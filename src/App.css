@@ -3,3 +3,25 @@
 .site-layout .site-layout-background {
   background: #fff;
 }
+
+.logo-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo-collapsed {
+  height: 40px;
+  margin: 10px 18px;
+}
+
+.logo {
+  height: 40px;
+  margin: 16px;
+}
+
+.logo-text {
+  font-size: '18px';
+  font-weight: 600;
+}
