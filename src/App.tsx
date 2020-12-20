@@ -1,16 +1,17 @@
 import { Layout } from 'antd';
 import React, { useState } from 'react';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch, Link } from 'react-router-dom';
 import './App.css';
 import logoSquare from './assets/images/logo-square.png';
 
-import MenuList from './Layout/MenuList';
-import Header from './Layout/Header';
+import MenuList from './Layout/MenuList/MenuList';
+import Header from './Layout/Header/HeaderComponent';
 import Welcome from './Welcome';
 import ClientUsers from './Users/ClientUsers/pages/ClientUsers';
 import AdminUsers from './Users/AdminUsers/pages/AdminUsers';
 import Carrier from './Carriers/pages/Carriers';
 import AuditTrail from './AuditTrail/pages/AuditTrail';
+import Profile from './Users/User/Profile/Profile';
 
 const { Sider, Content, Footer } = Layout;
 
@@ -22,13 +23,15 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={collapseHandler}>
-          <div className="logo-container">
-            <img className="logo" src={logoSquare} alt="EksShipping" />
-            {!collapsed && (
-              <h1 style={{ color: 'white' }} className="logo-text">
-                EksShipping
-              </h1>
-            )}
+          <div>
+            <Link to="/" className="logo-container">
+              <img className="logo" src={logoSquare} alt="EksShipping" />
+              {!collapsed && (
+                <h1 style={{ color: 'white' }} className="logo-text">
+                  EksShipping
+                </h1>
+              )}
+            </Link>
           </div>
           <MenuList />
         </Sider>
@@ -45,6 +48,7 @@ const App: React.FC = () => {
                 <Route path="/admins" component={AdminUsers} />
                 <Route path="/carriers" component={Carrier} />
                 <Route path="/audit" component={AuditTrail} />
+                <Route path="/user/profile" component={Profile} />
                 <Redirect to="/" />
               </Switch>
             </div>
