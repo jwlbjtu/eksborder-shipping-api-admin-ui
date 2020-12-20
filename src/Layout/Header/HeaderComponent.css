@@ -1,7 +1,8 @@
-.menu:global(.anticon) {
+.menu .anticon {
   margin-right: 8px;
 }
-.menu:global(.ant-dropdown-menu-item) {
+
+.menu .ant-dropdown-menu-item {
   min-width: 160px;
 }
 
