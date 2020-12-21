@@ -1,0 +1,9 @@
+.profile-header {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.form-body {
+  min-width: 224px;
+  max-width: 448px;
+}
