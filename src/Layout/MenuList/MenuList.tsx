@@ -19,12 +19,7 @@ const MenuList = (): ReactElement => {
   }, [location]);
 
   return (
-    <Menu
-      selectedKeys={[seletedKey]}
-      theme="dark"
-      defaultSelectedKeys={['1']}
-      mode="inline"
-    >
+    <Menu selectedKeys={[seletedKey]} theme="dark" mode="inline">
       <SubMenu key="users" icon={<TeamOutlined />} title="用户管理">
         <Menu.Item key="clients">
           <Link to="/clients">货代用户</Link>

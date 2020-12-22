@@ -22,6 +22,7 @@ const AvatarDropdown = (): ReactElement => {
         <Avatar
           size="small"
           className="avatar"
+          icon={<UserOutlined />}
           src="https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png"
           alt="avatar"
         />
