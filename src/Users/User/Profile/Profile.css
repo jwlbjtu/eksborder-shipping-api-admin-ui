@@ -7,3 +7,8 @@
   min-width: 224px;
   max-width: 448px;
 }
+
+.profile-content {
+  padding: 26px 50px;
+  min-height: 360;
+}

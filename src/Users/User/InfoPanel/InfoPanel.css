@@ -1,0 +1,8 @@
+.profile-avatar {
+  width: 100%;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 448px;
+  padding: 20px;
+}
