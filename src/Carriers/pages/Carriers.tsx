@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { ReactElement, useEffect, useState } from 'react';
 import {
   PageHeader,
@@ -11,11 +12,10 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import CarriersList from '../components/AddAccount/CarriersLists';
 import AddCarrierModal from '../components/AddAccount/AddCarrierModal';
-import DHLeComCreationForm from '../components/DHLeCommerce/DHLeComCreationForm';
+import UpdateCarrierModal from '../components/UpdateAccount/UpdateCarrierModal';
+
 import {
-  CARRIERS,
   GET_CARRIER_LOGO,
-  DEFAULT_ADDRESS_FORM_DATA,
   CARRIERS_SAMPLE_DATA
 } from '../../shared/utils/constants';
 
@@ -23,14 +23,13 @@ const Carriers = (): ReactElement => {
   const [carriersData, setCarriersData] = useState<any[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCarriersList, setShowCarriersList] = useState(false);
-  const [addCarrierModalInfo, setAddCarrierModalInfo] = useState({
-    carrier: '',
-    logo: '',
-    visible: false
-  });
-  const [addCarrierForm, setAddCarrierForm] = useState<ReactElement | null>(
+  const [addCarrierModal, setAddCarrierModal] = useState<ReactElement | null>(
     null
   );
+  const [
+    updateCarrierModal,
+    setUpdateCarrierModal
+  ] = useState<ReactElement | null>(null);
 
   useEffect(() => {
     // Call back end to get data
@@ -54,7 +53,7 @@ const Carriers = (): ReactElement => {
       const newData = [...carriersData];
       const record = newData.find((item) => item.key === key);
       if (record) {
-        record.status = record.status === 'active' ? 'inactive' : 'active';
+        record.active = !record.active;
       }
       setCarriersData(newData);
       setTableLoading(false);
@@ -64,31 +63,75 @@ const Carriers = (): ReactElement => {
   const showCarriersListHandler = () => setShowCarriersList(true);
   const hideCarriersListHandler = () => setShowCarriersList(false);
 
-  const showAddCarrierModalHandler = (carrier: string) => {
-    if (carrier === CARRIERS.DHL_ECOMMERCE) {
-      setAddCarrierForm(
-        <DHLeComCreationForm data={DEFAULT_ADDRESS_FORM_DATA} />
-      );
-    }
-    const info = {
-      carrier,
-      logo: GET_CARRIER_LOGO(carrier),
-      visible: true
-    };
-    setAddCarrierModalInfo(info);
-    setShowCarriersList(false);
-  };
   const addCarrierModalBackHandler = () => {
-    setAddCarrierModalInfo({ ...addCarrierModalInfo, visible: false });
+    setAddCarrierModal(null);
     setShowCarriersList(true);
-    setAddCarrierForm(null);
   };
   const addCarrierModalCancelHandler = () => {
-    setAddCarrierModalInfo({ ...addCarrierModalInfo, visible: false });
-    setAddCarrierForm(null);
+    setAddCarrierModal(null);
   };
-  const addCarrierModalOkHandler = () => {
-    alert('OK Clicked');
+  const addCarrierModalOkHandler = (values: any) => {
+    setAddCarrierModal(null);
+    setTableLoading(true);
+    const account = {
+      ...values,
+      key: 99,
+      active: true
+    };
+    // TODO: connect to backend
+    setTimeout(() => {
+      const newData = [...carriersData, account];
+      setCarriersData(newData);
+      setTableLoading(false);
+    }, 2000);
+  };
+
+  const showAddCarrierModalHandler = (carrier: string) => {
+    setShowCarriersList(false);
+    setAddCarrierModal(
+      <AddCarrierModal
+        carrier={carrier}
+        logo={GET_CARRIER_LOGO(carrier)}
+        visible
+        backClicked={addCarrierModalBackHandler}
+        cancelCliecked={addCarrierModalCancelHandler}
+        okClicked={addCarrierModalOkHandler}
+      />
+    );
+  };
+
+  const hideUpdateCarrierModal = () => {
+    setUpdateCarrierModal(null);
+  };
+  const updateCarrierModalOkHandler = (values: any) => {
+    setUpdateCarrierModal(null);
+    setTableLoading(true);
+    const omitList = ['clientId'];
+    if (!values.password) omitList.push('clientSecret');
+    const account = _.omit(values, omitList);
+    // TODO: connect to backend
+    setTimeout(() => {
+      const newData = [...carriersData];
+      // @ts-expect-error: not a type issue
+      const carrier = newData.find((item) => item.key === account.key);
+      Object.keys(account).forEach((keyId) => {
+        // @ts-expect-error: not a type issue
+        carrier[keyId] = account[keyId];
+      });
+      setCarriersData(newData);
+      setTableLoading(false);
+    }, 2000);
+  };
+
+  const showUpdateCarrierModal = (record: any) => {
+    setUpdateCarrierModal(
+      <UpdateCarrierModal
+        data={_.omit(record, ['clientId', 'clientSecret'])}
+        visible
+        cancelClicked={hideUpdateCarrierModal}
+        okClicked={updateCarrierModalOkHandler}
+      />
+    );
   };
 
   const columns = [
@@ -117,14 +160,14 @@ const Carriers = (): ReactElement => {
     },
     {
       title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'active',
+      key: 'active',
       render: (text: string, record: any) => (
         <Switch
           checkedChildren="启用"
           unCheckedChildren="停用"
           defaultChecked
-          checked={text === 'active'}
+          checked={record.active}
           onClick={() => statusChangeHandler(record.key)}
         />
       )
@@ -134,7 +177,11 @@ const Carriers = (): ReactElement => {
       key: 'action',
       render: (text: string, record: any) => (
         <Space size="small">
-          <Button size="small" type="link">
+          <Button
+            size="small"
+            type="link"
+            onClick={() => showUpdateCarrierModal(record)}
+          >
             修改
           </Button>
           <Popconfirm
@@ -160,16 +207,8 @@ const Carriers = (): ReactElement => {
         handleCancel={hideCarriersListHandler}
         imageClicked={showAddCarrierModalHandler}
       />
-      <AddCarrierModal
-        carrier={addCarrierModalInfo.carrier}
-        logo={addCarrierModalInfo.logo}
-        visible={addCarrierModalInfo.visible}
-        backClicked={addCarrierModalBackHandler}
-        cancelCliecked={addCarrierModalCancelHandler}
-        okClicked={addCarrierModalOkHandler}
-      >
-        {addCarrierForm}
-      </AddCarrierModal>
+      {addCarrierModal}
+      {updateCarrierModal}
       <PageHeader
         title="物流账号"
         subTitle="管理EksShipping的物流账号"

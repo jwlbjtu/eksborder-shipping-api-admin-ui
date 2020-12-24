@@ -1,31 +1,52 @@
-import React, { ReactElement, useEffect } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Form, Modal, Button, Image, Divider } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
+import DHLeComCreationForm from '../DHLeCommerce/DHLeComCreationForm';
+import {
+  CARRIERS,
+  DEFAULT_ADDRESS_FORM_DATA
+} from '../../../shared/utils/constants';
 
 interface AddCarrierModalProps {
   carrier: string;
   logo: string;
   visible: boolean;
-  children: ReactElement | null;
   backClicked: () => void;
   cancelCliecked: () => void;
-  okClicked: () => void;
+  okClicked: (values: any) => void;
 }
 
 const AddCarrierModal = ({
   carrier,
   logo,
   visible,
-  children,
   backClicked,
   cancelCliecked,
   okClicked
 }: AddCarrierModalProps): ReactElement => {
   const [form] = Form.useForm();
+  const [addCarrierForm, setAddCarrierForm] = useState<ReactElement | null>(
+    null
+  );
 
   useEffect(() => {
-    console.log(carrier);
-  }, [carrier]);
+    if (carrier === CARRIERS.DHL_ECOMMERCE) {
+      form.setFieldsValue(DEFAULT_ADDRESS_FORM_DATA);
+      setAddCarrierForm(
+        <DHLeComCreationForm form={form} disabled={false} isUpdate={false} />
+      );
+    }
+  }, [form, carrier]);
+
+  const okClickedHandler = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        form.resetFields();
+        okClicked({ ...values, carrier });
+      })
+      .catch(() => {});
+  };
 
   return (
     <Modal
@@ -52,7 +73,9 @@ const AddCarrierModal = ({
         </Button>
       }
       onCancel={cancelCliecked}
-      onOk={okClicked}
+      onOk={okClickedHandler}
+      transitionName=""
+      maskTransitionName=""
     >
       <div
         style={{
@@ -67,7 +90,7 @@ const AddCarrierModal = ({
         </span>
       </div>
       <Divider />
-      {children}
+      {addCarrierForm}
     </Modal>
   );
 };

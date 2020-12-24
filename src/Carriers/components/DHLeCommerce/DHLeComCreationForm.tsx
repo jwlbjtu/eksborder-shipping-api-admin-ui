@@ -1,50 +1,53 @@
-import React, { ReactElement, useEffect } from 'react';
+import React, { ReactElement } from 'react';
 import { Form, Input, Divider, Space, Button } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import AddressFormItems from '../../../shared/components/AddressFormItems';
 
 interface FormProps {
-  data: Record<string, unknown>;
+  form: any;
+  disabled: boolean;
+  isUpdate: boolean;
 }
 
-const DHLeComCreationForm = ({ data }: FormProps): ReactElement => {
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    form.setFieldsValue(data);
-  }, [form, data]);
-
+const DHLeComCreationForm = ({
+  form,
+  disabled,
+  isUpdate
+}: FormProps): ReactElement => {
   return (
     <Form layout="vertical" form={form}>
       <Form.Item label="账号名称" name="name">
-        <Input placeholder="账号名称" />
+        <Input placeholder="账号名称" disabled={disabled} />
+      </Form.Item>
+      <Form.Item label="账号说明" name="description">
+        <Input placeholder="账号说明" disabled={disabled} />
       </Form.Item>
       <Form.Item
         label="Client ID"
         name="clientId"
-        rules={[{ required: true, message: 'Client ID 必须填写' }]}
+        rules={[{ required: !isUpdate, message: 'Client ID 必须填写' }]}
       >
-        <Input placeholder="Client ID" />
+        <Input placeholder="Client ID" disabled={isUpdate} />
       </Form.Item>
       <Form.Item
         label="Client Secret"
         name="clientSecret"
-        rules={[{ required: true, message: 'Client Secret 必须填写' }]}
+        rules={[{ required: !isUpdate, message: 'Client Secret 必须填写' }]}
       >
-        <Input placeholder="Client Secret" />
+        <Input.Password placeholder="Client Secret" />
       </Form.Item>
       <Space>
         <Form.Item
           name="pickup-main"
           rules={[{ required: true, message: 'Pickup Code 必须填写' }]}
         >
-          <Input placeholder="Pickup Code" />
+          <Input placeholder="Pickup Code" disabled={disabled} />
         </Form.Item>
         <Form.Item
           name="destribution-main"
           rules={[{ required: true, message: 'Destribution Code 必须填写' }]}
         >
-          <Input placeholder="Destribution Code" />
+          <Input placeholder="Destribution Code" disabled={disabled} />
         </Form.Item>
       </Space>
       <Form.List name="locations">
@@ -60,7 +63,7 @@ const DHLeComCreationForm = ({ data }: FormProps): ReactElement => {
                   name={[field.name, 'pickup']}
                   rules={[{ required: true, message: 'Pickup Code 必须填写' }]}
                 >
-                  <Input placeholder="Pickup Code" />
+                  <Input placeholder="Pickup Code" disabled={disabled} />
                 </Form.Item>
                 <Form.Item
                   name={[field.name, 'destribution']}
@@ -68,7 +71,7 @@ const DHLeComCreationForm = ({ data }: FormProps): ReactElement => {
                     { required: true, message: 'Desctribution Code 必须填写' }
                   ]}
                 >
-                  <Input placeholder="Destribution Code" />
+                  <Input placeholder="Destribution Code" disabled={disabled} />
                 </Form.Item>
                 <MinusCircleOutlined
                   onClick={() => {
@@ -83,6 +86,7 @@ const DHLeComCreationForm = ({ data }: FormProps): ReactElement => {
                 onClick={() => add()}
                 block
                 icon={<PlusOutlined />}
+                disabled={disabled}
               >
                 Add Pickup Information
               </Button>
@@ -91,7 +95,7 @@ const DHLeComCreationForm = ({ data }: FormProps): ReactElement => {
         )}
       </Form.List>
       <Divider />
-      <AddressFormItems />
+      <AddressFormItems disabled={disabled} />
     </Form>
   );
 };

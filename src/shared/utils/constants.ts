@@ -53,27 +53,27 @@ export const CARRIERS_SAMPLE_DATA = [
     carrier: CARRIERS.DHL_ECOMMERCE,
     name: 'DHL eCommerce 小包账号',
     description: '用于FLAT，GOUND之类的小包业务',
-    status: 'active'
+    active: true
   },
   {
     key: 2,
     carrier: CARRIERS.FEDEX,
     name: 'FDEX美国本土派送账号',
     description: '用于Amazon电商一件代发业务',
-    status: 'active'
+    active: true
   },
   {
     key: 3,
     carrier: CARRIERS.UPS,
     name: 'UPS国际账号',
     description: '用于中国和美国间的业务',
-    status: 'inactive'
+    active: false
   },
   {
     key: 4,
     carrier: CARRIERS.USPS,
     name: 'USPS美国小包账号',
     description: '用于美国本地的小包业务',
-    status: 'inactive'
+    active: false
   }
 ];

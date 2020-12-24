@@ -26,6 +26,8 @@ const CarriersList = ({
       visible={visible}
       closable={false}
       footer={<Button onClick={handleCancel}>取消</Button>}
+      transitionName=""
+      maskTransitionName=""
     >
       <Row>
         <Space size="middle">
