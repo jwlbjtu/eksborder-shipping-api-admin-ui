@@ -1,20 +1,25 @@
 import React, { ReactElement } from 'react';
-import { Form, Avatar, Upload, Button, Input, message, Select } from 'antd';
+import { Form, Avatar, Upload, Button, Input, message } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import PhoneNumberFormItems from '../../../../shared/components/PhoneNumberItems';
 import './InfoPanel.css';
 
-const { Option } = Select;
-
 interface InfoFormValue {
+  avatar: string;
   name: string;
   email: string;
   prefix: string;
   phone: string;
 }
 
-const InfoPanel = ({ data }: { data: InfoFormValue }): ReactElement => {
+interface InfoPanelProps {
+  data: InfoFormValue;
+  onSubmit: (values: any) => void;
+}
+
+const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
   const infoFormSubmitHandler = (values: InfoFormValue) => {
-    console.log(values);
+    onSubmit(values);
   };
 
   const uploadHandler = (info: any) => {
@@ -28,20 +33,12 @@ const InfoPanel = ({ data }: { data: InfoFormValue }): ReactElement => {
     }
   };
 
-  const prefixSelector = (
-    <Form.Item name="prefix" noStyle>
-      <Select style={{ width: 70 }}>
-        <Option value="1">+1</Option>
-        <Option value="86">+86</Option>
-      </Select>
-    </Form.Item>
-  );
-
   return (
     <div>
       <div className="profile-avatar">
         <Avatar
           size={144}
+          src={data && data.avatar}
           icon={<UserOutlined />}
           style={{ marginBottom: '12px' }}
         />
@@ -77,17 +74,7 @@ const InfoPanel = ({ data }: { data: InfoFormValue }): ReactElement => {
         >
           <Input placeholder="邮箱" />
         </Form.Item>
-        <Form.Item
-          name="phone"
-          label="电话"
-          rules={[{ required: true, message: '请输入您的电话!' }]}
-        >
-          <Input
-            placeholder="电话号码"
-            addonBefore={prefixSelector}
-            style={{ width: '100%' }}
-          />
-        </Form.Item>
+        <PhoneNumberFormItems disabled={false} />
         <Form.Item>
           <Button type="primary" htmlType="submit">
             更新基本信息

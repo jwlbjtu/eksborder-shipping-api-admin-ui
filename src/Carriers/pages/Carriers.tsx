@@ -32,8 +32,12 @@ const Carriers = (): ReactElement => {
   ] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // Call back end to get data
-    setCarriersData(CARRIERS_SAMPLE_DATA);
+    // TODO: Call back end to get data
+    setTableLoading(true);
+    setTimeout(() => {
+      setCarriersData(CARRIERS_SAMPLE_DATA);
+      setTableLoading(false);
+    }, 1000);
   }, []);
 
   const deleteAccountHandler = (key: number) => {
@@ -176,7 +180,7 @@ const Carriers = (): ReactElement => {
       title: '操作',
       key: 'action',
       render: (text: string, record: any) => (
-        <Space size="small">
+        <Space size={0} split={<Divider type="vertical" />}>
           <Button
             size="small"
             type="link"

@@ -11,7 +11,9 @@ import ClientUsers from './Users/ClientUsers/pages/ClientUsers';
 import AdminUsers from './Users/AdminUsers/pages/AdminUsers';
 import Carrier from './Carriers/pages/Carriers';
 import AuditTrail from './AuditTrail/pages/AuditTrail';
-import Profile from './Users/User/Profile/Profile';
+import UserProfile from './Users/User/pages/UserProfile';
+import AdminProfile from './Users/AdminUsers/pages/AdminProfile';
+import ClientManagePage from './Users/ClientUsers/pages/ClientManagePage';
 
 const { Sider, Content, Footer } = Layout;
 
@@ -44,12 +46,13 @@ const App: React.FC = () => {
             >
               <Switch>
                 <Route path="/" component={Welcome} exact />
+                <Route path="/clients/:id" component={ClientManagePage} />
                 <Route path="/clients" component={ClientUsers} />
+                <Route path="/admins/:id" component={AdminProfile} />
                 <Route path="/admins" component={AdminUsers} />
                 <Route path="/carriers" component={Carrier} />
                 <Route path="/audit" component={AuditTrail} />
-                <Route path="/user/profile" component={Profile} />
-                <Redirect to="/" />
+                <Route path="/user/profile" component={UserProfile} />
               </Switch>
             </div>
           </Content>
