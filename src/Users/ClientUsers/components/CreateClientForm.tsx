@@ -27,6 +27,7 @@ const CreateClientForm = ({
     form
       .validateFields()
       .then((values) => {
+        form.resetFields();
         const role = USER_ROLES.API_USER;
         const result: CreateUserData = {
           companyName: values.companyName,

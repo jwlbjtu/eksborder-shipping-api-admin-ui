@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { Spin, Divider, Tabs, message } from 'antd';
 import { useParams } from 'react-router-dom';
 
@@ -24,10 +24,12 @@ import {
 } from '../../../shared/types/user';
 import errorHandler from '../../../shared/utils/errorHandler';
 import LoadError from '../../../shared/components/ErrorPages';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const { TabPane } = Tabs;
 
 const ClientManagePage = (): ReactElement => {
+  const auth = useContext(AuthContext);
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,11 +37,14 @@ const ClientManagePage = (): ReactElement => {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // TODO: add authentication
     setLoading(true);
     setFailed(false);
     axios
-      .get(`${SERVER_ROUTES.USERS}/${id}`)
+      .get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setData(response.data);
       })
@@ -50,14 +55,17 @@ const ClientManagePage = (): ReactElement => {
       .finally(() => {
         setLoading(false);
       });
-  }, [id]);
+  }, [id, auth]);
 
   const getUserData = async () => {
-    // TODO: add authentication
     setLoading(true);
     setFailed(false);
     try {
-      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`);
+      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       setData(response.data);
     } catch (error) {
       errorHandler(error);
@@ -68,14 +76,21 @@ const ClientManagePage = (): ReactElement => {
   };
 
   const infoUpdatedHandler = async (updateData: UpdateClientData) => {
-    // TODO: add authentication
     setSubloading(true);
     try {
       if (data) {
-        const response = await axios.put(SERVER_ROUTES.USERS, {
-          id: data.id,
-          ...updateData
-        });
+        const response = await axios.put(
+          SERVER_ROUTES.USERS,
+          {
+            id: data.id,
+            ...updateData
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
         const updatedUser = response.data;
         setData(updatedUser);
         message.success('用户信息更新成功！');
@@ -88,14 +103,21 @@ const ClientManagePage = (): ReactElement => {
   };
 
   const passwordUpdatedHandler = async (values: PasswordFormValue) => {
-    // TODO: add auth
     setSubloading(true);
     try {
       if (data) {
-        await axios.put(`${SERVER_ROUTES.USERS}/password`, {
-          id: data.id,
-          ...values
-        });
+        await axios.put(
+          `${SERVER_ROUTES.USERS}/password`,
+          {
+            id: data.id,
+            ...values
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
         message.success('密码更新成功！');
       }
     } catch (error) {
@@ -119,9 +141,12 @@ const ClientManagePage = (): ReactElement => {
   const createApiTokenHandler = async () => {
     setSubloading(true);
     try {
-      // TODO: add auth
       if (data) {
-        const response = await axios.get(`${SERVER_ROUTES.API}/refresh/${id}`);
+        const response = await axios.get(`${SERVER_ROUTES.API}/refresh/${id}`, {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        });
         const newToken = response.data.token;
         const newData = { ...data, apiToken: newToken };
         setData(newData);
@@ -136,8 +161,11 @@ const ClientManagePage = (): ReactElement => {
   const deleteApiTokenHandler = async () => {
     setSubloading(true);
     try {
-      // TODO: add auth
-      await axios.get(`${SERVER_ROUTES.API}/revoke/${id}`);
+      await axios.get(`${SERVER_ROUTES.API}/revoke/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newData = _.omit(data, ['apiToken']);
       setData(newData);
     } catch (error) {

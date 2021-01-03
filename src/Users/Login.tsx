@@ -6,8 +6,10 @@ import { Footer } from 'antd/lib/layout/layout';
 import logo from '../assets/images/logo-dark.png';
 
 import AuthContext from '../shared/components/context/auth-context';
+import axios from '../shared/utils/axios-base';
 
 import './Login.css';
+import { SERVER_ROUTES } from '../shared/utils/constants';
 
 const LoginMessage: React.FC<{ content: string }> = ({
   content
@@ -29,22 +31,22 @@ const Login = (): ReactElement => {
   const [submiting, setSubmitting] = useState(false);
   const [userLoginState, setUserLoginState] = useState('ok');
 
-  const loginHandler = (values: any) => {
+  const loginHandler = async (values: { email: string; password: string }) => {
     setSubmitting(true);
+    setUserLoginState('ok');
     try {
       // 登录
-      setTimeout(() => {
-        if (values.email === 'ok@eksborder.com') {
-          message.success('登录成功！');
-          auth.login();
-          return;
-        }
-        // 如果失败去设置用户错误信息
-        setUserLoginState('error');
-        setSubmitting(false);
-      }, 2000);
+      const response = await axios.post(`${SERVER_ROUTES.USERS}/login`, {
+        user: values
+      });
+      message.success('登录成功！');
+      auth.login(response.data);
     } catch (error) {
       message.error('登录失败，请重试！');
+      // 如果失败去设置用户错误信息
+      setUserLoginState('error');
+    } finally {
+      setSubmitting(false);
     }
   };
 

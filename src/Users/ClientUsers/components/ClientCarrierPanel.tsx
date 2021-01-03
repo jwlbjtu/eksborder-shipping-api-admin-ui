@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   PageHeader,
   Table,
@@ -21,23 +21,27 @@ import ClientUpdateCarrierForm from './ClientUpdateCarrierForm';
 import axios from '../../../shared/utils/axios-base';
 import errorHandler from '../../../shared/utils/errorHandler';
 import { CreateUserCarrierData, UserCarrier } from '../../../shared/types/user';
-import { Facility, Service } from '../../../shared/types/carrier';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface ClientCarrierPanelProps {
   id: string;
 }
 
 const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [data, setData] = useState<UserCarrier[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [updateForm, setUpdateForm] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // TODO: add auth
     setTableLoading(true);
     axios
-      .get(`${SERVER_ROUTES.ACCOUNT}/${id}`)
+      .get(`${SERVER_ROUTES.ACCOUNT}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setData(response.data);
       })
@@ -47,13 +51,16 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       .finally(() => {
         setTableLoading(false);
       });
-  }, [id]);
+  }, [id, auth]);
 
   const deleteHandler = async (accountId: number) => {
-    // TODO: add auth
     setTableLoading(true);
     try {
-      await axios.delete(`${SERVER_ROUTES.ACCOUNT}/${accountId}`);
+      await axios.delete(`${SERVER_ROUTES.ACCOUNT}/${accountId}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newData = data.filter((item) => item.id !== accountId);
       setData(newData);
     } catch (error) {
@@ -64,11 +71,14 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
   };
 
   const statusChangeHandler = async (active: boolean, values: UserCarrier) => {
-    // TODO: add auth
     setTableLoading(true);
     try {
       const updateData = { id: values.id, isActive: active };
-      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, updateData);
+      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, updateData, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const updatedAccount = response.data;
       const newData = [...data];
       const record = newData.find((item) => item.id === updatedAccount.id);
@@ -86,7 +96,6 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
   const hideCreateFormHandler = () => setShowCreateForm(false);
   const showCreateFormHandler = () => setShowCreateForm(true);
   const createHandler = async (values: CreateUserCarrierData) => {
-    // TODO: add auth
     setTableLoading(true);
     hideCreateFormHandler();
     try {
@@ -94,7 +103,11 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
         ...values,
         userRef: id
       };
-      const response = await axios.post(SERVER_ROUTES.ACCOUNT, account);
+      const response = await axios.post(SERVER_ROUTES.ACCOUNT, account, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newData = [...data, response.data];
       setData(newData);
     } catch (error) {
@@ -107,11 +120,14 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
   const hideUpdateForm = () => setUpdateForm(null);
 
   const updateHandler = async (values: any) => {
-    // TODO: add auth
     hideUpdateForm();
     setTableLoading(true);
     try {
-      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, values);
+      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, values, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const updatedRecord = response.data;
       const newData = [...data];
       const record = newData.find(

@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Spin, Breadcrumb, Divider, message } from 'antd';
 
@@ -16,8 +16,10 @@ import {
   UpdateUserData,
   User
 } from '../../../shared/types/user';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const AdminProfile = (): ReactElement => {
+  const auth = useContext(AuthContext);
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
@@ -25,11 +27,14 @@ const AdminProfile = (): ReactElement => {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // TODO: add authentication
     setLoading(true);
     setFailed(false);
     axios
-      .get(`${SERVER_ROUTES.USERS}/${id}`)
+      .get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setUserData(response.data);
       })
@@ -38,14 +43,17 @@ const AdminProfile = (): ReactElement => {
         setFailed(true);
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, auth]);
 
   const getUserData = async () => {
-    // TODO: add authentication
     setLoading(true);
     setFailed(false);
     try {
-      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`);
+      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       setUserData(response.data);
     } catch (error) {
       errorHandler(error);
@@ -56,14 +64,21 @@ const AdminProfile = (): ReactElement => {
   };
 
   const infoPanelDataHandler = async (data: UpdateUserData) => {
-    // TODO: add auth
     setSubLoading(true);
     try {
       if (userData) {
-        const response = await axios.put(SERVER_ROUTES.USERS, {
-          id: userData.id,
-          ...data
-        });
+        const response = await axios.put(
+          SERVER_ROUTES.USERS,
+          {
+            id: userData.id,
+            ...data
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
         const updatedUser = response.data;
         setUserData(updatedUser);
         message.success('用户信息更新成功！');
@@ -76,14 +91,21 @@ const AdminProfile = (): ReactElement => {
   };
 
   const passwordPanelDataHandler = async (values: PasswordFormValue) => {
-    // TODO: add auth
     setSubLoading(true);
     try {
       if (userData) {
-        await axios.put(`${SERVER_ROUTES.USERS}/password`, {
-          id: userData.id,
-          ...values
-        });
+        await axios.put(
+          `${SERVER_ROUTES.USERS}/password`,
+          {
+            id: userData.id,
+            ...values
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
         message.success('密码更新成功！');
       }
     } catch (error) {

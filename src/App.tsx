@@ -1,5 +1,5 @@
 import { Layout } from 'antd';
-import React, { ReactElement, useContext, useState } from 'react';
+import React, { ReactElement, useCallback, useContext, useState } from 'react';
 import { BrowserRouter, Redirect, Route, Switch, Link } from 'react-router-dom';
 import './App.css';
 import logoSquare from './assets/images/logo-square.png';
@@ -17,25 +17,27 @@ import ClientManagePage from './Users/ClientUsers/pages/ClientManagePage';
 import Login from './Users/Login';
 
 import AuthContext from './shared/components/context/auth-context';
+import { UserData } from './shared/types/user';
 
 const { Sider, Content, Footer } = Layout;
 
 const App: React.FC = (): ReactElement => {
   const auth = useContext(AuthContext);
   const [collapsed, setCollapsed] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(auth.userData);
+
+  const login = useCallback((data: UserData) => {
+    setUserData(data);
+  }, []);
+
+  const logout = useCallback(() => {
+    setUserData(null);
+  }, []);
+
   const collapseHandler = () => setCollapsed(!collapsed);
-  const [isLoggedIn, setIsLoggedIn] = useState(auth.isLoggedIn);
-
-  const login = () => {
-    setIsLoggedIn(true);
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-  };
 
   let page = null;
-  if (isLoggedIn) {
+  if (userData) {
     page = (
       <BrowserRouter>
         <Layout style={{ minHeight: '100vh' }}>
@@ -91,7 +93,9 @@ const App: React.FC = (): ReactElement => {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn: !!userData, userData, login, logout }}
+    >
       {page}
     </AuthContext.Provider>
   );

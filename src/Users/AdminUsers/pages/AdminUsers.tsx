@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   PageHeader,
   Table,
@@ -20,19 +20,24 @@ import CreateAdminForm from '../components/CreateAdminForm';
 import axios from '../../../shared/utils/axios-base';
 import errorHandler from '../../../shared/utils/errorHandler';
 import { CreateUserData, User } from '../../../shared/types/user';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 type AdminUsersProps = RouteComponentProps;
 
 const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [adminData, setAdminData] = useState<User[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateAdminForm, setShowCreateAdminForm] = useState(false);
 
   useEffect(() => {
-    // TODO: add authantication
     setTableLoading(true);
     axios
-      .get(`${SERVER_ROUTES.USERS}/list/admins`)
+      .get(`${SERVER_ROUTES.USERS}/list/admins`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setAdminData(response.data);
       })
@@ -41,13 +46,16 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
         errorHandler(error);
       })
       .finally(() => setTableLoading(false));
-  }, []);
+  }, [auth]);
 
   const deleteAdminUserHandler = async (id: string) => {
-    // TODO: add authentication
     setTableLoading(true);
     try {
-      await axios.delete(`${SERVER_ROUTES.USERS}/${id}`);
+      await axios.delete(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newData = adminData.filter((item) => item.id !== id);
       setAdminData(newData);
     } catch (error) {
@@ -61,8 +69,11 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
     setTableLoading(true);
     try {
       const data = { ...value, isActive: active };
-      // TODO: add authantication
-      const response = await axios.put(SERVER_ROUTES.USERS, data);
+      const response = await axios.put(SERVER_ROUTES.USERS, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const updatedUser = response.data;
       const newData = [...adminData];
       const record = newData.find((item) => item.id === updatedUser.id);
@@ -81,11 +92,14 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
   const showCreateAdminFormHandler = () => setShowCreateAdminForm(true);
 
   const createAdminHandler = async (data: CreateUserData) => {
-    // TODO: add authentication
     setTableLoading(true);
     hideCreateAdminFormHandler();
     try {
-      const response = await axios.post(SERVER_ROUTES.USERS, data);
+      const response = await axios.post(SERVER_ROUTES.USERS, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newUser = response.data;
       const newData = [...adminData, newUser];
       setAdminData(newData);

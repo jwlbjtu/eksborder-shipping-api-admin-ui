@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   PageHeader,
   Button,
@@ -21,8 +21,10 @@ import {
   CarrierCreateData,
   CarrierUpdateData
 } from '../../shared/types/carrier';
+import AuthContext from '../../shared/components/context/auth-context';
 
 const Carriers = (): ReactElement => {
+  const auth = useContext(AuthContext);
   const [carriersData, setCarriersData] = useState<Carrier[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCarriersList, setShowCarriersList] = useState(false);
@@ -37,8 +39,11 @@ const Carriers = (): ReactElement => {
   useEffect(() => {
     setTableLoading(true);
     axios
-      .get(SERVER_ROUTES.CARRIER)
-      // TODO: add authantication
+      .get(SERVER_ROUTES.CARRIER, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setCarriersData(response.data);
       })
@@ -47,13 +52,16 @@ const Carriers = (): ReactElement => {
         // TODO: if 401 Unauthorized logout user
       })
       .finally(() => setTableLoading(false));
-  }, []);
+  }, [auth]);
 
   const deleteAccountHandler = async (id: string) => {
     setTableLoading(true);
     try {
-      // TODO: add authantication
-      await axios.delete(`${SERVER_ROUTES.CARRIER}/${id}`);
+      await axios.delete(`${SERVER_ROUTES.CARRIER}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newData = carriersData.filter((item) => item.id !== id);
       setCarriersData(newData);
     } catch (error) {
@@ -68,8 +76,11 @@ const Carriers = (): ReactElement => {
     setTableLoading(true);
     try {
       const data = { ...value, isActive: active };
-      // TODO: add authantication
-      const response = await axios.put(SERVER_ROUTES.CARRIER, data);
+      const response = await axios.put(SERVER_ROUTES.CARRIER, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const updatedCarrier = response.data;
       const newData = [...carriersData];
       const record = newData.find((item) => item.id === updatedCarrier.id);
@@ -99,8 +110,11 @@ const Carriers = (): ReactElement => {
     setAddCarrierModal(null);
     setTableLoading(true);
     try {
-      // TODO: if 401 Unauthorized logout user
-      const response = await axios.post(SERVER_ROUTES.CARRIER, values);
+      const response = await axios.post(SERVER_ROUTES.CARRIER, values, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newCarrier = response.data;
       const newData = [...carriersData, newCarrier];
       setCarriersData(newData);
@@ -136,10 +150,18 @@ const Carriers = (): ReactElement => {
     setUpdateCarrierModal(null);
     setTableLoading(true);
     try {
-      const response = await axios.put(SERVER_ROUTES.CARRIER, {
-        id,
-        ...values
-      });
+      const response = await axios.put(
+        SERVER_ROUTES.CARRIER,
+        {
+          id,
+          ...values
+        },
+        {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        }
+      );
       const updatedCarrier = response.data;
 
       const newData = [...carriersData];

@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { PageHeader, Table, Button } from 'antd';
 import dayjs from 'dayjs';
 import { CheckCircleTwoTone, PrinterOutlined } from '@ant-design/icons';
@@ -11,6 +11,7 @@ import errorHandler from '../../../shared/utils/errorHandler';
 import { Address } from '../../../shared/types/carrier';
 import { ShippingRecord, Label } from '../../../shared/types/record';
 import ImageModal from '../../../shared/components/ImageModal';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface ClientShippingPanelProps {
   id: string;
@@ -19,22 +20,25 @@ interface ClientShippingPanelProps {
 const ClientShippingPanel = ({
   id
 }: ClientShippingPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [tableLoading, setTableLoading] = useState(false);
   const [recordsData, setRecordsData] = useState<any[]>([]);
   const [labelImage, setLabelImage] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // TODO: Call back end to get data
     setTableLoading(true);
     axios
-      .get(`${SERVER_ROUTES.RECORDS}/${id}`)
+      .get(`${SERVER_ROUTES.RECORDS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
-        console.log(response.data);
         setRecordsData(response.data);
       })
       .catch((error) => errorHandler(error))
       .finally(() => setTableLoading(false));
-  }, [id]);
+  }, [id, auth]);
 
   const hideLabelHandler = () => setLabelImage(null);
   const showLabelHandler = (type: string, format: string, data: string) => {

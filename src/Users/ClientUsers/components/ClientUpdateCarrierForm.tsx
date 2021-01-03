@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -20,6 +20,7 @@ import { UserCarrier } from '../../../shared/types/user';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
 import axios from '../../../shared/utils/axios-base';
 import errorHandler from '../../../shared/utils/errorHandler';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const { Option } = Select;
 
@@ -42,6 +43,7 @@ const ClientUpdateCarrierForm = ({
   onCancel,
   onOk
 }: ClientUpdateCarrierFormProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [form] = Form.useForm();
   const [carrierData, setCarrierData] = useState<Carrier[]>([]);
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
@@ -49,11 +51,13 @@ const ClientUpdateCarrierForm = ({
   const [dataActive, setDataActive] = useState(data.isActive);
 
   useEffect(() => {
-    // TODO: add auth
-    // load all available carrier accounts
     setLoading(true);
     axios
-      .get(SERVER_ROUTES.CARRIER)
+      .get(SERVER_ROUTES.CARRIER, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         const allCarriers = response.data;
         setCarrierData(allCarriers);
@@ -70,7 +74,7 @@ const ClientUpdateCarrierForm = ({
         errorHandler(error);
       })
       .finally(() => setLoading(false));
-  }, [data]);
+  }, [data, auth]);
 
   const cancelClickedHandler = () => {
     form.resetFields();

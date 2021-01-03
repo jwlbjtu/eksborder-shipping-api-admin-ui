@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -19,6 +19,7 @@ import { Carrier, Facility, Service } from '../../../shared/types/carrier';
 import { CreateUserCarrierData } from '../../../shared/types/user.d';
 import axios from '../../../shared/utils/axios-base';
 import errorHandler from '../../../shared/utils/errorHandler';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const { Option } = Select;
 
@@ -39,16 +40,20 @@ const ClientConnectCarrierForm = ({
   onCancel,
   onOk
 }: ClientConnectCarrierFormProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [form] = Form.useForm();
   const [carrierData, setCarrierData] = useState<Carrier[]>([]);
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // TODO: add auth
     setLoading(true);
     axios
-      .get(SERVER_ROUTES.CARRIER)
+      .get(SERVER_ROUTES.CARRIER, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setCarrierData(response.data);
       })
@@ -56,7 +61,7 @@ const ClientConnectCarrierForm = ({
         errorHandler(error);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [auth]);
 
   const cancelClickedHandler = () => {
     form.resetFields();

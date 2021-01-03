@@ -1,9 +1,10 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown, Menu } from 'antd';
 import React, { ReactElement, useContext } from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import AuthContext from '../../../shared/components/context/auth-context';
+import { DEFAULT_SERVER_HOST } from '../../../shared/utils/constants';
 
 const AvatarDropdown = (): ReactElement => {
   const auth = useContext(AuthContext);
@@ -27,10 +28,10 @@ const AvatarDropdown = (): ReactElement => {
           size="small"
           className="avatar"
           icon={<UserOutlined />}
-          src="https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png"
+          src={`${DEFAULT_SERVER_HOST}/${auth.userData?.image}`}
           alt="avatar"
         />
-        <span className="anticon">Wenlong Jiang</span>
+        <span className="anticon">{auth.userData?.fullName}</span>
       </span>
     </Dropdown>
   );

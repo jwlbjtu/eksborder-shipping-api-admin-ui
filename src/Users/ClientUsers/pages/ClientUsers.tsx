@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import {
   Avatar,
@@ -9,7 +8,7 @@ import {
   Switch,
   Table
 } from 'antd';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from '../../../shared/utils/axios-base';
 import CreateClientForm from '../components/CreateClientForm';
@@ -20,19 +19,24 @@ import {
 } from '../../../shared/utils/constants';
 import errorHandler from '../../../shared/utils/errorHandler';
 import { CreateUserData, User } from '../../../shared/types/user';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 type ClientUsersProps = RouteComponentProps;
 
 const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [clientsData, setClientsData] = useState<User[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateClientForm, setShowCreateClientForm] = useState(false);
 
   useEffect(() => {
-    // TODO: add authentication
     setTableLoading(true);
     axios
-      .get(`${SERVER_ROUTES.USERS}/list/${USER_ROLES.API_USER}`)
+      .get(`${SERVER_ROUTES.USERS}/list/${USER_ROLES.API_USER}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setClientsData(response.data);
       })
@@ -40,14 +44,17 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
         errorHandler(error);
       })
       .finally(() => setTableLoading(false));
-  }, []);
+  }, [auth]);
 
   const statusChangeHandler = async (active: boolean, value: User) => {
-    // TODO: add authentication
     setTableLoading(true);
     try {
       const data = { ...value, isActive: active };
-      const response = await axios.put(SERVER_ROUTES.USERS, data);
+      const response = await axios.put(SERVER_ROUTES.USERS, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const updatedUser = response.data;
       const newData = [...clientsData];
       const record = newData.find((item) => item.id === updatedUser.id);
@@ -66,11 +73,14 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
   const showCreateClientFormHandler = () => setShowCreateClientForm(true);
 
   const createAdminHandler = async (data: CreateUserData) => {
-    // TODO: add authentication
     setTableLoading(true);
     hideCreateClientFormHandler();
     try {
-      const response = await axios.post(SERVER_ROUTES.USERS, data);
+      const response = await axios.post(SERVER_ROUTES.USERS, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
       const newUser = response.data;
       const newData = [...clientsData, newUser];
       setClientsData(newData);

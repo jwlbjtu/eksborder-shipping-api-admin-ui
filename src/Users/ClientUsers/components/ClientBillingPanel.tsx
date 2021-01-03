@@ -1,6 +1,6 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, PageHeader, Table } from 'antd';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import axios from '../../../shared/utils/axios-base';
 
@@ -9,6 +9,7 @@ import ClientBillingForm from './ClientBillingForm';
 import { SERVER_ROUTES } from '../../../shared/utils/constants';
 import errorHandler from '../../../shared/utils/errorHandler';
 import { Billing, CreateBillingData } from '../../../shared/types/billing';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface ClientBillingPanelProps {
   id: string;
@@ -19,15 +20,19 @@ const ClientBillingPanel = ({
   id,
   updateBalance
 }: ClientBillingPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [billingData, setBillingData] = useState<Billing[]>([]);
 
   useEffect(() => {
     setLoading(true);
-    // TODO: add authentication
     axios
-      .get(`${SERVER_ROUTES.BILLINGS}/${id}`)
+      .get(`${SERVER_ROUTES.BILLINGS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
       .then((response) => {
         setBillingData(response.data);
       })
@@ -37,7 +42,7 @@ const ClientBillingPanel = ({
       .finally(() => {
         setLoading(false);
       });
-  }, [id]);
+  }, [id, auth]);
 
   const showBillingForm = () => setShowForm(true);
   const hideBillingForm = () => setShowForm(false);
@@ -45,11 +50,15 @@ const ClientBillingPanel = ({
   const addBillHandler = async (values: CreateBillingData) => {
     hideBillingForm();
     setLoading(true);
-    // TODO: add auth
     try {
       const response = await axios.post(
         `${SERVER_ROUTES.BILLINGS}/${id}`,
-        values
+        values,
+        {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        }
       );
       const newBill: Billing = response.data;
       const newData = [newBill, ...billingData];

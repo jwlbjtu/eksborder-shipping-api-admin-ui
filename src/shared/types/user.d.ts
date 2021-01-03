@@ -1,9 +1,16 @@
-import { Facility, Service } from './carrier';
-
 export interface UserLogin {
   email: string;
   password: string;
   isActive: boolean;
+}
+
+export interface UserData {
+  userId: string;
+  fullName: string;
+  image: string;
+  role: string;
+  token_type: string;
+  token: string;
 }
 
 export interface PasswordFormValue {
