@@ -1,10 +1,14 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, PageHeader, Table } from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import axios from '../../../shared/utils/axios-base';
 
 import ClientBillingForm from './ClientBillingForm';
 
-import { CLIETN_BILLING_DATA } from '../../../shared/utils/constants';
+import { SERVER_ROUTES } from '../../../shared/utils/constants';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { Billing, CreateBillingData } from '../../../shared/types/billing';
 
 interface ClientBillingPanelProps {
   id: string;
@@ -17,44 +21,51 @@ const ClientBillingPanel = ({
 }: ClientBillingPanelProps): ReactElement => {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [billingData, setBillingData] = useState<any[]>([]);
+  const [billingData, setBillingData] = useState<Billing[]>([]);
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      // TODO: call back end
-      // @ts-expect-error: 123
-      setBillingData(CLIETN_BILLING_DATA[id]);
-      setLoading(false);
-    }, 1000);
+    // TODO: add authentication
+    axios
+      .get(`${SERVER_ROUTES.BILLINGS}/${id}`)
+      .then((response) => {
+        setBillingData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   const showBillingForm = () => setShowForm(true);
   const hideBillingForm = () => setShowForm(false);
 
-  const addBillHandler = (values: any) => {
+  const addBillHandler = async (values: CreateBillingData) => {
     hideBillingForm();
     setLoading(true);
-    // TODO: call back end
-    setTimeout(() => {
-      const newData = [...billingData];
-      const newB =
-        values.isPayment === 1 ? 986.78 - values.total : 986.78 + values.total;
-      newData.push({
-        ...values,
-        date: '2020-12-26',
-        balance: newB
-      });
+    // TODO: add auth
+    try {
+      const response = await axios.post(
+        `${SERVER_ROUTES.BILLINGS}/${id}`,
+        values
+      );
+      const newBill: Billing = response.data;
+      const newData = [newBill, ...billingData];
       setBillingData(newData);
-      updateBalance(newB);
+      updateBalance(newBill.balance);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  const renderCell = (text: string, record: any) => {
+  const renderCell = (text: number, record: Billing) => {
     return text ? (
-      <span style={{ color: record.isPayment ? '#cf1322' : '#3f8600' }}>
-        {text}
+      <span style={{ color: record.addFund ? '#3f8600' : '#cf1322' }}>
+        {text.toFixed(2)}
       </span>
     ) : (
       '-'
@@ -64,52 +75,67 @@ const ClientBillingPanel = ({
   const columns = [
     {
       title: '生成日期',
-      key: 'date',
-      dataIndex: 'date'
+      key: 'createdAt',
+      dataIndex: 'createdAt',
+      render: (date: string) => {
+        return dayjs(date).format('YYYY/MM/DD');
+      }
     },
     {
       title: '物流账号',
-      key: 'carrierAccount',
-      dataIndex: 'carrierAccount'
+      key: 'account',
+      dataIndex: 'account'
     },
     {
       title: '账单说明',
       key: 'description',
       dataIndex: 'description'
     },
-
     {
       title: '邮寄费用',
       key: 'shippingCost',
       dataIndex: 'shippingCost',
-      align: 'right',
-      render: renderCell
+      render: (text: string, record: Billing) => {
+        if (record.details && record.details.shippingCost) {
+          const { amount } = record.details.shippingCost;
+          return renderCell(amount, record);
+        }
+        return '-';
+      }
     },
     {
       title: '手续费',
       key: 'fee',
       dataIndex: 'fee',
-      align: 'right',
-      render: renderCell
+      render: (text: string, record: Billing) => {
+        if (record.details && record.details.fee) {
+          const { amount } = record.details.fee;
+          return renderCell(amount, record);
+        }
+        return '-';
+      }
     },
     {
       title: '总计',
       key: 'total',
       dataIndex: 'total',
-      align: 'right',
       render: renderCell
     },
     {
       title: '余额',
       key: 'balance',
       dataIndex: 'balance',
-      align: 'right'
+      render: (value: number) => value.toFixed(2)
     }
   ];
 
   const table = (
-    // @ts-expect-error: type check failed
-    <Table columns={columns} dataSource={billingData} loading={loading} />
+    <Table
+      rowKey={(record: Billing) => record.id}
+      columns={columns}
+      dataSource={billingData}
+      loading={loading}
+    />
   );
 
   return (

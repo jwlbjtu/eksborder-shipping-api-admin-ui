@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -12,32 +12,49 @@ import {
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
 import './ClientInfoPanel.css';
+import { User, UpdateClientData } from '../../../shared/types/user';
+import { DEFAULT_SERVER_HOST } from '../../../shared/utils/constants';
 
 interface InfoPanelProps {
-  data: any;
-  onSubmit: (values: any) => void;
+  data: User;
+  onUpload: (imageUrl: string) => void;
+  onSubmit: (data: UpdateClientData) => void;
 }
 
-const ClientInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
-  const [active, setActive] = useState(true);
-
-  useEffect(() => {
-    if (data) {
-      setActive(data.active);
-    }
-  }, [data]);
+const ClientInfoPanel = ({
+  data,
+  onUpload,
+  onSubmit
+}: InfoPanelProps): ReactElement => {
+  const [active, setActive] = useState(data.isActive);
+  const [uploading, setUploading] = useState(false);
+  const [imageLink, setImageLink] = useState(data.logoImage);
 
   const infoFormSubmitHandler = (values: any) => {
-    onSubmit({ ...values, active });
+    const updateData: UpdateClientData = {
+      companyName: values.companyName,
+      userName: values.userName,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      countryCode: values.countryCode,
+      phone: values.phone,
+      isActive: active
+    };
+    onSubmit(updateData);
   };
 
   const uploadHandler = (info: any) => {
-    if (info.file.status !== 'uploading') {
-      console.log(info.file, info.fileList);
+    if (info.file.status === 'uploading') {
+      setUploading(true);
     }
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
+      setImageLink(info.file.response.link);
+      onUpload(info.file.response.link);
+      setUploading(false);
     } else if (info.file.status === 'error') {
+      setUploading(false);
       message.error(`${info.file.name} file upload failed.`);
     }
   };
@@ -47,18 +64,23 @@ const ClientInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       <div className="profile-avatar">
         <Avatar
           size={144}
-          src={data && data.avatar}
+          src={imageLink && `${DEFAULT_SERVER_HOST}/${imageLink}`}
           icon={<UserOutlined />}
           style={{ marginBottom: '12px' }}
         />
         <Upload
-          name="avarta"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          headers={{ authorization: 'authorization-text' }}
+          name="image"
+          accept=".jpg,.png,.jpeg"
+          action={`${DEFAULT_SERVER_HOST}/users/logo/${data.id}`}
+          // headers={{ authorization: 'authorization-text' }}
           onChange={uploadHandler}
           showUploadList={false}
         >
-          <Button icon={<UploadOutlined />} disabled={!active}>
+          <Button
+            icon={<UploadOutlined />}
+            loading={uploading}
+            disabled={!active}
+          >
             更换头像
           </Button>
         </Upload>
@@ -71,19 +93,19 @@ const ClientInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       >
         <Form.Item
           label="用户名"
-          name="username"
+          name="userName"
           rules={[{ required: true, message: '用户名必须填！' }]}
         >
           <Input placeholder="姓" disabled={!active} />
         </Form.Item>
-        <Form.Item label="公司名称" name="company">
+        <Form.Item label="公司名称" name="companyName">
           <Input placeholder="公司名称" disabled={!active} />
         </Form.Item>
         <Space size="large" align="baseline" style={{ width: '100%' }}>
           <Form.Item
             style={{ width: '212px' }}
             label="姓"
-            name="lastname"
+            name="lastName"
             rules={[{ required: true, message: '姓必须填！' }]}
           >
             <Input placeholder="姓" disabled={!active} />
@@ -91,7 +113,7 @@ const ClientInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
           <Form.Item
             style={{ width: '212px' }}
             label="名"
-            name="firstname"
+            name="firstName"
             rules={[{ required: true, message: '名必须填！' }]}
           >
             <Input placeholder="名" disabled={!active} />

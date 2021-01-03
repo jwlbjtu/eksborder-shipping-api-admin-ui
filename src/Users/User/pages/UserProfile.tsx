@@ -61,7 +61,7 @@ const UserProfile = (): ReactElement => {
           <ProfilePage
             panels={[
               <InfoPanel data={userData} onSubmit={infoPanelDataHandler} />,
-              <PasswordPanel onSumbit={passwordPanelDataHandler} />
+              <PasswordPanel isSelf onSumbit={passwordPanelDataHandler} />
             ]}
           />
         </Spin>

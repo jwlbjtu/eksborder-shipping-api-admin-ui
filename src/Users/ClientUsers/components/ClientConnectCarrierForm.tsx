@@ -10,14 +10,15 @@ import {
   InputNumber,
   Result
 } from 'antd';
-import _ from 'lodash';
 import {
-  CARRIERS_SAMPLE_DATA,
   FEE_TYPE,
   FEE_CALCULATE_BASE,
-  DHL_ECOMMERCE_DOMESTIC_SERVICES,
-  DHL_ECOMMERCE_FACILITIES
+  SERVER_ROUTES
 } from '../../../shared/utils/constants';
+import { Carrier, Facility, Service } from '../../../shared/types/carrier';
+import { CreateUserCarrierData } from '../../../shared/types/user.d';
+import axios from '../../../shared/utils/axios-base';
+import errorHandler from '../../../shared/utils/errorHandler';
 
 const { Option } = Select;
 
@@ -30,7 +31,7 @@ const radioStyle = {
 interface ClientConnectCarrierFormProps {
   visible: boolean;
   onCancel: () => void;
-  onOk: (values: any) => void;
+  onOk: (values: CreateUserCarrierData) => void;
 }
 
 const ClientConnectCarrierForm = ({
@@ -39,21 +40,22 @@ const ClientConnectCarrierForm = ({
   onOk
 }: ClientConnectCarrierFormProps): ReactElement => {
   const [form] = Form.useForm();
-  const [carrierData, setCarrierData] = useState<any[]>([]);
-  const [selectedCarrier, setSelectedCarrier] = useState<any | null>(null);
+  const [carrierData, setCarrierData] = useState<Carrier[]>([]);
+  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // TODO: connect back end
-    // load all available carrier accounts
+    // TODO: add auth
     setLoading(true);
-    setTimeout(() => {
-      const allData = CARRIERS_SAMPLE_DATA;
-      if (allData && allData.length > 0) {
-        setCarrierData(allData);
-      }
-      setLoading(false);
-    }, 1000);
+    axios
+      .get(SERVER_ROUTES.CARRIER)
+      .then((response) => {
+        setCarrierData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const cancelClickedHandler = () => {
@@ -66,28 +68,39 @@ const ClientConnectCarrierForm = ({
     form
       .validateFields()
       .then((values) => {
-        console.log(values);
         form.resetFields();
-        const services = values.services.map(
-          (item: number) => DHL_ECOMMERCE_DOMESTIC_SERVICES[item]
-        );
-        const facilities = values.facilities.map(
-          (item: number) => DHL_ECOMMERCE_FACILITIES[item]
-        );
-        const result = {
-          ...values,
-          services,
-          facilities,
-          carrier: selectedCarrier.carrier,
-          connectedAccount: selectedCarrier.name
-        };
-        onOk(result);
+        if (selectedCarrier) {
+          const services = values.services.map(
+            (index: number) => selectedCarrier.services[index].key
+          );
+          const facilities =
+            values.facilities &&
+            values.facilities.map(
+              (index: number) => selectedCarrier.facilities[index].facility
+            );
+          const result: CreateUserCarrierData = {
+            accountName: values.accountName,
+            carrier: selectedCarrier.carrierName,
+            connectedAccount: selectedCarrier.accountName,
+            services,
+            facilities,
+            fee: values.fee,
+            feeBase: values.feeBase,
+            billingType: values.billingType,
+            carrierRef: selectedCarrier.id,
+            userRef: '',
+            note: values.note,
+            isActive: true
+          };
+          onOk(result);
+          setSelectedCarrier(null);
+        }
       })
       .catch(() => {});
   };
 
-  const carrierSelectedHandler = (value: number) => {
-    setSelectedCarrier(carrierData[value - 1]);
+  const carrierSelectedHandler = (index: number) => {
+    setSelectedCarrier(carrierData[index]);
   };
 
   return (
@@ -114,21 +127,21 @@ const ClientConnectCarrierForm = ({
           <Form form={form} layout="vertical">
             <Form.Item
               label="账号名称"
-              name="name"
+              name="accountName"
               rules={[{ required: true, message: '账号名称必须填！' }]}
             >
               <Input placeholder="账号名称" />
             </Form.Item>
             <Form.Item
               label="选择要关联的账号"
-              name="connectedAcconut"
+              name="connectedAccount"
               rules={[{ required: true, message: '请选择要关联的账号！' }]}
             >
               <Select placeholder="关联账号" onChange={carrierSelectedHandler}>
-                {carrierData.map((item) => {
+                {carrierData.map((item: Carrier, index: number) => {
                   return (
-                    <Option key={item.key} value={item.key}>
-                      {item.name}
+                    <Option key={item.id} value={index}>
+                      {item.accountName}
                     </Option>
                   );
                 })}
@@ -146,33 +159,15 @@ const ClientConnectCarrierForm = ({
                   disabled={!selectedCarrier}
                   optionLabelProp="label"
                 >
-                  {selectedCarrier.services.map((ser: any, index: number) => {
-                    return (
-                      <Option key={ser.id} value={index} label={ser.id}>
-                        {`${ser.id} - ${ser.name}`}
-                      </Option>
-                    );
-                  })}
-                </Select>
-              </Form.Item>
-            )}
-            {selectedCarrier && selectedCarrier.facilities && (
-              <Form.Item
-                label="操作中心"
-                name="facilities"
-                rules={[{ required: true, message: '至少选择一个操作中心！' }]}
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="操作中心"
-                  disabled={!selectedCarrier}
-                  optionLabelProp="label"
-                >
-                  {selectedCarrier.facilities.map(
-                    (item: any, index: number) => {
+                  {selectedCarrier.services.map(
+                    (service: Service, index: number) => {
                       return (
-                        <Option key={item} value={index} label={item}>
-                          {item}
+                        <Option
+                          key={service.key}
+                          value={index}
+                          label={service.key}
+                        >
+                          {`${service.key} - ${service.name}`}
                         </Option>
                       );
                     }
@@ -180,6 +175,38 @@ const ClientConnectCarrierForm = ({
                 </Select>
               </Form.Item>
             )}
+            {selectedCarrier &&
+              selectedCarrier.facilities &&
+              selectedCarrier.facilities.length > 0 && (
+                <Form.Item
+                  label="操作中心"
+                  name="facilities"
+                  rules={[
+                    { required: true, message: '至少选择一个操作中心！' }
+                  ]}
+                >
+                  <Select
+                    mode="multiple"
+                    placeholder="操作中心"
+                    disabled={!selectedCarrier}
+                    optionLabelProp="label"
+                  >
+                    {selectedCarrier.facilities.map(
+                      (item: Facility, index: number) => {
+                        return (
+                          <Option
+                            key={item.facility}
+                            value={index}
+                            label={item.facility}
+                          >
+                            {item.facility}
+                          </Option>
+                        );
+                      }
+                    )}
+                  </Select>
+                </Form.Item>
+              )}
             <Space size="large" align="baseline" style={{ width: '100%' }}>
               <Form.Item
                 label="费率"
@@ -190,11 +217,11 @@ const ClientConnectCarrierForm = ({
               </Form.Item>
               <Form.Item
                 label="费率模式"
-                name="feeType"
+                name="billingType"
                 rules={[{ required: true, message: '请选择费率模式' }]}
               >
                 <Radio.Group>
-                  {FEE_TYPE.map((item) => {
+                  {Object.values(FEE_TYPE).map((item) => {
                     return (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
@@ -205,11 +232,11 @@ const ClientConnectCarrierForm = ({
               </Form.Item>
               <Form.Item
                 label="费率基准"
-                name="feeCalBase"
+                name="feeBase"
                 rules={[{ required: true, message: '请选择费率基准' }]}
               >
                 <Radio.Group>
-                  {FEE_CALCULATE_BASE.map((item) => {
+                  {Object.values(FEE_CALCULATE_BASE).map((item) => {
                     return (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
@@ -219,7 +246,7 @@ const ClientConnectCarrierForm = ({
                 </Radio.Group>
               </Form.Item>
             </Space>
-            <Form.Item label="备注" name="remark">
+            <Form.Item label="备注" name="note">
               <Input.TextArea autoSize placeholder="账号相关备注" />
             </Form.Item>
           </Form>

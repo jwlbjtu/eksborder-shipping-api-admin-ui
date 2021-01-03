@@ -11,76 +11,101 @@ import {
 } from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
+import axios from '../../../shared/utils/axios-base';
 import CreateClientForm from '../components/CreateClientForm';
-import { CLIENT_SAMPLE_DATA } from '../../../shared/utils/constants';
+import {
+  DEFAULT_SERVER_HOST,
+  SERVER_ROUTES,
+  USER_ROLES
+} from '../../../shared/utils/constants';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { CreateUserData, User } from '../../../shared/types/user';
 
 type ClientUsersProps = RouteComponentProps;
 
 const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
-  const [clientsData, setClientsData] = useState<any[]>([]);
+  const [clientsData, setClientsData] = useState<User[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateClientForm, setShowCreateClientForm] = useState(false);
 
   useEffect(() => {
-    // TODO: Call back end to get data
+    // TODO: add authentication
     setTableLoading(true);
-    setTimeout(() => {
-      setClientsData(CLIENT_SAMPLE_DATA);
-      setTableLoading(false);
-    }, 1000);
+    axios
+      .get(`${SERVER_ROUTES.USERS}/list/${USER_ROLES.API_USER}`)
+      .then((response) => {
+        setClientsData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => setTableLoading(false));
   }, []);
 
-  const statusChangeHandler = (key: number) => {
-    // TODO: connect to backend
+  const statusChangeHandler = async (active: boolean, value: User) => {
+    // TODO: add authentication
     setTableLoading(true);
-    setTimeout(() => {
+    try {
+      const data = { ...value, isActive: active };
+      const response = await axios.put(SERVER_ROUTES.USERS, data);
+      const updatedUser = response.data;
       const newData = [...clientsData];
-      const record = newData.find((item) => item.key === key);
+      const record = newData.find((item) => item.id === updatedUser.id);
       if (record) {
-        record.active = !record.active;
+        record.isActive = !record.isActive;
+        setClientsData(newData);
       }
-      setClientsData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const hideCreateClientFormHandler = () => setShowCreateClientForm(false);
   const showCreateClientFormHandler = () => setShowCreateClientForm(true);
 
-  const createAdminHandler = (values: any) => {
-    // TODO: connect to backend
+  const createAdminHandler = async (data: CreateUserData) => {
+    // TODO: add authentication
     setTableLoading(true);
     hideCreateClientFormHandler();
-    setTimeout(() => {
-      const account = {
-        ..._.omit(values, ['confirm-password']),
-        key: 5,
-        date: '2020/12/25'
-      };
-      const newData = [...clientsData, account];
+    try {
+      const response = await axios.post(SERVER_ROUTES.USERS, data);
+      const newUser = response.data;
+      const newData = [...clientsData, newUser];
       setClientsData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const columns = [
     {
       title: '',
-      key: 'avatar',
-      render: (text: string, record: any) => {
-        return <Avatar src={record.avatar} icon={<UserOutlined />} />;
+      key: 'logoImage',
+      render: (text: string, record: User) => {
+        return (
+          <Avatar
+            src={
+              record.logoImage && `${DEFAULT_SERVER_HOST}/${record.logoImage}`
+            }
+            icon={<UserOutlined />}
+          />
+        );
       }
     },
     {
       title: '公司名称',
-      key: 'company',
-      dataIndex: 'company'
+      key: 'companyName',
+      dataIndex: 'companyName'
     },
     {
       title: '联系人',
       key: 'name',
-      render: (text: string, record: any) => {
-        return `${record.lastname} ${record.firstname}`;
+      render: (text: string, record: User) => {
+        return `${record.lastName} ${record.firstName}`;
       }
     },
     {
@@ -89,34 +114,29 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
       dataIndex: 'email'
     },
     {
-      title: '更新日期',
-      key: 'date',
-      dataIndex: 'date'
-    },
-    {
       title: '状态',
-      key: 'active',
-      dataIndex: 'active',
-      render: (text: string, record: any) => (
+      key: 'isActive',
+      dataIndex: 'isActive',
+      render: (active: boolean, record: User) => (
         <Switch
           checkedChildren="启用"
           unCheckedChildren="停用"
           defaultChecked
-          checked={record.active}
-          onClick={() => statusChangeHandler(record.key)}
+          checked={active}
+          onClick={() => statusChangeHandler(!active, record)}
         />
       )
     },
     {
       title: '操作',
       key: 'action',
-      render: (text: string, record: any) => (
+      render: (text: string, record: User) => (
         <Space size={0} split={<Divider type="vertical" />}>
           <Button
             size="small"
             type="link"
             // eslint-disable-next-line react/prop-types
-            onClick={() => history.push(`/clients/${record.key}`)}
+            onClick={() => history.push(`/clients/${record.id}`)}
           >
             管理
           </Button>
@@ -148,6 +168,7 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
       />
       <Divider />
       <Table
+        rowKey={(record) => record.id}
         columns={columns}
         dataSource={clientsData}
         loading={tableLoading}

@@ -10,84 +10,112 @@ import {
   Popconfirm
 } from 'antd';
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
-import _ from 'lodash';
 import { RouteComponentProps } from 'react-router-dom';
-import { ADMIN_SAMPLE_DATA } from '../../../shared/utils/constants';
+import {
+  DEFAULT_SERVER_HOST,
+  ROLES_TO_DISPLAY,
+  SERVER_ROUTES
+} from '../../../shared/utils/constants';
 import CreateAdminForm from '../components/CreateAdminForm';
+import axios from '../../../shared/utils/axios-base';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { CreateUserData, User } from '../../../shared/types/user';
 
 type AdminUsersProps = RouteComponentProps;
 
 const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
-  const [adminData, setAdminData] = useState<any[]>([]);
+  const [adminData, setAdminData] = useState<User[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateAdminForm, setShowCreateAdminForm] = useState(false);
 
   useEffect(() => {
-    // TODO: Call back end to get data
+    // TODO: add authantication
     setTableLoading(true);
-    setTimeout(() => {
-      setAdminData(ADMIN_SAMPLE_DATA);
-      setTableLoading(false);
-    }, 1000);
+    axios
+      .get(`${SERVER_ROUTES.USERS}/list/admins`)
+      .then((response) => {
+        setAdminData(response.data);
+      })
+      .catch((error) => {
+        // TODO: 401 log out user
+        errorHandler(error);
+      })
+      .finally(() => setTableLoading(false));
   }, []);
 
-  const deleteAdminUserHandler = (key: number) => {
-    // TODO: connect to backend
+  const deleteAdminUserHandler = async (id: string) => {
+    // TODO: add authentication
     setTableLoading(true);
-    setTimeout(() => {
-      const newData = adminData.filter((item) => item.key !== key);
+    try {
+      await axios.delete(`${SERVER_ROUTES.USERS}/${id}`);
+      const newData = adminData.filter((item) => item.id !== id);
       setAdminData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
-  const statusChangeHandler = (key: number) => {
-    // TODO: connect to backend
+  const statusChangeHandler = async (active: boolean, value: User) => {
     setTableLoading(true);
-    setTimeout(() => {
+    try {
+      const data = { ...value, isActive: active };
+      // TODO: add authantication
+      const response = await axios.put(SERVER_ROUTES.USERS, data);
+      const updatedUser = response.data;
       const newData = [...adminData];
-      const record = newData.find((item) => item.key === key);
+      const record = newData.find((item) => item.id === updatedUser.id);
       if (record) {
-        record.active = !record.active;
+        record.isActive = updatedUser.isActive;
+        setAdminData(newData);
       }
-      setAdminData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const hideCreateAdminFormHandler = () => setShowCreateAdminForm(false);
   const showCreateAdminFormHandler = () => setShowCreateAdminForm(true);
 
-  const createAdminHandler = (values: any) => {
-    // TODO: connect to backend
+  const createAdminHandler = async (data: CreateUserData) => {
+    // TODO: add authentication
     setTableLoading(true);
     hideCreateAdminFormHandler();
-    setTimeout(() => {
-      const account = {
-        ..._.omit(values, ['confirm-password']),
-        key: 5,
-        date: '2020/12/18',
-        role: values.superAdmin ? 'Super' : 'Admin'
-      };
-      const newData = [...adminData, account];
+    try {
+      const response = await axios.post(SERVER_ROUTES.USERS, data);
+      const newUser = response.data;
+      const newData = [...adminData, newUser];
       setAdminData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const columns = [
     {
       title: '',
-      key: 'avatar',
-      render: (text: string, record: any) => {
-        return <Avatar src={record.avatar} icon={<UserOutlined />} />;
+      key: 'logoImage',
+      render: (text: string, record: User) => {
+        return (
+          <Avatar
+            src={
+              record.logoImage && `${DEFAULT_SERVER_HOST}/${record.logoImage}`
+            }
+            icon={<UserOutlined />}
+          />
+        );
       }
     },
     {
       title: '姓名',
       key: 'name',
-      render: (text: string, record: any) => {
-        return `${record.lastname} ${record.firstname}`;
+      render: (text: string, record: User) => {
+        return `${record.lastName} ${record.firstName}`;
       }
     },
     {
@@ -98,44 +126,42 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
     {
       title: '权限',
       key: 'role',
-      dataIndex: 'role'
-    },
-    {
-      title: '更新日期',
-      key: 'date',
-      dataIndex: 'date'
+      dataIndex: 'role',
+      render: (role: string) => {
+        return ROLES_TO_DISPLAY[role];
+      }
     },
     {
       title: '状态',
-      key: 'active',
-      dataIndex: 'active',
-      render: (text: string, record: any) => (
+      key: 'isActive',
+      dataIndex: 'isActive',
+      render: (active: boolean, record: User) => (
         <Switch
           checkedChildren="启用"
           unCheckedChildren="停用"
           defaultChecked
-          checked={record.active}
-          onClick={() => statusChangeHandler(record.key)}
+          checked={active}
+          onClick={() => statusChangeHandler(!active, record)}
         />
       )
     },
     {
       title: '操作',
       key: 'action',
-      render: (text: string, record: any) => (
+      render: (text: string, record: User) => (
         <Space size={0} split={<Divider type="vertical" />}>
           <Button
             size="small"
             type="link"
             // eslint-disable-next-line react/prop-types
-            onClick={() => history.push(`/admins/${record.key}`)}
+            onClick={() => history.push(`/admins/${record.id}`)}
           >
             查看
           </Button>
           <Popconfirm
             title="确认删除该账号?"
             placement="topRight"
-            onConfirm={() => deleteAdminUserHandler(record.key)}
+            onConfirm={() => deleteAdminUserHandler(record.id)}
             okText="确定"
             cancelText="取消"
           >
@@ -171,6 +197,7 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
       />
       <Divider />
       <Table
+        rowKey={(record: User) => record.id}
         columns={columns}
         dataSource={adminData}
         pagination={false}
