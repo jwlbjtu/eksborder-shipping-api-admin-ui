@@ -4,7 +4,7 @@ import { UserData } from '../../types/user';
 interface AuthContextProps {
   isLoggedIn: boolean;
   userData: UserData | null;
-  login: (data: UserData) => void;
+  login: (data: UserData, expirationDate?: Date) => void;
   logout: () => void;
 }
 

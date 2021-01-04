@@ -1,7 +1,9 @@
 import { Layout } from 'antd';
-import React, { ReactElement, useCallback, useContext, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { BrowserRouter, Redirect, Route, Switch, Link } from 'react-router-dom';
+import useAuth from './shared/hooks/auth-hook';
 import './App.css';
+
 import logoSquare from './assets/images/logo-square.png';
 
 import MenuList from './Layout/MenuList/MenuList';
@@ -17,23 +19,12 @@ import ClientManagePage from './Users/ClientUsers/pages/ClientManagePage';
 import Login from './Users/Login';
 
 import AuthContext from './shared/components/context/auth-context';
-import { UserData } from './shared/types/user';
 
 const { Sider, Content, Footer } = Layout;
 
 const App: React.FC = (): ReactElement => {
-  const auth = useContext(AuthContext);
+  const { userData, login, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(auth.userData);
-
-  const login = useCallback((data: UserData) => {
-    setUserData(data);
-  }, []);
-
-  const logout = useCallback(() => {
-    setUserData(null);
-  }, []);
-
   const collapseHandler = () => setCollapsed(!collapsed);
 
   let page = null;

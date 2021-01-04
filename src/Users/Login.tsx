@@ -40,7 +40,7 @@ const Login = (): ReactElement => {
         user: values
       });
       message.success('登录成功！');
-      auth.login(response.data);
+      auth.login(response.data, undefined);
     } catch (error) {
       message.error('登录失败，请重试！');
       // 如果失败去设置用户错误信息

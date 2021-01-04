@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useContext, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -18,6 +18,7 @@ import {
   DEFAULT_SERVER_HOST,
   USER_ROLES
 } from '../../../shared/utils/constants';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface InfoPanelProps {
   data: User | null;
@@ -25,6 +26,7 @@ interface InfoPanelProps {
 }
 
 const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [superAdmin, setSuperAdmin] = useState(
     data ? data.role === USER_ROLES.ADMIN_SUPER : false
   );
@@ -74,7 +76,9 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
           name="image"
           accept=".jpg,.png,.jpeg"
           action={`${DEFAULT_SERVER_HOST}/users/logo/${data && data.id}`}
-          // headers={{ authorization: 'authorization-text' }}
+          headers={{
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }}
           onChange={uploadHandler}
           showUploadList={false}
         >

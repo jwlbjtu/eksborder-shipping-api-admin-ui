@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useContext, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -14,6 +14,7 @@ import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
 import './ClientInfoPanel.css';
 import { User, UpdateClientData } from '../../../shared/types/user';
 import { DEFAULT_SERVER_HOST } from '../../../shared/utils/constants';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface InfoPanelProps {
   data: User;
@@ -26,6 +27,7 @@ const ClientInfoPanel = ({
   onUpload,
   onSubmit
 }: InfoPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [active, setActive] = useState(data.isActive);
   const [uploading, setUploading] = useState(false);
   const [imageLink, setImageLink] = useState(data.logoImage);
@@ -72,7 +74,9 @@ const ClientInfoPanel = ({
           name="image"
           accept=".jpg,.png,.jpeg"
           action={`${DEFAULT_SERVER_HOST}/users/logo/${data.id}`}
-          // headers={{ authorization: 'authorization-text' }}
+          headers={{
+            authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }}
           onChange={uploadHandler}
           showUploadList={false}
         >
