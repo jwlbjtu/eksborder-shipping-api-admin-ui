@@ -1,53 +1,82 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import { Spin } from 'antd';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import { message, Spin } from 'antd';
 
 import ProfilePage from '../../ProfilePage';
 import InfoPanel from '../components/InfoPanel/InfoPanel';
 import PasswordPanel from '../../PasswordPanel';
 
-import { USER_DATA } from '../../../shared/utils/constants';
+import { SERVER_ROUTES } from '../../../shared/utils/constants';
+import AuthContext from '../../../shared/components/context/auth-context';
+import axios from '../../../shared/utils/axios-base';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { PasswordFormValue, UpdateUserSelf } from '../../../shared/types/user';
 
 const UserProfile = (): ReactElement => {
+  const auth = useContext(AuthContext);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
 
   useEffect(() => {
-    // TODO: backend connection
     setLoading(true);
-    setTimeout(() => {
-      setUserData({
-        avatar: USER_DATA.avatar,
-        name: USER_DATA.name,
-        email: USER_DATA.email,
-        countryCode: USER_DATA.phone.countryCode,
-        phone: USER_DATA.phone.number
-      });
-      setLoading(false);
-    }, 1000);
-  }, []);
+    axios
+      .get(`${SERVER_ROUTES.USERS}/self`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        setUserData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => setLoading(false));
+  }, [auth]);
 
-  const infoPanelDataHandler = (values: any) => {
-    // TODO: connect to back end
+  const infoPanelDataHandler = async (values: UpdateUserSelf) => {
     setSubLoading(true);
-    setTimeout(() => {
-      console.log(`Info updated from top`);
-      console.log(values);
-      const newData = { ...userData, ...values };
-      setUserData(newData);
-      console.log(newData);
+    try {
+      const response = await axios.put(
+        SERVER_ROUTES.USERS,
+        { id: userData.id, ...values },
+        {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        }
+      );
+      setUserData(response.data);
+      const newUserData = {
+        ...auth.userData,
+        fullName: `${response.data.lastName}${response.data.firstName}`
+      };
+      // @ts-expect-error: ignore
+      auth.setUserData(newUserData);
+      message.success('用户信息更新成功！');
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setSubLoading(false);
-    }, 1000);
+    }
   };
 
-  const passwordPanelDataHandler = (values: any) => {
-    // TODO: connect to back end
+  const passwordPanelDataHandler = async (values: PasswordFormValue) => {
     setSubLoading(true);
-    setTimeout(() => {
-      console.log(`Password updated from top`);
-      console.log(values);
+    try {
+      if (userData) {
+        await axios.put(`${SERVER_ROUTES.USERS}/selfPassword`, values, {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        });
+        message.success('密码更新成功！');
+      }
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setSubLoading(false);
-    }, 1000);
+    }
   };
 
   return (

@@ -23,7 +23,7 @@ import AuthContext from './shared/components/context/auth-context';
 const { Sider, Content, Footer } = Layout;
 
 const App: React.FC = (): ReactElement => {
-  const { userData, login, logout } = useAuth();
+  const { userData, setUserData, login, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const collapseHandler = () => setCollapsed(!collapsed);
 
@@ -85,7 +85,7 @@ const App: React.FC = (): ReactElement => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: !!userData, userData, login, logout }}
+      value={{ isLoggedIn: !!userData, userData, setUserData, login, logout }}
     >
       {page}
     </AuthContext.Provider>

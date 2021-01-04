@@ -18,7 +18,7 @@ export interface PasswordFormValue {
   'new-password': string;
 }
 
-export interface UpdateClientData {
+export interface UpdateUserSelf {
   companyName: string;
   userName: string;
   firstName: string;
@@ -26,6 +26,9 @@ export interface UpdateClientData {
   email: string;
   countryCode: string;
   phone: string;
+}
+
+export interface UpdateClientData extends UpdateUserSelf {
   isActive: boolean;
 }
 

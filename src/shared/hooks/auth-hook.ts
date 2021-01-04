@@ -43,7 +43,8 @@ const useAuth = () => {
   useEffect(() => {
     if (userData && tokenExpDate) {
       const remainingTime = tokenExpDate.getTime() - new Date().getTime();
-      logoutTimer = setTimeout(logout, remainingTime);
+      // log user out 3 mins befor token expires
+      logoutTimer = setTimeout(logout, remainingTime - 1000 * 60 * 3);
     } else {
       clearTimeout(logoutTimer);
     }
@@ -65,7 +66,7 @@ const useAuth = () => {
     }
   }, [login]);
 
-  return { userData, login, logout };
+  return { userData, setUserData, login, logout };
 };
 
 export default useAuth;
