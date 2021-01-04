@@ -59,6 +59,7 @@ const Login = (): ReactElement => {
               <img alt="logo" className="loginLogo" src={logo} />
             </Link>
           </div>
+          <div className="desc">Eksborder 货代物流平台管理网站</div>
         </div>
         <div className="main">
           <Form onFinish={loginHandler}>
