@@ -1,23 +1,67 @@
-import _ from 'lodash';
-import React, { ReactElement, useEffect, useState } from 'react';
-import { PageHeader, Table, Divider, Button } from 'antd';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import { PageHeader, Table, Button } from 'antd';
+import dayjs from 'dayjs';
+import { CheckCircleTwoTone, PrinterOutlined } from '@ant-design/icons';
+import axios from '../../../shared/utils/axios-base';
+import {
+  GET_CARRIER_LOGO,
+  SERVER_ROUTES
+} from '../../../shared/utils/constants';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { Address } from '../../../shared/types/carrier';
+import { ShippingRecord, Label } from '../../../shared/types/record';
+import ImageModal from '../../../shared/components/ImageModal';
+import AuthContext from '../../../shared/components/context/auth-context';
 
-const ClientShippingPanel = (): ReactElement => {
+interface ClientShippingPanelProps {
+  id: string;
+}
+
+const ClientShippingPanel = ({
+  id
+}: ClientShippingPanelProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [tableLoading, setTableLoading] = useState(false);
+  const [recordsData, setRecordsData] = useState<any[]>([]);
+  const [labelImage, setLabelImage] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // TODO: Call back end to get data
     setTableLoading(true);
-    setTimeout(() => {
-      setTableLoading(false);
-    }, 1000);
-  }, []);
+    axios
+      .get(`${SERVER_ROUTES.RECORDS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        setRecordsData(response.data);
+      })
+      .catch((error) => errorHandler(error))
+      .finally(() => setTableLoading(false));
+  }, [id, auth]);
+
+  const hideLabelHandler = () => setLabelImage(null);
+  const showLabelHandler = (type: string, format: string, data: string) => {
+    setLabelImage(
+      <ImageModal
+        type={type}
+        format={format}
+        data={data}
+        onCancel={hideLabelHandler}
+        visible
+      />
+    );
+  };
 
   const columns = [
     {
       title: '',
       dataIndex: 'logo',
-      key: 'logo'
+      key: 'logo',
+      render: (text: string, record: ShippingRecord) => {
+        const logo = GET_CARRIER_LOGO(record.carrier);
+        return <img className="logo" src={logo} alt={record.carrier} />;
+      }
     },
     {
       title: '物流公司',
@@ -32,49 +76,94 @@ const ClientShippingPanel = (): ReactElement => {
     {
       title: '邮寄费',
       dataIndex: 'rate',
-      key: 'rate'
+      key: 'rate',
+      align: 'center',
+      render: (rate: number) => {
+        if (!rate && rate !== 0) return '-';
+        return `$ ${rate.toFixed(2)}`;
+      }
     },
     {
       title: '收件地址',
-      dataIndex: 'receipent',
-      key: 'receipent'
+      dataIndex: 'toAddress',
+      key: 'toAddress',
+      render: (address: Address) => {
+        return (
+          <div>
+            <div>
+              <strong>{`${address.name}`}</strong>
+            </div>
+            <div>{`${address.city}, ${address.state} ${address.postalCode}`}</div>
+          </div>
+        );
+      }
     },
     {
       title: 'Tracking',
-      dataIndex: 'tracking',
-      key: 'tracking'
+      dataIndex: 'trackingId',
+      key: 'trackingId'
     },
     {
       title: '日期',
-      dataIndex: 'date',
-      key: 'date'
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => {
+        return dayjs(date).format('YYYY/MM/DD');
+      }
     },
     {
       title: 'Manifested',
       dataIndex: 'manifested',
-      key: 'manifested'
+      key: 'manifested',
+      align: 'center',
+      render: (manifested: boolean) => {
+        return manifested ? <CheckCircleTwoTone /> : '-';
+      }
     },
     {
-      title: 'Label',
-      dataIndex: 'label',
-      key: 'label'
+      title: 'Labels',
+      dataIndex: 'labels',
+      key: 'labels',
+      render: (labels: Label[]) => {
+        const label = labels[0];
+        return (
+          <Button
+            type="primary"
+            icon={<PrinterOutlined />}
+            onClick={() =>
+              showLabelHandler(label.encodeType, label.format, label.labelData)
+            }
+            ghost
+          >
+            打印面单
+          </Button>
+        );
+      }
     }
   ];
 
   return (
     <div>
+      {labelImage}
       <PageHeader
         title=""
         extra={[
-          <Button type="primary" disabled>
+          <Button key="create" type="primary" disabled>
             生成 Manifest
           </Button>,
-          <Button type="primary" disabled>
+          <Button key="view" type="primary" disabled>
             查看 Manifest
           </Button>
         ]}
       />
-      <Table columns={columns} dataSource={[]} loading={tableLoading} />
+      <Table
+        rowKey={(record: ShippingRecord) => record.id}
+        // @ts-expect-error: ignore
+        columns={columns}
+        dataSource={recordsData}
+        loading={tableLoading}
+        scroll={{ x: true }}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -8,16 +8,19 @@ import {
   Spin,
   Radio,
   InputNumber,
-  Result
+  Result,
+  Switch
 } from 'antd';
-import _ from 'lodash';
 import {
-  CARRIERS_SAMPLE_DATA,
   FEE_TYPE,
   FEE_CALCULATE_BASE,
-  DHL_ECOMMERCE_DOMESTIC_SERVICES,
-  DHL_ECOMMERCE_FACILITIES
+  SERVER_ROUTES
 } from '../../../shared/utils/constants';
+import { UserCarrier } from '../../../shared/types/user';
+import { Carrier, Facility, Service } from '../../../shared/types/carrier';
+import axios from '../../../shared/utils/axios-base';
+import errorHandler from '../../../shared/utils/errorHandler';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const { Option } = Select;
 
@@ -29,7 +32,7 @@ const radioStyle = {
 
 interface ClientUpdateCarrierFormProps {
   visible: boolean;
-  data: any;
+  data: UserCarrier;
   onCancel: () => void;
   onOk: (values: any) => void;
 }
@@ -40,29 +43,38 @@ const ClientUpdateCarrierForm = ({
   onCancel,
   onOk
 }: ClientUpdateCarrierFormProps): ReactElement => {
+  const auth = useContext(AuthContext);
   const [form] = Form.useForm();
-  const [carrierData, setCarrierData] = useState<any[]>([]);
-  const [selectedCarrier, setSelectedCarrier] = useState<any | null>(null);
+  const [carrierData, setCarrierData] = useState<Carrier[]>([]);
+  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dataActive, setDataActive] = useState(data.isActive);
 
   useEffect(() => {
-    // TODO: connect back end
-    // load all available carrier accounts
     setLoading(true);
-    setTimeout(() => {
-      const allData = CARRIERS_SAMPLE_DATA;
-      if (allData && allData.length > 0) {
-        setCarrierData(allData);
-      }
-      console.log(data);
-      const carrier = allData.find(
-        (item: any) => item.name === data.connectedAccount
-      );
-      console.log(carrier);
-      setSelectedCarrier(carrier);
-      setLoading(false);
-    }, 1000);
-  }, [data]);
+    axios
+      .get(SERVER_ROUTES.CARRIER, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        const allCarriers = response.data;
+        setCarrierData(allCarriers);
+        if (allCarriers.length > 0) {
+          const carrier = allCarriers.find(
+            (item: Carrier) => item.accountName === data.connectedAccount
+          );
+          setSelectedCarrier(carrier);
+        } else {
+          setSelectedCarrier(null);
+        }
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => setLoading(false));
+  }, [data, auth]);
 
   const cancelClickedHandler = () => {
     form.resetFields();
@@ -74,29 +86,41 @@ const ClientUpdateCarrierForm = ({
     form
       .validateFields()
       .then((values) => {
-        console.log(values);
-        form.resetFields();
-        const services = values.services.map(
-          (item: number) => DHL_ECOMMERCE_DOMESTIC_SERVICES[item]
-        );
-        const facilities = values.facilities.map(
-          (item: number) => DHL_ECOMMERCE_FACILITIES[item]
-        );
-        const result = {
-          ...values,
-          key: data.key,
-          services,
-          facilities,
-          carrier: selectedCarrier.carrier,
-          connectedAccount: selectedCarrier.name
-        };
-        onOk(result);
+        // form.resetFields();
+        if (selectedCarrier) {
+          const services = values.services.map(
+            (index: number) => selectedCarrier.services[index].key
+          );
+          const facilities =
+            values.facilities &&
+            values.facilities.map(
+              (index: number) => selectedCarrier.facilities[index].facility
+            );
+          const result = {
+            id: data.id,
+            carrier: selectedCarrier.carrierName,
+            connectedAccount: selectedCarrier.accountName,
+            services,
+            facilities,
+            fee: values.fee,
+            feeBase: values.feeBase,
+            billingType: values.billingType,
+            carrierRef: selectedCarrier.id,
+            note: values.note,
+            isActive: dataActive
+          };
+          onOk(result);
+        }
       })
       .catch(() => {});
   };
 
-  const carrierSelectedHandler = (value: number) => {
-    setSelectedCarrier(carrierData[value - 1]);
+  const carrierSelectedHandler = (index: number) => {
+    setSelectedCarrier(carrierData[index]);
+  };
+
+  const changeActiveHandler = () => {
+    setDataActive(!dataActive);
   };
 
   return (
@@ -111,9 +135,20 @@ const ClientUpdateCarrierForm = ({
       centered
       closable={false}
       visible={visible}
-      okText="关联账号"
+      okText="修改账号"
       cancelText="取消"
-      title="关联物流账号"
+      title={
+        <div>
+          <strong>修改物流账号</strong>
+          <Switch
+            style={{ float: 'right' }}
+            checkedChildren="启用"
+            unCheckedChildren="停用"
+            checked={dataActive}
+            onClick={changeActiveHandler}
+          />
+        </div>
+      }
       onCancel={cancelClickedHandler}
       onOk={okClickedHandler}
       okButtonProps={{ disabled: !(carrierData && carrierData.length > 0) }}
@@ -123,9 +158,9 @@ const ClientUpdateCarrierForm = ({
           <Form form={form} layout="vertical">
             <Form.Item
               label="账号名称"
-              name="name"
+              name="accountName"
               rules={[{ required: true, message: '账号名称必须填！' }]}
-              initialValue={data.name}
+              initialValue={data.accountName}
             >
               <Input placeholder="账号名称" disabled />
             </Form.Item>
@@ -133,17 +168,19 @@ const ClientUpdateCarrierForm = ({
               label="选择要关联的账号"
               name="connectedAcconut"
               rules={[{ required: true, message: '请选择要关联的账号！' }]}
-              initialValue={
-                carrierData.find(
-                  (item: any) => item.name === data.connectedAccount
-                ).key
-              }
+              initialValue={carrierData.findIndex(
+                (item: Carrier) => item.accountName === data.connectedAccount
+              )}
             >
-              <Select placeholder="关联账号" onChange={carrierSelectedHandler}>
-                {carrierData.map((item) => {
+              <Select
+                placeholder="关联账号"
+                onChange={carrierSelectedHandler}
+                disabled={!dataActive}
+              >
+                {carrierData.map((item: Carrier, index: number) => {
                   return (
-                    <Option key={item.key} value={item.key}>
-                      {item.name}
+                    <Option key={item.id} value={index}>
+                      {item.accountName}
                     </Option>
                   );
                 })}
@@ -154,26 +191,27 @@ const ClientUpdateCarrierForm = ({
                 label="授权服务"
                 name="services"
                 rules={[{ required: true, message: '至少选择一个服务！' }]}
-                initialValue={data.services.map((item: any) =>
-                  _.findIndex(
-                    selectedCarrier.services,
-                    (ele: any) => ele.id === item.id
+                initialValue={data.services.map((item: string) =>
+                  selectedCarrier.services.findIndex(
+                    (ele: Service) => ele.key === item
                   )
                 )}
               >
                 <Select
                   mode="multiple"
                   placeholder="授权服务"
-                  disabled={!selectedCarrier}
+                  disabled={!dataActive}
                   optionLabelProp="label"
                 >
-                  {selectedCarrier.services.map((ser: any, index: number) => {
-                    return (
-                      <Option key={ser.id} value={index} label={ser.id}>
-                        {`${ser.id} - ${ser.name}`}
-                      </Option>
-                    );
-                  })}
+                  {selectedCarrier.services.map(
+                    (ser: Service, index: number) => {
+                      return (
+                        <Option key={ser.key} value={index} label={ser.key}>
+                          {`${ser.key} - ${ser.name}`}
+                        </Option>
+                      );
+                    }
+                  )}
                 </Select>
               </Form.Item>
             )}
@@ -182,24 +220,27 @@ const ClientUpdateCarrierForm = ({
                 label="操作中心"
                 name="facilities"
                 rules={[{ required: true, message: '至少选择一个操作中心！' }]}
-                initialValue={data.facilities.map((item: any) =>
-                  _.findIndex(
-                    selectedCarrier.facilities,
-                    (ele: any) => ele === item
+                initialValue={data.facilities.map((item: string) =>
+                  selectedCarrier.facilities.findIndex(
+                    (ele: Facility) => ele.facility === item
                   )
                 )}
               >
                 <Select
                   mode="multiple"
                   placeholder="操作中心"
-                  disabled={!selectedCarrier}
+                  disabled={!dataActive}
                   optionLabelProp="label"
                 >
                   {selectedCarrier.facilities.map(
-                    (item: any, index: number) => {
+                    (item: Facility, index: number) => {
                       return (
-                        <Option key={item} value={index} label={item}>
-                          {item}
+                        <Option
+                          key={item.facility}
+                          value={index}
+                          label={item.facility}
+                        >
+                          {item.facility}
                         </Option>
                       );
                     }
@@ -214,16 +255,20 @@ const ClientUpdateCarrierForm = ({
                 rules={[{ required: true, message: '费率必须填！' }]}
                 initialValue={data.fee}
               >
-                <InputNumber min={0} style={{ width: '180px' }} />
+                <InputNumber
+                  min={0}
+                  style={{ width: '180px' }}
+                  disabled={!dataActive}
+                />
               </Form.Item>
               <Form.Item
                 label="费率模式"
-                name="feeType"
+                name="billingType"
                 rules={[{ required: true, message: '请选择费率模式' }]}
-                initialValue={data.feeType}
+                initialValue={data.billingType}
               >
-                <Radio.Group>
-                  {FEE_TYPE.map((item) => {
+                <Radio.Group disabled={!dataActive}>
+                  {Object.values(FEE_TYPE).map((item) => {
                     return (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
@@ -234,12 +279,12 @@ const ClientUpdateCarrierForm = ({
               </Form.Item>
               <Form.Item
                 label="费率基准"
-                name="feeCalBase"
+                name="feeBase"
                 rules={[{ required: true, message: '请选择费率基准' }]}
-                initialValue={data.feeCalBase}
+                initialValue={data.feeBase}
               >
-                <Radio.Group>
-                  {FEE_CALCULATE_BASE.map((item) => {
+                <Radio.Group disabled={!dataActive}>
+                  {Object.values(FEE_CALCULATE_BASE).map((item) => {
                     return (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
@@ -249,8 +294,12 @@ const ClientUpdateCarrierForm = ({
                 </Radio.Group>
               </Form.Item>
             </Space>
-            <Form.Item label="备注" name="remark" initialValue={data.remark}>
-              <Input.TextArea autoSize placeholder="账号相关备注" />
+            <Form.Item label="备注" name="note" initialValue={data.note}>
+              <Input.TextArea
+                autoSize
+                placeholder="账号相关备注"
+                disabled={!dataActive}
+              />
             </Form.Item>
           </Form>
         ) : (

@@ -2,11 +2,13 @@ import React, { ReactElement } from 'react';
 import { Modal, Form, Input, Space } from 'antd';
 import PasswordFormItems from '../../../shared/components/PasswordFormItems';
 import PhoneFormItems from '../../../shared/components/PhoneNumberItems';
+import { USER_ROLES } from '../../../shared/utils/constants';
+import { CreateUserData } from '../../../shared/types/user';
 
 interface CreateClientFormProps {
   visible: boolean;
   onCancel: () => void;
-  onOk: (values: any) => void;
+  onOk: (values: CreateUserData) => void;
 }
 
 const CreateClientForm = ({
@@ -26,7 +28,19 @@ const CreateClientForm = ({
       .validateFields()
       .then((values) => {
         form.resetFields();
-        const result = { ...values };
+        const role = USER_ROLES.API_USER;
+        const result: CreateUserData = {
+          companyName: values.companyName,
+          userName: values.userName,
+          password: values['new-password'],
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          countryCode: values.countryCode,
+          phone: values.phone,
+          role,
+          isActive: true
+        };
         onOk(result);
       })
       .catch(() => {});
@@ -53,20 +67,20 @@ const CreateClientForm = ({
       <Form form={form} layout="vertical">
         <Form.Item
           label="用户名"
-          name="username"
+          name="userName"
           rules={[{ required: true, message: '用户名必须填！' }]}
         >
           <Input placeholder="用户名" />
         </Form.Item>
         <PasswordFormItems label="密码" showDescription />
-        <Form.Item label="公司名称" name="company">
+        <Form.Item label="公司名称" name="companyName">
           <Input placeholder="公司名称" />
         </Form.Item>
         <Space size="large" align="baseline" style={{ width: '100%' }}>
           <Form.Item
             style={{ width: '212px' }}
             label="姓"
-            name="lastname"
+            name="lastName"
             rules={[{ required: true, message: '姓必须填！' }]}
           >
             <Input placeholder="姓" />
@@ -74,7 +88,7 @@ const CreateClientForm = ({
           <Form.Item
             style={{ width: '212px' }}
             label="名"
-            name="firstname"
+            name="firstName"
             rules={[{ required: true, message: '名必须填！' }]}
           >
             <Input placeholder="名" />

@@ -1,10 +1,11 @@
 import React, { ReactElement } from 'react';
-import { Modal, Button, Row, Image, Space } from 'antd';
+import { Modal, Button, Row, Image, Space, Divider } from 'antd';
 import { CARRIERS } from '../../../shared/utils/constants';
 import dhleCommerceLogo from '../../../assets/images/carriers/dhl-ecommerce-logo.svg';
 import fedexLogo from '../../../assets/images/carriers/fedex-logo.svg';
 import upsLogo from '../../../assets/images/carriers/ups-logo.svg';
 import uspsLogo from '../../../assets/images/carriers/usps-logo.svg';
+import pbLogo from '../../../assets/images/carriers/pitney-bowes-logo.png';
 
 interface CarriersListProps {
   visible: boolean;
@@ -66,6 +67,20 @@ const CarriersList = ({
             preview={false}
             src={uspsLogo}
             alt={CARRIERS.USPS}
+          />
+        </Space>
+      </Row>
+      <Divider />
+      <Row>
+        <Space>
+          <Image
+            onClick={() => imageClicked(CARRIERS.PITNEY_BOWES)}
+            style={{ cursor: 'pointer' }}
+            width={120}
+            height={73.84}
+            preview={false}
+            src={pbLogo}
+            alt={CARRIERS.PITNEY_BOWES}
           />
         </Space>
       </Row>

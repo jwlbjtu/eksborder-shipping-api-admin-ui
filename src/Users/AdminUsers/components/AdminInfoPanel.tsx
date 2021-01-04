@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -13,34 +13,52 @@ import {
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
 import './AdminInfoPanel.css';
+import { UpdateUserData, User } from '../../../shared/types/user';
+import {
+  DEFAULT_SERVER_HOST,
+  USER_ROLES
+} from '../../../shared/utils/constants';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface InfoPanelProps {
-  data: any;
-  onSubmit: (values: any) => void;
+  data: User | null;
+  onSubmit: (updateData: UpdateUserData) => void;
 }
 
 const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
-  const [superAdmin, setSuperAdmin] = useState(false);
-  const [active, setActive] = useState(true);
-
-  useEffect(() => {
-    if (data) {
-      setSuperAdmin(data.role === 'Super');
-      setActive(data.active);
-    }
-  }, [data]);
+  const auth = useContext(AuthContext);
+  const [superAdmin, setSuperAdmin] = useState(
+    data ? data.role === USER_ROLES.ADMIN_SUPER : false
+  );
+  const [active, setActive] = useState(data ? data.isActive : false);
+  const [uploading, setUploading] = useState(false);
+  const [imageLink, setImageLink] = useState(data && data.logoImage);
 
   const infoFormSubmitHandler = (values: any) => {
-    onSubmit({ ...values, superAdmin, active });
+    const updateData: UpdateUserData = {
+      companyName: data?.companyName || '',
+      userName: values.userName,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      countryCode: values.countryCode,
+      phone: values.phone,
+      role: superAdmin ? USER_ROLES.ADMIN_SUPER : USER_ROLES.ADMIN,
+      isActive: active
+    };
+    onSubmit(updateData);
   };
 
   const uploadHandler = (info: any) => {
-    if (info.file.status !== 'uploading') {
-      console.log(info.file, info.fileList);
+    if (info.file.status === 'uploading') {
+      setUploading(true);
     }
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
+      setImageLink(info.file.response.link);
+      setUploading(false);
     } else if (info.file.status === 'error') {
+      setUploading(false);
       message.error(`${info.file.name} file upload failed.`);
     }
   };
@@ -50,18 +68,25 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       <div className="profile-avatar">
         <Avatar
           size={144}
-          src={data && data.avatar}
+          src={imageLink && `${DEFAULT_SERVER_HOST}/${imageLink}`}
           icon={<UserOutlined />}
           style={{ marginBottom: '12px' }}
         />
         <Upload
-          name="avarta"
-          action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-          headers={{ authorization: 'authorization-text' }}
+          name="image"
+          accept=".jpg,.png,.jpeg"
+          action={`${DEFAULT_SERVER_HOST}/users/logo/${data && data.id}`}
+          headers={{
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }}
           onChange={uploadHandler}
           showUploadList={false}
         >
-          <Button icon={<UploadOutlined />} disabled={!active}>
+          <Button
+            icon={<UploadOutlined />}
+            loading={uploading}
+            disabled={!active}
+          >
             更换头像
           </Button>
         </Upload>
@@ -69,21 +94,21 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       <Form
         layout="vertical"
         className="form-body"
-        initialValues={data}
+        initialValues={data || undefined}
         onFinish={infoFormSubmitHandler}
       >
         <Form.Item
           label="用户名"
-          name="username"
+          name="userName"
           rules={[{ required: true, message: '用户名必须填！' }]}
         >
-          <Input placeholder="姓" disabled={!active} />
+          <Input placeholder="用户名" disabled={!active} />
         </Form.Item>
         <Space size="large" align="baseline" style={{ width: '100%' }}>
           <Form.Item
             style={{ width: '212px' }}
             label="姓"
-            name="lastname"
+            name="lastName"
             rules={[{ required: true, message: '姓必须填！' }]}
           >
             <Input placeholder="姓" disabled={!active} />
@@ -91,7 +116,7 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
           <Form.Item
             style={{ width: '212px' }}
             label="名"
-            name="firstname"
+            name="firstName"
             rules={[{ required: true, message: '名必须填！' }]}
           >
             <Input placeholder="名" disabled={!active} />
@@ -131,7 +156,7 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
           </Form.Item>
         </Space>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" disabled={!data}>
             更新基本信息
           </Button>
         </Form.Item>

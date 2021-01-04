@@ -12,7 +12,11 @@ const PhoneNumberItems = ({
   const [phoneLocale, setPhoneLocale] = useState<'en-US' | 'zh-CN'>('en-US');
 
   const prefixSelector = (
-    <Form.Item name="countryCode" noStyle>
+    <Form.Item
+      name="countryCode"
+      rules={[{ required: true, message: '请输选择国家区号!' }]}
+      noStyle
+    >
       <Select
         disabled={disabled}
         style={{ width: 70 }}

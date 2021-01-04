@@ -1,55 +1,145 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Spin, Breadcrumb, Divider } from 'antd';
+import { Spin, Breadcrumb, Divider, message } from 'antd';
+
+import axios from '../../../shared/utils/axios-base';
 
 import ProfilePage from '../../ProfilePage';
 import PasswordPanel from '../../PasswordPanel';
 import AdminInfoPanel from '../components/AdminInfoPanel';
+import LoadError from '../../../shared/components/ErrorPages';
 
-import { ADMIN_SAMPLE_DATA } from '../../../shared/utils/constants';
+import { SERVER_ROUTES } from '../../../shared/utils/constants';
+import errorHandler from '../../../shared/utils/errorHandler';
+import {
+  PasswordFormValue,
+  UpdateUserData,
+  User
+} from '../../../shared/types/user';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 const AdminProfile = (): ReactElement => {
-  const [userData, setUserData] = useState<any>(null);
+  const auth = useContext(AuthContext);
+  const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const { id } = useParams<{ id: string }>();
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // TODO: backend connection
     setLoading(true);
-    setTimeout(() => {
-      setUserData(ADMIN_SAMPLE_DATA[+id - 1]);
+    setFailed(false);
+    axios
+      .get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        setUserData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+        setFailed(true);
+      })
+      .finally(() => setLoading(false));
+  }, [id, auth]);
+
+  const getUserData = async () => {
+    setLoading(true);
+    setFailed(false);
+    try {
+      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      setUserData(response.data);
+    } catch (error) {
+      errorHandler(error);
+      setFailed(true);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, [id]);
-
-  const infoPanelDataHandler = (values: any) => {
-    // TODO: connect to back end
-    setSubLoading(true);
-    setTimeout(() => {
-      console.log(`Info updated from admin top`);
-      console.log(values);
-      const newData = {
-        ...userData,
-        ...values,
-        date: '2020/12/19',
-        role: values.superAdmin ? 'Super' : 'Admin'
-      };
-      setUserData(newData);
-      console.log(newData);
-      setSubLoading(false);
-    }, 1000);
+    }
   };
 
-  const passwordPanelDataHandler = (values: any) => {
-    // TODO: connect to back end
+  const infoPanelDataHandler = async (data: UpdateUserData) => {
     setSubLoading(true);
-    setTimeout(() => {
-      console.log(`Password updated from admin top`);
-      console.log(values);
+    try {
+      if (userData) {
+        const response = await axios.put(
+          SERVER_ROUTES.USERS,
+          {
+            id: userData.id,
+            ...data
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
+        const updatedUser = response.data;
+        setUserData(updatedUser);
+        message.success('用户信息更新成功！');
+      }
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setSubLoading(false);
-    }, 1000);
+    }
   };
+
+  const passwordPanelDataHandler = async (values: PasswordFormValue) => {
+    setSubLoading(true);
+    try {
+      if (userData) {
+        await axios.put(
+          `${SERVER_ROUTES.USERS}/password`,
+          {
+            id: userData.id,
+            ...values
+          },
+          {
+            headers: {
+              Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            }
+          }
+        );
+        message.success('密码更新成功！');
+      }
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setSubLoading(false);
+    }
+  };
+
+  const content = failed ? (
+    <LoadError
+      title="获取用户信息错误，请稍后再试！"
+      text="再试一次"
+      onButtonClick={getUserData}
+    />
+  ) : (
+    <Spin size="large" spinning={subLoading}>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link to="/admins">内部用户</Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          {userData && `${userData.lastName} ${userData.firstName}`}
+        </Breadcrumb.Item>
+      </Breadcrumb>
+      <Divider />
+      <ProfilePage
+        panels={[
+          <AdminInfoPanel data={userData} onSubmit={infoPanelDataHandler} />,
+          <PasswordPanel isSelf={false} onSumbit={passwordPanelDataHandler} />
+        ]}
+      />
+    </Spin>
+  );
 
   return (
     <>
@@ -58,26 +148,7 @@ const AdminProfile = (): ReactElement => {
           <Spin size="large" />
         </div>
       ) : (
-        <Spin size="large" spinning={subLoading}>
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Link to="/admins">内部用户</Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {userData && `${userData.lastname} ${userData.firstname}`}
-            </Breadcrumb.Item>
-          </Breadcrumb>
-          <Divider />
-          <ProfilePage
-            panels={[
-              <AdminInfoPanel
-                data={userData}
-                onSubmit={infoPanelDataHandler}
-              />,
-              <PasswordPanel onSumbit={passwordPanelDataHandler} />
-            ]}
-          />
-        </Spin>
+        content
       )}
     </>
   );

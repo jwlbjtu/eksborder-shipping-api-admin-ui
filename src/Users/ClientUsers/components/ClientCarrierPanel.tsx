@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   PageHeader,
   Table,
@@ -9,103 +9,143 @@ import {
   Popconfirm
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import _ from 'lodash';
-import { CLIENT_CARRIERS_DATA } from '../../../shared/utils/constants';
+import dayjs from 'dayjs';
+import {
+  FEE_CALCULATE_BASE,
+  FEE_TYPE_KEYS,
+  SERVER_ROUTES
+} from '../../../shared/utils/constants';
 
 import ClientConnectCarrierForm from './ClientConnectCarrierForm';
 import ClientUpdateCarrierForm from './ClientUpdateCarrierForm';
+import axios from '../../../shared/utils/axios-base';
+import errorHandler from '../../../shared/utils/errorHandler';
+import { CreateUserCarrierData, UserCarrier } from '../../../shared/types/user';
+import AuthContext from '../../../shared/components/context/auth-context';
 
 interface ClientCarrierPanelProps {
   id: string;
 }
 
 const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
-  const [data, setData] = useState<any[]>([]);
+  const auth = useContext(AuthContext);
+  const [data, setData] = useState<UserCarrier[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [updateForm, setUpdateForm] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // TODO: Call back end to get data
     setTableLoading(true);
-    setTimeout(() => {
-      // @ts-expect-error: fix later
-      setData(CLIENT_CARRIERS_DATA[id]);
-      setTableLoading(false);
-    }, 1000);
-  }, [id]);
+    axios
+      .get(`${SERVER_ROUTES.ACCOUNT}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+      })
+      .finally(() => {
+        setTableLoading(false);
+      });
+  }, [id, auth]);
 
-  const deleteHandler = (key: number) => {
-    // TODO: connect to backend
+  const deleteHandler = async (accountId: number) => {
     setTableLoading(true);
-    setTimeout(() => {
-      const newData = data.filter((item) => item.key !== key);
+    try {
+      await axios.delete(`${SERVER_ROUTES.ACCOUNT}/${accountId}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const newData = data.filter((item) => item.id !== accountId);
       setData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
-  const statusChangeHandler = (key: number) => {
-    // TODO: connect to backend
+  const statusChangeHandler = async (active: boolean, values: UserCarrier) => {
     setTableLoading(true);
-    setTimeout(() => {
+    try {
+      const updateData = { id: values.id, isActive: active };
+      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, updateData, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const updatedAccount = response.data;
       const newData = [...data];
-      const record = newData.find((item) => item.key === key);
+      const record = newData.find((item) => item.id === updatedAccount.id);
       if (record) {
-        record.active = !record.active;
+        record.isActive = updatedAccount.isActive;
       }
       setData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const hideCreateFormHandler = () => setShowCreateForm(false);
   const showCreateFormHandler = () => setShowCreateForm(true);
-  const createHandler = (values: any) => {
-    // TODO: connect to backend
+  const createHandler = async (values: CreateUserCarrierData) => {
     setTableLoading(true);
     hideCreateFormHandler();
-    setTimeout(() => {
-      const account = {
-        key: 5,
-        name: values.name,
-        accountId: '4n5pxq24kpiob12oz2',
-        carrier: values.carrier,
-        connectedAccount: values.connectedAccount,
-        services: values.services,
-        facilities: values.facilities,
-        fee: values.fee,
-        feeType: values.feeType,
-        feeCalBase: values.feeCalBase,
-        remark: values.remark,
-        active: true,
-        date: '2020/12/27'
+    try {
+      const account: CreateUserCarrierData = {
+        ...values,
+        userRef: id
       };
-      const newData = [...data, account];
+      const response = await axios.post(SERVER_ROUTES.ACCOUNT, account, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const newData = [...data, response.data];
       setData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const hideUpdateForm = () => setUpdateForm(null);
 
-  const updateHandler = (values: any) => {
-    // TODO: connect to backend
+  const updateHandler = async (values: any) => {
     hideUpdateForm();
     setTableLoading(true);
-    setTimeout(() => {
-      const newData = [...data];
-      const newRecord = newData.find((item: any) => item.key === values.key);
-      Object.keys(values).forEach((key: string) => {
-        newRecord[key] = values[key];
+    try {
+      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, values, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
       });
-      newRecord.date = '2020/12/28';
+      const updatedRecord = response.data;
+      const newData = [...data];
+      const record = newData.find(
+        (item: UserCarrier) => item.id === updatedRecord.id
+      );
+      Object.keys(updatedRecord).forEach((key: string) => {
+        // @ts-expect-error: ignore
+        record[key] = updatedRecord[key];
+      });
       setData(newData);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
-  const showUpdateForm = (record: any) => {
+  const showUpdateForm = (record: UserCarrier) => {
     setUpdateForm(
       <ClientUpdateCarrierForm
         data={record}
@@ -119,8 +159,8 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
   const columns = [
     {
       title: '账号名称',
-      key: 'name',
-      dataIndex: 'name'
+      key: 'accountName',
+      dataIndex: 'accountName'
     },
     {
       title: '账号',
@@ -141,8 +181,9 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       title: '物流服务',
       key: 'services',
       dataIndex: 'services',
-      render: (text: any[]) => {
-        const result = text ? text.map((item) => item.id).join(', ') : '-';
+      render: (services: string[] | undefined) => {
+        if (!services) return '-';
+        const result = services.length !== 0 ? services.join(', ') : '-';
         return result;
       }
     },
@@ -150,8 +191,9 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       title: '操作中心',
       key: 'facilities',
       dataIndex: 'facilities',
-      render: (text: any[]) => {
-        const result = text ? text.join(', ') : '-';
+      render: (facilities: string[] | undefined) => {
+        if (!facilities) return '-';
+        const result = facilities.length !== 0 ? facilities.join(', ') : '-';
         return result;
       }
     },
@@ -159,50 +201,49 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       title: '费率',
       key: 'fee',
       dataIndex: 'fee',
-      render: (text: number, record: any) => {
+      render: (text: number, record: UserCarrier) => {
         let prefix = '';
         let surfix = '';
-        if (record.feeType === 'amount') {
-          prefix = '$ ';
+        if (record.billingType === FEE_TYPE_KEYS.AMOUNT) {
+          prefix = '$';
         } else {
           surfix = '%';
         }
-
-        if (record.feeCalBase === 'price') surfix += ' 价格';
-        if (record.feeCalBase === 'order') surfix += ' 每票';
-        if (record.feeCalBase === 'weight') surfix += ' 每公斤';
-
+        surfix += ` / ${FEE_CALCULATE_BASE[record.feeBase].name}`;
         return `${prefix}${text}${surfix}`;
       }
     },
     {
       title: '备注',
-      key: 'remark',
-      dataIndex: 'remark'
+      key: 'note',
+      dataIndex: 'note'
     },
     {
       title: '更新日期',
-      key: 'date',
-      dataIndex: 'date'
+      key: 'updatedAt',
+      dataIndex: 'updatedAt',
+      render: (date: string) => {
+        return dayjs(date).format('YYYY/MM/DD');
+      }
     },
     {
       title: '状态',
-      key: 'active',
-      dataIndex: 'active',
-      render: (text: boolean, record: any) => (
+      key: 'isActive',
+      dataIndex: 'isActive',
+      render: (active: boolean, record: UserCarrier) => (
         <Switch
           checkedChildren="启用"
           unCheckedChildren="停用"
           defaultChecked
-          checked={record.active}
-          onClick={() => statusChangeHandler(record.key)}
+          checked={active}
+          onClick={() => statusChangeHandler(!active, record)}
         />
       )
     },
     {
       title: '操作',
       key: 'action',
-      render: (text: string, record: any) => (
+      render: (text: string, record: UserCarrier) => (
         <Space size={0} split={<Divider type="vertical" />}>
           <Button
             size="small"
@@ -214,7 +255,7 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
           <Popconfirm
             title="确认删除该账号?"
             placement="topRight"
-            onConfirm={() => deleteHandler(record.key)}
+            onConfirm={() => deleteHandler(record.id)}
             okText="确定"
             cancelText="取消"
           >
@@ -250,6 +291,7 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
         }
       />
       <Table
+        rowKey={(record: UserCarrier) => record.id}
         columns={columns}
         dataSource={data}
         pagination={false}

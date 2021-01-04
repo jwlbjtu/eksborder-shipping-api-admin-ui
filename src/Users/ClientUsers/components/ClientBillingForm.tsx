@@ -1,10 +1,11 @@
 import React, { ReactElement } from 'react';
 import { Modal, Form, Input, Row, Col, InputNumber, Radio } from 'antd';
+import { CreateBillingData } from '../../../shared/types/billing';
 
 interface CreateClientFormProps {
   visible: boolean;
   onCancel: () => void;
-  onOk: (values: any) => void;
+  onOk: (values: CreateBillingData) => void;
 }
 
 const ClientBillingForm = ({
@@ -23,9 +24,12 @@ const ClientBillingForm = ({
     form
       .validateFields()
       .then((values) => {
-        console.log(values);
         form.resetFields();
-        const result = { ...values };
+        const result: CreateBillingData = {
+          total: values.total,
+          addFund: values.addFund === 2,
+          description: values.description
+        };
         onOk(result);
       })
       .catch(() => {});
@@ -74,7 +78,7 @@ const ClientBillingForm = ({
             <Form.Item
               label="账单类型"
               initialValue={1}
-              name="isPayment"
+              name="addFund"
               rules={[{ required: true, message: '请选择账单类型！' }]}
             >
               <Radio.Group name="radiogroup">

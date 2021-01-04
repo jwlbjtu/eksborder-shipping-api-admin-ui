@@ -11,7 +11,7 @@ const AddressFormItems = ({
 }): ReactElement => {
   return (
     <Collapse>
-      <Panel key={1} header="Return Address">
+      <Panel key={1} header="Return Address" forceRender>
         <Form.Item
           label="Company"
           name="company"

@@ -1,7 +1,10 @@
 import React, { ReactElement } from 'react';
-import { Form, Input, Divider, Space, Button } from 'antd';
+import { Form, Input, Divider, Space, Button, Select } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import AddressFormItems from '../../../shared/components/AddressFormItems';
+import { DHL_ECOMMERCE_DOMESTIC_SERVICES } from '../../../shared/utils/constants';
+
+const { Option } = Select;
 
 interface FormProps {
   form: any;
@@ -16,25 +19,62 @@ const DHLeComCreationForm = ({
 }: FormProps): ReactElement => {
   return (
     <Form layout="vertical" form={form}>
-      <Form.Item label="账号名称" name="name">
+      <Form.Item
+        label="账号名称"
+        name="accountName"
+        rules={[
+          { required: true, message: '请填写账号名称' },
+          { min: 3, message: '账号名称至少3位' }
+        ]}
+      >
         <Input placeholder="账号名称" disabled={disabled} />
       </Form.Item>
       <Form.Item label="账号说明" name="description">
         <Input placeholder="账号说明" disabled={disabled} />
       </Form.Item>
+      {!isUpdate && (
+        <Form.Item
+          label="Client ID"
+          name="clientId"
+          rules={[
+            { required: !isUpdate, message: 'Client ID 必须填写' },
+            { min: 3, message: 'Client ID至少3位' }
+          ]}
+        >
+          <Input placeholder="Client ID" disabled={isUpdate} />
+        </Form.Item>
+      )}
+      {!isUpdate && (
+        <Form.Item
+          label="Client Secret"
+          name="clientSecret"
+          rules={[
+            { required: !isUpdate, message: 'Client Secret 必须填写' },
+            { min: 3, message: 'Client Secret至少3位' }
+          ]}
+        >
+          <Input.Password placeholder="Client Secret" />
+        </Form.Item>
+      )}
       <Form.Item
-        label="Client ID"
-        name="clientId"
-        rules={[{ required: !isUpdate, message: 'Client ID 必须填写' }]}
+        label="Services"
+        name="services"
+        rules={[{ required: true, message: '至少要有一个Service' }]}
       >
-        <Input placeholder="Client ID" disabled={isUpdate} />
-      </Form.Item>
-      <Form.Item
-        label="Client Secret"
-        name="clientSecret"
-        rules={[{ required: !isUpdate, message: 'Client Secret 必须填写' }]}
-      >
-        <Input.Password placeholder="Client Secret" />
+        <Select
+          mode="multiple"
+          optionLabelProp="label"
+          disabled={disabled}
+          allowClear
+        >
+          {DHL_ECOMMERCE_DOMESTIC_SERVICES.map((service, index) => {
+            return (
+              <Option key={service.key} value={index} label={service.key}>
+                {`${service.key} - ${service.name}`}
+              </Option>
+            );
+          })}
+        </Select>
       </Form.Item>
       <Space>
         <Form.Item
@@ -44,10 +84,10 @@ const DHLeComCreationForm = ({
           <Input placeholder="Pickup Code" disabled={disabled} />
         </Form.Item>
         <Form.Item
-          name="destribution-main"
-          rules={[{ required: true, message: 'Destribution Code 必须填写' }]}
+          name="facility-main"
+          rules={[{ required: true, message: 'Facility Code 必须填写' }]}
         >
-          <Input placeholder="Destribution Code" disabled={disabled} />
+          <Input placeholder="Facility Code" disabled={disabled} />
         </Form.Item>
       </Space>
       <Form.List name="locations">
@@ -66,12 +106,12 @@ const DHLeComCreationForm = ({
                   <Input placeholder="Pickup Code" disabled={disabled} />
                 </Form.Item>
                 <Form.Item
-                  name={[field.name, 'destribution']}
+                  name={[field.name, 'facility']}
                   rules={[
-                    { required: true, message: 'Desctribution Code 必须填写' }
+                    { required: true, message: 'Facility Code 必须填写' }
                   ]}
                 >
-                  <Input placeholder="Destribution Code" disabled={disabled} />
+                  <Input placeholder="Facility Code" disabled={disabled} />
                 </Form.Item>
                 <MinusCircleOutlined
                   onClick={() => {

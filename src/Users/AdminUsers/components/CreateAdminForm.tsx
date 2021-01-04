@@ -2,11 +2,13 @@ import React, { ReactElement, useState } from 'react';
 import { Modal, Form, Input, Space, Checkbox } from 'antd';
 import PasswordFormItems from '../../../shared/components/PasswordFormItems';
 import PhoneFormItems from '../../../shared/components/PhoneNumberItems';
+import { CreateUserData } from '../../../shared/types/user';
+import { USER_ROLES } from '../../../shared/utils/constants';
 
 interface CreateAdminFormProps {
   visible: boolean;
   onCancel: () => void;
-  onOk: (values: any) => void;
+  onOk: (values: CreateUserData) => void;
 }
 
 const CreateAdminForm = ({
@@ -28,9 +30,21 @@ const CreateAdminForm = ({
       .validateFields()
       .then((values) => {
         form.resetFields();
-        setSuperAdmin(false);
-        const result = { ...values, superAdmin };
+        const role = superAdmin ? USER_ROLES.ADMIN_SUPER : USER_ROLES.ADMIN;
+        const result: CreateUserData = {
+          companyName: 'Eksborder Inc',
+          userName: values.userName,
+          password: values['new-password'],
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          countryCode: values.countryCode,
+          phone: values.phone,
+          role,
+          isActive: true
+        };
         onOk(result);
+        setSuperAdmin(false);
       })
       .catch(() => {});
   };
@@ -56,7 +70,7 @@ const CreateAdminForm = ({
       <Form form={form} layout="vertical">
         <Form.Item
           label="用户名"
-          name="username"
+          name="userName"
           rules={[{ required: true, message: '用户名必须填！' }]}
         >
           <Input placeholder="用户名" />
@@ -66,7 +80,7 @@ const CreateAdminForm = ({
           <Form.Item
             style={{ width: '212px' }}
             label="姓"
-            name="lastname"
+            name="lastName"
             rules={[{ required: true, message: '姓必须填！' }]}
           >
             <Input placeholder="姓" />
@@ -74,7 +88,7 @@ const CreateAdminForm = ({
           <Form.Item
             style={{ width: '212px' }}
             label="名"
-            name="firstname"
+            name="firstName"
             rules={[{ required: true, message: '名必须填！' }]}
           >
             <Input placeholder="名" />

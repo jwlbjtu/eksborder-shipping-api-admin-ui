@@ -4,8 +4,15 @@ import { LeftOutlined } from '@ant-design/icons';
 import DHLeComCreationForm from '../DHLeCommerce/DHLeComCreationForm';
 import {
   CARRIERS,
-  DEFAULT_ADDRESS_FORM_DATA
+  DEFAULT_ADDRESS_FORM_DATA,
+  DHL_ECOMMERCE_DOMESTIC_SERVICES
 } from '../../../shared/utils/constants';
+import {
+  CarrierCreateData,
+  Facility,
+  Service,
+  Address
+} from '../../../shared/types/carrier';
 
 interface AddCarrierModalProps {
   carrier: string;
@@ -13,7 +20,7 @@ interface AddCarrierModalProps {
   visible: boolean;
   backClicked: () => void;
   cancelCliecked: () => void;
-  okClicked: (values: any) => void;
+  okClicked: (values: CarrierCreateData) => void;
 }
 
 const AddCarrierModal = ({
@@ -43,7 +50,54 @@ const AddCarrierModal = ({
       .validateFields()
       .then((values) => {
         form.resetFields();
-        okClicked({ ...values, carrier });
+        let carrierServices: Service[] = [];
+        let services: Service[] = [];
+        if (carrier === CARRIERS.DHL_ECOMMERCE) {
+          carrierServices = DHL_ECOMMERCE_DOMESTIC_SERVICES;
+        }
+        if (carrierServices.length > 0) {
+          services = values.services.map(
+            (inds: number) => carrierServices[inds]
+          );
+        }
+
+        const facilities: Facility[] = [];
+        if (carrier === CARRIERS.DHL_ECOMMERCE) {
+          facilities.push({
+            pickup: values['pickup-main'],
+            facility: values['facility-main']
+          });
+          if (values.locations) {
+            values.locations.forEach((element: Facility) => {
+              facilities.push(element);
+            });
+          }
+        }
+
+        const address: Address = {
+          company: values.company,
+          street1: values.street1,
+          street2: values.street2,
+          city: values.city,
+          state: values.state,
+          country: values.country,
+          postalCode: values.postalCode
+        };
+
+        const data: CarrierCreateData = {
+          accountName: values.accountName,
+          carrierName: carrier,
+          description: values.description,
+          clientId: values.clientId,
+          clientSecret: values.clientSecret,
+          facilities,
+          services,
+          returnAddress: address,
+          shipperId: values.shipperId,
+          isActive: true
+        };
+
+        okClicked(data);
       })
       .catch(() => {});
   };

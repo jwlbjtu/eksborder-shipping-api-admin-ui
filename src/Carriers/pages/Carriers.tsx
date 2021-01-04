@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import {
   PageHeader,
   Button,
@@ -13,14 +12,20 @@ import { PlusOutlined } from '@ant-design/icons';
 import CarriersList from '../components/AddAccount/CarriersLists';
 import AddCarrierModal from '../components/AddAccount/AddCarrierModal';
 import UpdateCarrierModal from '../components/UpdateAccount/UpdateCarrierModal';
+import axios from '../../shared/utils/axios-base';
 
+import { GET_CARRIER_LOGO, SERVER_ROUTES } from '../../shared/utils/constants';
+import errorHandler from '../../shared/utils/errorHandler';
 import {
-  GET_CARRIER_LOGO,
-  CARRIERS_SAMPLE_DATA
-} from '../../shared/utils/constants';
+  Carrier,
+  CarrierCreateData,
+  CarrierUpdateData
+} from '../../shared/types/carrier';
+import AuthContext from '../../shared/components/context/auth-context';
 
 const Carriers = (): ReactElement => {
-  const [carriersData, setCarriersData] = useState<any[]>([]);
+  const auth = useContext(AuthContext);
+  const [carriersData, setCarriersData] = useState<Carrier[]>([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [showCarriersList, setShowCarriersList] = useState(false);
   const [addCarrierModal, setAddCarrierModal] = useState<ReactElement | null>(
@@ -32,36 +37,63 @@ const Carriers = (): ReactElement => {
   ] = useState<ReactElement | null>(null);
 
   useEffect(() => {
-    // TODO: Call back end to get data
     setTableLoading(true);
-    setTimeout(() => {
-      setCarriersData(CARRIERS_SAMPLE_DATA);
-      setTableLoading(false);
-    }, 1000);
-  }, []);
+    axios
+      .get(SERVER_ROUTES.CARRIER, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      })
+      .then((response) => {
+        setCarriersData(response.data);
+      })
+      .catch((error) => {
+        errorHandler(error);
+        // TODO: if 401 Unauthorized logout user
+      })
+      .finally(() => setTableLoading(false));
+  }, [auth]);
 
-  const deleteAccountHandler = (key: number) => {
-    // TODO: connect to backend
+  const deleteAccountHandler = async (id: string) => {
     setTableLoading(true);
-    setTimeout(() => {
-      const newData = carriersData.filter((item) => item.key !== key);
+    try {
+      await axios.delete(`${SERVER_ROUTES.CARRIER}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const newData = carriersData.filter((item) => item.id !== id);
       setCarriersData(newData);
+    } catch (error) {
+      // TODO: if 401 Unauthorized logout user
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
-  const statusChangeHandler = (key: number) => {
-    // TODO: connect to backend
+  const statusChangeHandler = async (active: boolean, value: Carrier) => {
     setTableLoading(true);
-    setTimeout(() => {
+    try {
+      const data = { ...value, isActive: active };
+      const response = await axios.put(SERVER_ROUTES.CARRIER, data, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const updatedCarrier = response.data;
       const newData = [...carriersData];
-      const record = newData.find((item) => item.key === key);
+      const record = newData.find((item) => item.id === updatedCarrier.id);
       if (record) {
-        record.active = !record.active;
+        record.isActive = updatedCarrier.isActive;
+        setCarriersData(newData);
       }
-      setCarriersData(newData);
+    } catch (error) {
+      // TODO: if 401 Unauthorized logout user
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const showCarriersListHandler = () => setShowCarriersList(true);
@@ -74,20 +106,24 @@ const Carriers = (): ReactElement => {
   const addCarrierModalCancelHandler = () => {
     setAddCarrierModal(null);
   };
-  const addCarrierModalOkHandler = (values: any) => {
+  const addCarrierModalOkHandler = async (values: CarrierCreateData) => {
     setAddCarrierModal(null);
     setTableLoading(true);
-    const account = {
-      ...values,
-      key: 99,
-      active: true
-    };
-    // TODO: connect to backend
-    setTimeout(() => {
-      const newData = [...carriersData, account];
+    try {
+      const response = await axios.post(SERVER_ROUTES.CARRIER, values, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      const newCarrier = response.data;
+      const newData = [...carriersData, newCarrier];
       setCarriersData(newData);
+    } catch (error) {
+      // TODO: if 401 Unauthorized logout user
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
   const showAddCarrierModalHandler = (carrier: string) => {
@@ -107,30 +143,47 @@ const Carriers = (): ReactElement => {
   const hideUpdateCarrierModal = () => {
     setUpdateCarrierModal(null);
   };
-  const updateCarrierModalOkHandler = (values: any) => {
+  const updateCarrierModalOkHandler = async (
+    id: string,
+    values: CarrierUpdateData
+  ) => {
     setUpdateCarrierModal(null);
     setTableLoading(true);
-    const omitList = ['clientId'];
-    if (!values.password) omitList.push('clientSecret');
-    const account = _.omit(values, omitList);
-    // TODO: connect to backend
-    setTimeout(() => {
+    try {
+      const response = await axios.put(
+        SERVER_ROUTES.CARRIER,
+        {
+          id,
+          ...values
+        },
+        {
+          headers: {
+            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+          }
+        }
+      );
+      const updatedCarrier = response.data;
+
       const newData = [...carriersData];
-      // @ts-expect-error: not a type issue
-      const carrier = newData.find((item) => item.key === account.key);
-      Object.keys(account).forEach((keyId) => {
-        // @ts-expect-error: not a type issue
-        carrier[keyId] = account[keyId];
-      });
-      setCarriersData(newData);
+      const carrier = newData.find((item) => item.id === id);
+      if (carrier) {
+        Object.keys(updatedCarrier).forEach((keyId) => {
+          // @ts-expect-error: igore
+          carrier[keyId] = updatedCarrier[keyId];
+        });
+        setCarriersData(newData);
+      }
+    } catch (error) {
+      errorHandler(error);
+    } finally {
       setTableLoading(false);
-    }, 2000);
+    }
   };
 
-  const showUpdateCarrierModal = (record: any) => {
+  const showUpdateCarrierModal = (record: Carrier) => {
     setUpdateCarrierModal(
       <UpdateCarrierModal
-        data={_.omit(record, ['clientId', 'clientSecret'])}
+        data={record}
         visible
         cancelClicked={hideUpdateCarrierModal}
         okClicked={updateCarrierModalOkHandler}
@@ -142,20 +195,20 @@ const Carriers = (): ReactElement => {
     {
       title: '',
       key: 'logo',
-      render: (text: string, record: any) => {
-        const logo = GET_CARRIER_LOGO(record.carrier);
-        return <img className="logo" src={logo} alt={record.carrier} />;
+      render: (text: string, record: Carrier) => {
+        const logo = GET_CARRIER_LOGO(record.carrierName);
+        return <img className="logo" src={logo} alt={record.carrierName} />;
       }
     },
     {
       title: '物流公司',
-      dataIndex: 'carrier',
-      key: 'carrier'
+      dataIndex: 'carrierName',
+      key: 'carrierName'
     },
     {
       title: '账号名称',
-      dataIndex: 'name',
-      key: 'name'
+      dataIndex: 'accountName',
+      key: 'accountName'
     },
     {
       title: '账号说明',
@@ -164,22 +217,22 @@ const Carriers = (): ReactElement => {
     },
     {
       title: '状态',
-      dataIndex: 'active',
-      key: 'active',
-      render: (text: string, record: any) => (
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (value: boolean, record: Carrier) => (
         <Switch
           checkedChildren="启用"
           unCheckedChildren="停用"
           defaultChecked
-          checked={record.active}
-          onClick={() => statusChangeHandler(record.key)}
+          checked={value}
+          onClick={() => statusChangeHandler(!value, record)}
         />
       )
     },
     {
       title: '操作',
       key: 'action',
-      render: (text: string, record: any) => (
+      render: (text: string, record: Carrier) => (
         <Space size={0} split={<Divider type="vertical" />}>
           <Button
             size="small"
@@ -191,7 +244,7 @@ const Carriers = (): ReactElement => {
           <Popconfirm
             title="确认删除该账号?"
             placement="topRight"
-            onConfirm={() => deleteAccountHandler(record.key)}
+            onConfirm={() => deleteAccountHandler(record.id)}
             okText="确定"
             cancelText="取消"
           >
@@ -229,6 +282,7 @@ const Carriers = (): ReactElement => {
       />
       <Divider />
       <Table
+        rowKey={(record: Carrier) => record.id}
         columns={columns}
         dataSource={carriersData}
         pagination={false}
