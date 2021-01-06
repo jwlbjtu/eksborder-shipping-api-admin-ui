@@ -40,6 +40,7 @@ const CreateAdminForm = ({
           email: values.email,
           countryCode: values.countryCode,
           phone: values.phone,
+          minBalance: 0,
           role,
           isActive: true
         };

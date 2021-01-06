@@ -1,5 +1,5 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, PageHeader, Table } from 'antd';
+import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
+import { Button, notification, PageHeader, Table } from 'antd';
 import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import axios from '../../../shared/utils/axios-base';
@@ -13,17 +13,20 @@ import AuthContext from '../../../shared/components/context/auth-context';
 
 interface ClientBillingPanelProps {
   id: string;
-  updateBalance: (value: number) => void;
+  curBalance: number;
+  updateBalance: () => void;
 }
 
 const ClientBillingPanel = ({
   id,
+  curBalance,
   updateBalance
 }: ClientBillingPanelProps): ReactElement => {
   const auth = useContext(AuthContext);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [billingData, setBillingData] = useState<Billing[]>([]);
+  const [isSpin, setIsSpin] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -44,30 +47,44 @@ const ClientBillingPanel = ({
       });
   }, [id, auth]);
 
+  const refreshRecords = async () => {
+    setIsSpin(true);
+    try {
+      const response = await axios.get(`${SERVER_ROUTES.BILLINGS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      updateBalance();
+      setBillingData(response.data);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSpin(false);
+    }
+  };
+
   const showBillingForm = () => setShowForm(true);
   const hideBillingForm = () => setShowForm(false);
 
   const addBillHandler = async (values: CreateBillingData) => {
+    if (!values.addFund && curBalance < values.total) {
+      notification.error({
+        message: '扣款失败',
+        description: `扣款金额${values.total}超过用户余额${curBalance}`
+      });
+      return;
+    }
     hideBillingForm();
-    setLoading(true);
     try {
-      const response = await axios.post(
-        `${SERVER_ROUTES.BILLINGS}/${id}`,
-        values,
-        {
-          headers: {
-            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-          }
+      await axios.post(`${SERVER_ROUTES.BILLINGS}/${id}`, values, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
         }
-      );
-      const newBill: Billing = response.data;
-      const newData = [newBill, ...billingData];
-      setBillingData(newData);
-      updateBalance(newBill.balance);
+      });
+      refreshRecords();
     } catch (error) {
       errorHandler(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -156,16 +173,21 @@ const ClientBillingPanel = ({
       />
       <PageHeader
         title=""
-        extra={
+        extra={[
           <Button
             key="1"
+            icon={<SyncOutlined spin={isSpin} />}
+            onClick={refreshRecords}
+          />,
+          <Button
+            key="2"
             type="primary"
             icon={<PlusOutlined />}
             onClick={showBillingForm}
           >
             添加账单信息
           </Button>
-        }
+        ]}
       />
       {table}
     </div>

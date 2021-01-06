@@ -72,7 +72,7 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
   const hideCreateClientFormHandler = () => setShowCreateClientForm(false);
   const showCreateClientFormHandler = () => setShowCreateClientForm(true);
 
-  const createAdminHandler = async (data: CreateUserData) => {
+  const createClientHandler = async (data: CreateUserData) => {
     setTableLoading(true);
     hideCreateClientFormHandler();
     try {
@@ -160,7 +160,7 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
       <CreateClientForm
         visible={showCreateClientForm}
         onCancel={hideCreateClientFormHandler}
-        onOk={createAdminHandler}
+        onOk={createClientHandler}
       />
       <PageHeader
         title="货代账号"

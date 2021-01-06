@@ -14,7 +14,9 @@ import {
 import {
   FEE_TYPE,
   FEE_CALCULATE_BASE,
-  SERVER_ROUTES
+  SERVER_ROUTES,
+  FEE_TYPE_KEYS,
+  FEE_CAL_BASE_KEYS
 } from '../../../shared/utils/constants';
 import { UserCarrier } from '../../../shared/types/user';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
@@ -49,6 +51,9 @@ const ClientUpdateCarrierForm = ({
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [loading, setLoading] = useState(false);
   const [dataActive, setDataActive] = useState(data.isActive);
+  const [disableRadio, setDisableRadio] = useState(
+    data.billingType === FEE_TYPE_KEYS.PROPORTIONS
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -75,6 +80,14 @@ const ClientUpdateCarrierForm = ({
       })
       .finally(() => setLoading(false));
   }, [data, auth]);
+
+  const feeRadioChangeHandler = (key: string) => {
+    if (key === FEE_TYPE_KEYS.PROPORTIONS) {
+      setDisableRadio(true);
+    } else {
+      setDisableRadio(false);
+    }
+  };
 
   const cancelClickedHandler = () => {
     form.resetFields();
@@ -270,7 +283,12 @@ const ClientUpdateCarrierForm = ({
                 <Radio.Group disabled={!dataActive}>
                   {Object.values(FEE_TYPE).map((item) => {
                     return (
-                      <Radio style={radioStyle} key={item.key} value={item.key}>
+                      <Radio
+                        style={radioStyle}
+                        key={item.key}
+                        value={item.key}
+                        onClick={() => feeRadioChangeHandler(item.key)}
+                      >
                         {item.name}
                       </Radio>
                     );
@@ -285,11 +303,24 @@ const ClientUpdateCarrierForm = ({
               >
                 <Radio.Group disabled={!dataActive}>
                   {Object.values(FEE_CALCULATE_BASE).map((item) => {
-                    return (
+                    let radio = (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
                       </Radio>
                     );
+                    if (item.key === FEE_CAL_BASE_KEYS.WEIGHT) {
+                      radio = (
+                        <Radio
+                          style={radioStyle}
+                          key={item.key}
+                          value={item.key}
+                          disabled={disableRadio}
+                        >
+                          {item.name}
+                        </Radio>
+                      );
+                    }
+                    return radio;
                   })}
                 </Radio.Group>
               </Form.Item>

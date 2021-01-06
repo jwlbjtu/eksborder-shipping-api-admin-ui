@@ -13,7 +13,9 @@ import {
 import {
   FEE_TYPE,
   FEE_CALCULATE_BASE,
-  SERVER_ROUTES
+  SERVER_ROUTES,
+  FEE_TYPE_KEYS,
+  FEE_CAL_BASE_KEYS
 } from '../../../shared/utils/constants';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
 import { CreateUserCarrierData } from '../../../shared/types/user.d';
@@ -45,6 +47,7 @@ const ClientConnectCarrierForm = ({
   const [carrierData, setCarrierData] = useState<Carrier[]>([]);
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
   const [loading, setLoading] = useState(false);
+  const [disableRadio, setDisableRadio] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -62,6 +65,14 @@ const ClientConnectCarrierForm = ({
       })
       .finally(() => setLoading(false));
   }, [auth]);
+
+  const feeRadioChangeHandler = (key: string) => {
+    if (key === FEE_TYPE_KEYS.PROPORTIONS) {
+      setDisableRadio(true);
+    } else {
+      setDisableRadio(false);
+    }
+  };
 
   const cancelClickedHandler = () => {
     form.resetFields();
@@ -218,7 +229,16 @@ const ClientConnectCarrierForm = ({
                 name="fee"
                 rules={[{ required: true, message: '费率必须填！' }]}
               >
-                <InputNumber min={0} style={{ width: '180px' }} />
+                <InputNumber
+                  min={0}
+                  style={{ width: '180px' }}
+                  formatter={(value) =>
+                    `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  }
+                  parser={(value) =>
+                    value ? value.replace(/\$\s?|(,*)/g, '') : 0
+                  }
+                />
               </Form.Item>
               <Form.Item
                 label="费率模式"
@@ -228,7 +248,12 @@ const ClientConnectCarrierForm = ({
                 <Radio.Group>
                   {Object.values(FEE_TYPE).map((item) => {
                     return (
-                      <Radio style={radioStyle} key={item.key} value={item.key}>
+                      <Radio
+                        style={radioStyle}
+                        key={item.key}
+                        value={item.key}
+                        onClick={() => feeRadioChangeHandler(item.key)}
+                      >
                         {item.name}
                       </Radio>
                     );
@@ -242,11 +267,24 @@ const ClientConnectCarrierForm = ({
               >
                 <Radio.Group>
                   {Object.values(FEE_CALCULATE_BASE).map((item) => {
-                    return (
+                    let radio = (
                       <Radio style={radioStyle} key={item.key} value={item.key}>
                         {item.name}
                       </Radio>
                     );
+                    if (item.key === FEE_CAL_BASE_KEYS.WEIGHT) {
+                      radio = (
+                        <Radio
+                          style={radioStyle}
+                          key={item.key}
+                          value={item.key}
+                          disabled={disableRadio}
+                        >
+                          {item.name}
+                        </Radio>
+                      );
+                    }
+                    return radio;
                   })}
                 </Radio.Group>
               </Form.Item>

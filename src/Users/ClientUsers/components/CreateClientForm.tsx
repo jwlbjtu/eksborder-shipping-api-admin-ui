@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { Modal, Form, Input, Space } from 'antd';
+import { Modal, Form, Input, Space, InputNumber } from 'antd';
 import PasswordFormItems from '../../../shared/components/PasswordFormItems';
 import PhoneFormItems from '../../../shared/components/PhoneNumberItems';
 import { USER_ROLES } from '../../../shared/utils/constants';
@@ -38,6 +38,7 @@ const CreateClientForm = ({
           email: values.email,
           countryCode: values.countryCode,
           phone: values.phone,
+          minBalance: values.minBalance,
           role,
           isActive: true
         };
@@ -105,6 +106,20 @@ const CreateClientForm = ({
           <Input placeholder="邮箱" />
         </Form.Item>
         <PhoneFormItems disabled={false} />
+        <Form.Item
+          label="最低额度"
+          name="minBalance"
+          rules={[{ required: true, message: '最低额度必须填！' }]}
+        >
+          <InputNumber
+            style={{ width: 'auto' }}
+            min={0}
+            formatter={(value) =>
+              `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            }
+            parser={(value) => (value ? value.replace(/\$\s?|(,*)/g, '') : 0)}
+          />
+        </Form.Item>
       </Form>
     </Modal>
   );

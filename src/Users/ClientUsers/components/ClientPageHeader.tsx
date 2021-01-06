@@ -54,12 +54,15 @@ const ClientPageHeader = ({
     >
       <Row>
         <Col span={18}>
-          <Descriptions size="small" column={2}>
+          <Descriptions size="small" column={3}>
             <Descriptions.Item label="联系人">{`${data.lastName}${data.firstName}`}</Descriptions.Item>
-            <Descriptions.Item label="邮箱">{data.email}</Descriptions.Item>
+            <Descriptions.Item label="最低额度">
+              ${data.minBalance.toFixed(2)}
+            </Descriptions.Item>
             <Descriptions.Item label="更新日期">
               {dayjs(data.updatedAt).format('YYYY/MM/DD')}
             </Descriptions.Item>
+            <Descriptions.Item label="邮箱">{data.email}</Descriptions.Item>
             <Descriptions.Item label="手机">{`+${data.countryCode} ${data.phone}`}</Descriptions.Item>
           </Descriptions>
         </Col>
@@ -68,6 +71,9 @@ const ClientPageHeader = ({
             style={{
               border: '2px solid rgb(220 220 220)',
               textAlign: 'center'
+            }}
+            valueStyle={{
+              color: data.balance > data.minBalance ? 'black' : '#cf1322'
             }}
             title="账户余额"
             precision={2}

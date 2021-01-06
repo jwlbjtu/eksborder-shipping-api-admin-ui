@@ -29,6 +29,7 @@ export interface UpdateUserSelf {
 }
 
 export interface UpdateClientData extends UpdateUserSelf {
+  minBalance: number;
   isActive: boolean;
 }
 

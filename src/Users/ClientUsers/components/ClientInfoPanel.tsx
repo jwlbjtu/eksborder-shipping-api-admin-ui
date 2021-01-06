@@ -7,7 +7,8 @@ import {
   Input,
   message,
   Space,
-  Switch
+  Switch,
+  InputNumber
 } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
@@ -40,6 +41,7 @@ const ClientInfoPanel = ({
       lastName: values.lastName,
       email: values.email,
       countryCode: values.countryCode,
+      minBalance: values.minBalance,
       phone: values.phone,
       isActive: active
     };
@@ -134,15 +136,31 @@ const ClientInfoPanel = ({
           <Input placeholder="邮箱" disabled={!active} />
         </Form.Item>
         <PhoneNumberFormItems disabled={!active} />
-        <Form.Item name="active">
-          <Switch
-            checkedChildren="启用"
-            unCheckedChildren="停用"
-            defaultChecked
-            checked={active}
-            onClick={() => setActive(!active)}
-          />
-        </Form.Item>
+        <Space size="large" align="end" style={{ width: '100%' }}>
+          <Form.Item
+            label="最低额度"
+            name="minBalance"
+            rules={[{ required: true, message: '最低额度必须填！' }]}
+          >
+            <InputNumber
+              style={{ width: 'auto' }}
+              min={0}
+              formatter={(value) =>
+                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+              parser={(value) => (value ? value.replace(/\$\s?|(,*)/g, '') : 0)}
+            />
+          </Form.Item>
+          <Form.Item name="active" style={{ marginLeft: '180px' }}>
+            <Switch
+              checkedChildren="启用"
+              unCheckedChildren="停用"
+              defaultChecked
+              checked={active}
+              onClick={() => setActive(!active)}
+            />
+          </Form.Item>
+        </Space>
         <Form.Item>
           <Button type="primary" htmlType="submit">
             更新基本信息

@@ -6,6 +6,7 @@ export interface ShippingRecord {
   carrier: string;
   provider?: string;
   service: string;
+  facility?: string;
   toAddress: Address;
   shippingId?: string;
   trackingId: string;
@@ -13,8 +14,24 @@ export interface ShippingRecord {
   createdAt: Date;
   manifested: boolean;
   labels: Label[];
+  packageInfo: {
+    weight: IWeight;
+    dimension?: IDimension;
+  };
   userRef: string;
   billingRef: string;
+}
+
+export interface IWeight {
+  value: number;
+  unitOfMeasure: 'BL' | 'OZ' | 'KG' | 'G';
+}
+
+export interface IDimension {
+  length: number;
+  width: number;
+  height: number;
+  unitOfMeasure: 'IN' | 'CM';
 }
 
 export interface Label {

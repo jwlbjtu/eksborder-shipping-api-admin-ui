@@ -1,7 +1,11 @@
 import React, { ReactElement, useContext, useEffect, useState } from 'react';
 import { PageHeader, Table, Button } from 'antd';
 import dayjs from 'dayjs';
-import { CheckCircleTwoTone, PrinterOutlined } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone,
+  PrinterOutlined,
+  SyncOutlined
+} from '@ant-design/icons';
 import axios from '../../../shared/utils/axios-base';
 import {
   GET_CARRIER_LOGO,
@@ -24,6 +28,7 @@ const ClientShippingPanel = ({
   const [tableLoading, setTableLoading] = useState(false);
   const [recordsData, setRecordsData] = useState<any[]>([]);
   const [labelImage, setLabelImage] = useState<ReactElement | null>(null);
+  const [isSpin, setIsSpin] = useState(false);
 
   useEffect(() => {
     setTableLoading(true);
@@ -39,6 +44,22 @@ const ClientShippingPanel = ({
       .catch((error) => errorHandler(error))
       .finally(() => setTableLoading(false));
   }, [id, auth]);
+
+  const refreshRecords = async () => {
+    setIsSpin(true);
+    try {
+      const response = await axios.get(`${SERVER_ROUTES.RECORDS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      setRecordsData(response.data);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setIsSpin(false);
+    }
+  };
 
   const hideLabelHandler = () => setLabelImage(null);
   const showLabelHandler = (type: string, format: string, data: string) => {
@@ -64,14 +85,40 @@ const ClientShippingPanel = ({
       }
     },
     {
-      title: '物流公司',
-      dataIndex: 'carrier',
-      key: 'carrier'
+      title: '账号',
+      dataIndex: 'accountName',
+      key: 'accountName'
     },
     {
-      title: '服务',
-      dataIndex: 'service',
-      key: 'service'
+      title: '物流信息',
+      dataIndex: 'info',
+      key: 'info',
+      render: (text: string, record: ShippingRecord) => {
+        return (
+          <div>
+            <div>{`${record.carrier} ${record.service}`}</div>
+            <div>{`${record.trackingId}`}</div>
+          </div>
+        );
+      }
+    },
+    {
+      title: '包裹尺寸',
+      key: 'packageInfo',
+      render: (text: string, record: ShippingRecord) => {
+        const { weight } = record.packageInfo;
+        const { dimension } = record.packageInfo;
+        return (
+          <div>
+            <div>{`${weight.value} ${weight.unitOfMeasure.toLowerCase()}`}</div>
+            {dimension && (
+              <div>{`${dimension.length} x ${dimension.width} x ${
+                dimension.height
+              } ${dimension.unitOfMeasure.toLowerCase()}`}</div>
+            )}
+          </div>
+        );
+      }
     },
     {
       title: '邮寄费',
@@ -97,11 +144,6 @@ const ClientShippingPanel = ({
           </div>
         );
       }
-    },
-    {
-      title: 'Tracking',
-      dataIndex: 'trackingId',
-      key: 'trackingId'
     },
     {
       title: '日期',
@@ -148,6 +190,11 @@ const ClientShippingPanel = ({
       <PageHeader
         title=""
         extra={[
+          <Button
+            key="1"
+            icon={<SyncOutlined spin={isSpin} />}
+            onClick={refreshRecords}
+          />,
           <Button key="create" type="primary" disabled>
             生成 Manifest
           </Button>,

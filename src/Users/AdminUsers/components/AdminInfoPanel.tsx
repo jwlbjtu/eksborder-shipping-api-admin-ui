@@ -43,6 +43,7 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       email: values.email,
       countryCode: values.countryCode,
       phone: values.phone,
+      minBalance: data?.minBalance || 0,
       role: superAdmin ? USER_ROLES.ADMIN_SUPER : USER_ROLES.ADMIN,
       isActive: active
     };

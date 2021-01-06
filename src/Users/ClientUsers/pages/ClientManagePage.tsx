@@ -134,8 +134,20 @@ const ClientManagePage = (): ReactElement => {
     }
   };
 
-  const updateBalanceHandler = (value: number) => {
-    if (data) setData({ ...data, balance: value });
+  const updateBalanceHandler = async () => {
+    setSubloading(true);
+    try {
+      const response = await axios.get(`${SERVER_ROUTES.USERS}/${id}`, {
+        headers: {
+          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+        }
+      });
+      setData(response.data);
+    } catch (error) {
+      errorHandler(error);
+    } finally {
+      setSubloading(false);
+    }
   };
 
   const createApiTokenHandler = async () => {
@@ -217,6 +229,7 @@ const ClientManagePage = (): ReactElement => {
                 >
                   <ClientBillingPanel
                     id={id}
+                    curBalance={data.balance}
                     updateBalance={updateBalanceHandler}
                   />
                 </TabPane>
