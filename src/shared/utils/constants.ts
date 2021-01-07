@@ -111,7 +111,8 @@ export const SERVER_ROUTES = {
   RECORDS: '/records'
 };
 
-export const DEFAULT_SERVER_HOST = 'http://localhost:5000';
+export const DEFAULT_SERVER_HOST =
+  process.env.REACT_APP_BENKEND_URL || 'http://localhost:5000';
 
 export const FEE_TYPE_KEYS = {
   PROPORTIONS: 'proportions',
