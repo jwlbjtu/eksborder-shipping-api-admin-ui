@@ -112,7 +112,9 @@ export const SERVER_ROUTES = {
 };
 
 export const DEFAULT_SERVER_HOST =
-  process.env.REACT_APP_BENKEND_URL || 'http://localhost:5000';
+  process.env.NODE_ENV === 'production'
+    ? process.env.REACT_APP_BENKEND_URL
+    : 'http://localhost:5000';
 
 export const FEE_TYPE_KEYS = {
   PROPORTIONS: 'proportions',
