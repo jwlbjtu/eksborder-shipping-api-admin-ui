@@ -1,5 +1,5 @@
-import { Layout } from 'antd';
-import React, { ReactElement, useState } from 'react';
+import { Layout, Spin } from 'antd';
+import React, { ReactElement, useState, Suspense } from 'react';
 import { BrowserRouter, Redirect, Route, Switch, Link } from 'react-router-dom';
 import useAuth from './shared/hooks/auth-hook';
 import './App.css';
@@ -9,16 +9,25 @@ import logoSquare from './assets/images/logo-square.png';
 import MenuList from './Layout/MenuList/MenuList';
 import Header from './Layout/Header/HeaderComponent';
 import Welcome from './Welcome';
-import ClientUsers from './Users/ClientUsers/pages/ClientUsers';
-import AdminUsers from './Users/AdminUsers/pages/AdminUsers';
-import Carrier from './Carriers/pages/Carriers';
-import AuditTrail from './AuditTrail/pages/AuditTrail';
-import UserProfile from './Users/User/pages/UserProfile';
-import AdminProfile from './Users/AdminUsers/pages/AdminProfile';
-import ClientManagePage from './Users/ClientUsers/pages/ClientManagePage';
 import Login from './Users/Login';
 
 import AuthContext from './shared/components/context/auth-context';
+
+const ClientUsers = React.lazy(
+  () => import('./Users/ClientUsers/pages/ClientUsers')
+);
+const AdminUsers = React.lazy(
+  () => import('./Users/AdminUsers/pages/AdminUsers')
+);
+const Carrier = React.lazy(() => import('./Carriers/pages/Carriers'));
+const AuditTrail = React.lazy(() => import('./AuditTrail/pages/AuditTrail'));
+const UserProfile = React.lazy(() => import('./Users/User/pages/UserProfile'));
+const AdminProfile = React.lazy(
+  () => import('./Users/AdminUsers/pages/AdminProfile')
+);
+const ClientManagePage = React.lazy(
+  () => import('./Users/ClientUsers/pages/ClientManagePage')
+);
 
 const { Sider, Content, Footer } = Layout;
 
@@ -87,7 +96,7 @@ const App: React.FC = (): ReactElement => {
     <AuthContext.Provider
       value={{ isLoggedIn: !!userData, userData, setUserData, login, logout }}
     >
-      {page}
+      <Suspense fallback={<Spin />}>{page}</Suspense>
     </AuthContext.Provider>
   );
 };
