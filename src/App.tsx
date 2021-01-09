@@ -56,24 +56,26 @@ const App: React.FC = (): ReactElement => {
           </Sider>
           <Layout className="site-layout">
             <Header />
-            <Content style={{ margin: '0 16px' }}>
-              <div
-                className="site-layout-background"
-                style={{ padding: 24, minHeight: 360 }}
-              >
-                <Switch>
-                  <Route path="/" component={Welcome} exact />
-                  <Route path="/clients/:id" component={ClientManagePage} />
-                  <Route path="/clients" component={ClientUsers} />
-                  <Route path="/admins/:id" component={AdminProfile} />
-                  <Route path="/admins" component={AdminUsers} />
-                  <Route path="/carriers" component={Carrier} />
-                  <Route path="/audit" component={AuditTrail} />
-                  <Route path="/user/profile" component={UserProfile} />
-                  <Redirect to="/" />
-                </Switch>
-              </div>
-            </Content>
+            <Suspense fallback={<Spin />}>
+              <Content style={{ margin: '0 16px' }}>
+                <div
+                  className="site-layout-background"
+                  style={{ padding: 24, minHeight: 360 }}
+                >
+                  <Switch>
+                    <Route path="/" component={Welcome} exact />
+                    <Route path="/clients/:id" component={ClientManagePage} />
+                    <Route path="/clients" component={ClientUsers} />
+                    <Route path="/admins/:id" component={AdminProfile} />
+                    <Route path="/admins" component={AdminUsers} />
+                    <Route path="/carriers" component={Carrier} />
+                    <Route path="/audit" component={AuditTrail} />
+                    <Route path="/user/profile" component={UserProfile} />
+                    <Redirect to="/" />
+                  </Switch>
+                </div>
+              </Content>
+            </Suspense>
             <Footer style={{ textAlign: 'center' }}>
               EksShipping Admin ©2020 Created by Eksborder
             </Footer>
@@ -96,7 +98,7 @@ const App: React.FC = (): ReactElement => {
     <AuthContext.Provider
       value={{ isLoggedIn: !!userData, userData, setUserData, login, logout }}
     >
-      <Suspense fallback={<Spin />}>{page}</Suspense>
+      {page}
     </AuthContext.Provider>
   );
 };
