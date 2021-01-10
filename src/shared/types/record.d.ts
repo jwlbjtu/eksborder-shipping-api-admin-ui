@@ -3,6 +3,7 @@ import { Address } from './carrier';
 export interface ShippingRecord {
   id: string;
   accountName: string;
+  carrierAccount: string;
   carrier: string;
   provider?: string;
   service: string;

@@ -87,7 +87,15 @@ const ClientShippingPanel = ({
     {
       title: '账号',
       dataIndex: 'accountName',
-      key: 'accountName'
+      key: 'accountName',
+      render: (accountName: string, record: ShippingRecord) => {
+        return (
+          <div>
+            <div>{accountName}</div>
+            <div>{`${record.carrierAccount}`}</div>
+          </div>
+        );
+      }
     },
     {
       title: '物流信息',
@@ -98,6 +106,7 @@ const ClientShippingPanel = ({
           <div>
             <div>{`${record.carrier} ${record.service}`}</div>
             <div>{`${record.trackingId}`}</div>
+            {record.facility && <div>{`${record.facility}`}</div>}
           </div>
         );
       }
