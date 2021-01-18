@@ -77,7 +77,7 @@ const App: React.FC = (): ReactElement => {
               </Content>
             </Suspense>
             <Footer style={{ textAlign: 'center' }}>
-              EksShipping Admin ©2020 Created by Eksborder
+              EksShipping Admin ©2021 Created by Eksborder
             </Footer>
           </Layout>
         </Layout>
