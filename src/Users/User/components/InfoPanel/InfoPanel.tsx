@@ -1,21 +1,28 @@
-import React, { ReactElement, useContext, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { Form, Avatar, Upload, Button, Input, message, Space } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { useDispatch, useSelector } from 'react-redux';
 import PhoneNumberFormItems from '../../../../shared/components/PhoneNumberItems';
 import './InfoPanel.css';
-import { UpdateUserSelf, User } from '../../../../shared/types/user';
-import AuthContext from '../../../../shared/components/context/auth-context';
+import { UpdateUserSelf, User, UserData } from '../../../../shared/types/user';
 import { DEFAULT_SERVER_HOST } from '../../../../shared/utils/constants';
+import {
+  selectCurUser,
+  selectUserLoading,
+  updateCurUser
+} from '../../../../redux/user/userSlice';
 
 interface InfoPanelProps {
-  data: User;
-  onSubmit: (values: UpdateUserSelf) => void;
+  data: User | UserData;
+  onSubmit: (id: string, values: UpdateUserSelf) => void;
 }
 
 const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const curUser = useSelector(selectCurUser);
+  const loading = useSelector(selectUserLoading);
   const [uploading, setUploading] = useState(false);
-  const [imageLink, setImageLink] = useState(data && data.logoImage);
+  const [imageLink, setImageLink] = useState(data.logoImage);
 
   const infoFormSubmitHandler = (values: any) => {
     const updateData: UpdateUserSelf = {
@@ -27,7 +34,7 @@ const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       countryCode: values.countryCode,
       phone: values.phone
     };
-    onSubmit(updateData);
+    onSubmit(data.id, updateData);
   };
 
   const uploadHandler = (info: any) => {
@@ -37,12 +44,13 @@ const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
       setImageLink(info.file.response.link);
-      const newUserData = {
-        ...auth.userData,
-        image: info.file.response.link
-      };
-      // @ts-expect-error: ignore
-      auth.setUserData(newUserData);
+      if (curUser && data.id === curUser.id) {
+        const newUserData: UserData = {
+          ...curUser,
+          logoImage: info.file.response.link
+        };
+        dispatch(updateCurUser(newUserData));
+      }
       setUploading(false);
     } else if (info.file.status === 'error') {
       setUploading(false);
@@ -62,9 +70,9 @@ const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
         <Upload
           name="image"
           accept=".jpg,.png,.jpeg"
-          action={`${DEFAULT_SERVER_HOST}/users/logo/${data && data.id}`}
+          action={`${DEFAULT_SERVER_HOST}/users/logo/${data.id}`}
           headers={{
-            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            Authorization: `${curUser?.token_type} ${curUser?.token}`
           }}
           onChange={uploadHandler}
           showUploadList={false}
@@ -117,7 +125,7 @@ const InfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
         </Form.Item>
         <PhoneNumberFormItems disabled={false} />
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={loading}>
             更新基本信息
           </Button>
         </Form.Item>

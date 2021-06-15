@@ -1,26 +1,24 @@
 import React, { ReactElement } from 'react';
 import { Modal, Form, Input, Space, InputNumber } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
 import PasswordFormItems from '../../../shared/components/PasswordFormItems';
 import PhoneFormItems from '../../../shared/components/PhoneNumberItems';
 import { USER_ROLES } from '../../../shared/utils/constants';
 import { CreateUserData } from '../../../shared/types/user';
+import {
+  createUserHandler,
+  selectShowCreateClient,
+  setShowCreateClient
+} from '../../../redux/user/userDataSlice';
 
-interface CreateClientFormProps {
-  visible: boolean;
-  onCancel: () => void;
-  onOk: (values: CreateUserData) => void;
-}
-
-const CreateClientForm = ({
-  visible,
-  onCancel,
-  onOk
-}: CreateClientFormProps): ReactElement => {
+const CreateClientForm = (): ReactElement => {
+  const dispatch = useDispatch();
+  const showModal = useSelector(selectShowCreateClient);
   const [form] = Form.useForm();
 
   const cancelClickedHandler = () => {
     form.resetFields();
-    onCancel();
+    dispatch(setShowCreateClient(false));
   };
 
   const okClickedHandler = () => {
@@ -42,7 +40,7 @@ const CreateClientForm = ({
           role,
           isActive: true
         };
-        onOk(result);
+        dispatch(createUserHandler(result));
       })
       .catch(() => {});
   };
@@ -58,7 +56,7 @@ const CreateClientForm = ({
       }}
       centered
       closable={false}
-      visible={visible}
+      visible={showModal}
       okText="创建账号"
       cancelText="取消"
       title="创建货代用户账号"
@@ -111,13 +109,15 @@ const CreateClientForm = ({
           name="minBalance"
           rules={[{ required: true, message: '最低额度必须填！' }]}
         >
-          <InputNumber
+          <InputNumber<number>
             style={{ width: 'auto' }}
             min={0}
             formatter={(value) =>
               `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
             }
-            parser={(value) => (value ? value.replace(/\$\s?|(,*)/g, '') : 0)}
+            parser={(value) =>
+              value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
+            }
           />
         </Form.Item>
       </Form>

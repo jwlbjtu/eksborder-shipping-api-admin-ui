@@ -1,4 +1,4 @@
-import { Address } from './carrier';
+import { Address, Service } from './carrier';
 
 export interface ShippingRecord {
   id: string;
@@ -6,7 +6,7 @@ export interface ShippingRecord {
   carrierAccount: string;
   carrier: string;
   provider?: string;
-  service: string;
+  service: Service;
   facility?: string;
   toAddress: Address;
   shippingId?: string;
@@ -15,6 +15,7 @@ export interface ShippingRecord {
   createdAt: Date;
   manifested: boolean;
   labels: Label[];
+  forms?: Form[];
   packageInfo: {
     weight: IWeight;
     dimension?: IDimension;
@@ -42,4 +43,10 @@ export interface Label {
   encodeType: string;
   format: string;
   parcelType?: string;
+}
+
+export interface Form {
+  formData: string;
+  format: string;
+  encodeType: string;
 }

@@ -1,28 +1,26 @@
 import React, { ReactElement, useState } from 'react';
 import { Modal, Form, Input, Space, Checkbox } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
 import PasswordFormItems from '../../../shared/components/PasswordFormItems';
 import PhoneFormItems from '../../../shared/components/PhoneNumberItems';
 import { CreateUserData } from '../../../shared/types/user';
 import { USER_ROLES } from '../../../shared/utils/constants';
+import {
+  createUserHandler,
+  selectShowCreateAdmin,
+  setShowCreateAdmin
+} from '../../../redux/user/userDataSlice';
 
-interface CreateAdminFormProps {
-  visible: boolean;
-  onCancel: () => void;
-  onOk: (values: CreateUserData) => void;
-}
-
-const CreateAdminForm = ({
-  visible,
-  onCancel,
-  onOk
-}: CreateAdminFormProps): ReactElement => {
+const CreateAdminForm = (): ReactElement => {
+  const dispatch = useDispatch();
+  const showModal = useSelector(selectShowCreateAdmin);
   const [form] = Form.useForm();
   const [superAdmin, setSuperAdmin] = useState(false);
 
   const cancelClickedHandler = () => {
     form.resetFields();
     setSuperAdmin(false);
-    onCancel();
+    dispatch(setShowCreateAdmin(false));
   };
 
   const okClickedHandler = () => {
@@ -44,7 +42,7 @@ const CreateAdminForm = ({
           role,
           isActive: true
         };
-        onOk(result);
+        dispatch(createUserHandler(result));
         setSuperAdmin(false);
       })
       .catch(() => {});
@@ -61,7 +59,7 @@ const CreateAdminForm = ({
       }}
       centered
       closable={false}
-      visible={visible}
+      visible={showModal}
       okText="创建账号"
       cancelText="取消"
       title="创建管理员账号"

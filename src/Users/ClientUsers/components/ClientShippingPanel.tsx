@@ -1,21 +1,24 @@
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
-import { PageHeader, Table, Button } from 'antd';
+import React, { ReactElement, useEffect } from 'react';
+import { PageHeader, Table, Button, Space } from 'antd';
 import dayjs from 'dayjs';
 import {
   CheckCircleTwoTone,
   PrinterOutlined,
   SyncOutlined
 } from '@ant-design/icons';
-import axios from '../../../shared/utils/axios-base';
-import {
-  GET_CARRIER_LOGO,
-  SERVER_ROUTES
-} from '../../../shared/utils/constants';
-import errorHandler from '../../../shared/utils/errorHandler';
+import { useDispatch, useSelector } from 'react-redux';
+import { GET_CARRIER_LOGO } from '../../../shared/utils/constants';
 import { Address } from '../../../shared/types/carrier';
 import { ShippingRecord, Label } from '../../../shared/types/record';
-import ImageModal from '../../../shared/components/ImageModal';
-import AuthContext from '../../../shared/components/context/auth-context';
+import {
+  fetchUserShippingRecords,
+  selectShippingLoading,
+  selectShippingRecords
+} from '../../../redux/user/userShippingSlice';
+import {
+  downloadLabelsHandler,
+  downloadShipmentForms
+} from '../../../shared/utils/helpers';
 
 interface ClientShippingPanelProps {
   id: string;
@@ -24,54 +27,16 @@ interface ClientShippingPanelProps {
 const ClientShippingPanel = ({
   id
 }: ClientShippingPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [tableLoading, setTableLoading] = useState(false);
-  const [recordsData, setRecordsData] = useState<any[]>([]);
-  const [labelImage, setLabelImage] = useState<ReactElement | null>(null);
-  const [isSpin, setIsSpin] = useState(false);
+  const dispatch = useDispatch();
+  const recordsData = useSelector(selectShippingRecords);
+  const loading = useSelector(selectShippingLoading);
 
   useEffect(() => {
-    setTableLoading(true);
-    axios
-      .get(`${SERVER_ROUTES.RECORDS}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setRecordsData(response.data);
-      })
-      .catch((error) => errorHandler(error))
-      .finally(() => setTableLoading(false));
-  }, [id, auth]);
+    dispatch(fetchUserShippingRecords(id));
+  }, [id, dispatch]);
 
   const refreshRecords = async () => {
-    setIsSpin(true);
-    try {
-      const response = await axios.get(`${SERVER_ROUTES.RECORDS}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      setRecordsData(response.data);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setIsSpin(false);
-    }
-  };
-
-  const hideLabelHandler = () => setLabelImage(null);
-  const showLabelHandler = (type: string, format: string, data: string) => {
-    setLabelImage(
-      <ImageModal
-        type={type}
-        format={format}
-        data={data}
-        onCancel={hideLabelHandler}
-        visible
-      />
-    );
+    dispatch(fetchUserShippingRecords(id));
   };
 
   const columns = [
@@ -112,7 +77,7 @@ const ClientShippingPanel = ({
       }
     },
     {
-      title: '包裹尺寸',
+      title: '包裹信息',
       key: 'packageInfo',
       render: (text: string, record: ShippingRecord) => {
         const { weight } = record.packageInfo;
@@ -172,22 +137,31 @@ const ClientShippingPanel = ({
       }
     },
     {
-      title: 'Labels',
+      title: '操作',
       dataIndex: 'labels',
       key: 'labels',
-      render: (labels: Label[]) => {
-        const label = labels[0];
+      render: (labels: Label[], record: ShippingRecord) => {
         return (
-          <Button
-            type="primary"
-            icon={<PrinterOutlined />}
-            onClick={() =>
-              showLabelHandler(label.encodeType, label.format, label.labelData)
-            }
-            ghost
-          >
-            打印面单
-          </Button>
+          <Space direction="vertical">
+            <Button
+              type="primary"
+              icon={<PrinterOutlined />}
+              onClick={() => downloadLabelsHandler(record)}
+              ghost
+            >
+              打印面单
+            </Button>
+            {record.forms && (
+              <Button
+                type="primary"
+                icon={<PrinterOutlined />}
+                onClick={() => downloadShipmentForms(record)}
+                ghost
+              >
+                打印发票
+              </Button>
+            )}
+          </Space>
         );
       }
     }
@@ -195,13 +169,12 @@ const ClientShippingPanel = ({
 
   return (
     <div>
-      {labelImage}
       <PageHeader
         title=""
         extra={[
           <Button
             key="1"
-            icon={<SyncOutlined spin={isSpin} />}
+            icon={<SyncOutlined spin={loading} />}
             onClick={refreshRecords}
           />,
           <Button key="create" type="primary" disabled>
@@ -212,12 +185,12 @@ const ClientShippingPanel = ({
           </Button>
         ]}
       />
-      <Table
+      <Table<ShippingRecord>
         rowKey={(record: ShippingRecord) => record.id}
         // @ts-expect-error: ignore
         columns={columns}
         dataSource={recordsData}
-        loading={tableLoading}
+        loading={loading}
         scroll={{ x: true }}
       />
     </div>

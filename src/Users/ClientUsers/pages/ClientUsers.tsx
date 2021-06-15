@@ -8,87 +8,37 @@ import {
   Switch,
   Table
 } from 'antd';
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import axios from '../../../shared/utils/axios-base';
+import { useDispatch, useSelector } from 'react-redux';
 import CreateClientForm from '../components/CreateClientForm';
 import {
   DEFAULT_SERVER_HOST,
-  SERVER_ROUTES,
   USER_ROLES
 } from '../../../shared/utils/constants';
-import errorHandler from '../../../shared/utils/errorHandler';
-import { CreateUserData, User } from '../../../shared/types/user';
-import AuthContext from '../../../shared/components/context/auth-context';
+import { User } from '../../../shared/types/user';
+import {
+  fetchUsersByRoleHandler,
+  selectClientUsers,
+  selectLoading,
+  setShowCreateClient,
+  updateUserHandler
+} from '../../../redux/user/userDataSlice';
 
 type ClientUsersProps = RouteComponentProps;
 
 const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [clientsData, setClientsData] = useState<User[]>([]);
-  const [tableLoading, setTableLoading] = useState(false);
-  const [showCreateClientForm, setShowCreateClientForm] = useState(false);
+  const dispatch = useDispatch();
+  const clientUsers = useSelector(selectClientUsers);
+  const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    setTableLoading(true);
-    axios
-      .get(`${SERVER_ROUTES.USERS}/list/${USER_ROLES.API_USER}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setClientsData(response.data);
-      })
-      .catch((error) => {
-        errorHandler(error);
-      })
-      .finally(() => setTableLoading(false));
-  }, [auth]);
+    dispatch(fetchUsersByRoleHandler(USER_ROLES.API_USER));
+  }, [dispatch]);
 
   const statusChangeHandler = async (active: boolean, value: User) => {
-    setTableLoading(true);
-    try {
-      const data = { ...value, isActive: active };
-      const response = await axios.put(SERVER_ROUTES.USERS, data, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const updatedUser = response.data;
-      const newData = [...clientsData];
-      const record = newData.find((item) => item.id === updatedUser.id);
-      if (record) {
-        record.isActive = !record.isActive;
-        setClientsData(newData);
-      }
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
-
-  const hideCreateClientFormHandler = () => setShowCreateClientForm(false);
-  const showCreateClientFormHandler = () => setShowCreateClientForm(true);
-
-  const createClientHandler = async (data: CreateUserData) => {
-    setTableLoading(true);
-    hideCreateClientFormHandler();
-    try {
-      const response = await axios.post(SERVER_ROUTES.USERS, data, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newUser = response.data;
-      const newData = [...clientsData, newUser];
-      setClientsData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    const data = { ...value, isActive: active };
+    dispatch(updateUserHandler(data));
   };
 
   const columns = [
@@ -157,11 +107,7 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
 
   return (
     <div>
-      <CreateClientForm
-        visible={showCreateClientForm}
-        onCancel={hideCreateClientFormHandler}
-        onOk={createClientHandler}
-      />
+      <CreateClientForm />
       <PageHeader
         title="货代账号"
         subTitle="货代账号和和业务管理"
@@ -170,7 +116,7 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
             key="1"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={showCreateClientFormHandler}
+            onClick={() => dispatch(setShowCreateClient(true))}
           >
             添加用户
           </Button>
@@ -180,8 +126,8 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
       <Table
         rowKey={(record) => record.id}
         columns={columns}
-        dataSource={clientsData}
-        loading={tableLoading}
+        dataSource={clientUsers}
+        loading={loading}
       />
     </div>
   );

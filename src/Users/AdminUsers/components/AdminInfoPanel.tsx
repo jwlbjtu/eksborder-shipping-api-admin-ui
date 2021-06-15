@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -10,6 +10,7 @@ import {
   Checkbox,
   Switch
 } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
 import './AdminInfoPanel.css';
@@ -18,21 +19,26 @@ import {
   DEFAULT_SERVER_HOST,
   USER_ROLES
 } from '../../../shared/utils/constants';
-import AuthContext from '../../../shared/components/context/auth-context';
+import { updateUserHandler } from '../../../redux/user/userDataSlice';
+import { selectCurUser } from '../../../redux/user/userSlice';
 
 interface InfoPanelProps {
-  data: User | null;
-  onSubmit: (updateData: UpdateUserData) => void;
+  data: User;
 }
 
-const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
+const AdminInfoPanel = ({ data }: InfoPanelProps): ReactElement => {
+  const dispatch = useDispatch();
+  const curUser = useSelector(selectCurUser);
   const [superAdmin, setSuperAdmin] = useState(
     data ? data.role === USER_ROLES.ADMIN_SUPER : false
   );
   const [active, setActive] = useState(data ? data.isActive : false);
   const [uploading, setUploading] = useState(false);
   const [imageLink, setImageLink] = useState(data && data.logoImage);
+
+  useEffect(() => {
+    setActive(data ? data.isActive : false);
+  }, [data]);
 
   const infoFormSubmitHandler = (values: any) => {
     const updateData: UpdateUserData = {
@@ -47,7 +53,8 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
       role: superAdmin ? USER_ROLES.ADMIN_SUPER : USER_ROLES.ADMIN,
       isActive: active
     };
-    onSubmit(updateData);
+    const userData = { ...data, ...updateData };
+    dispatch(updateUserHandler(userData));
   };
 
   const uploadHandler = (info: any) => {
@@ -78,7 +85,7 @@ const AdminInfoPanel = ({ data, onSubmit }: InfoPanelProps): ReactElement => {
           accept=".jpg,.png,.jpeg"
           action={`${DEFAULT_SERVER_HOST}/users/logo/${data && data.id}`}
           headers={{
-            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            Authorization: `${curUser?.token_type} ${curUser?.token}`
           }}
           onChange={uploadHandler}
           showUploadList={false}

@@ -1,23 +1,24 @@
 import React, { ReactElement } from 'react';
 import { Modal, Form, Input, Row, Col, InputNumber, Radio } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
 import { CreateBillingData } from '../../../shared/types/billing';
+import {
+  selectShowUserBilling,
+  setShowBillingForm
+} from '../../../redux/user/userBillingSlice';
 
 interface CreateClientFormProps {
-  visible: boolean;
-  onCancel: () => void;
   onOk: (values: CreateBillingData) => void;
 }
 
-const ClientBillingForm = ({
-  visible,
-  onCancel,
-  onOk
-}: CreateClientFormProps): ReactElement => {
+const ClientBillingForm = ({ onOk }: CreateClientFormProps): ReactElement => {
+  const dispatch = useDispatch();
+  const showModal = useSelector(selectShowUserBilling);
   const [form] = Form.useForm();
 
   const cancelClickedHandler = () => {
     form.resetFields();
-    onCancel();
+    dispatch(setShowBillingForm(false));
   };
 
   const okClickedHandler = () => {
@@ -46,7 +47,7 @@ const ClientBillingForm = ({
       }}
       centered
       closable={false}
-      visible={visible}
+      visible={showModal}
       okText="添加账单"
       cancelText="取消"
       title="添加账单信息"
@@ -61,7 +62,7 @@ const ClientBillingForm = ({
               name="total"
               rules={[{ required: true, message: '账单金额必须填！' }]}
             >
-              <InputNumber
+              <InputNumber<number>
                 style={{ width: 'auto' }}
                 autoFocus
                 min={0}
@@ -69,7 +70,7 @@ const ClientBillingForm = ({
                   `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
                 parser={(value) =>
-                  value ? value.replace(/\$\s?|(,*)/g, '') : 0
+                  value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
                 }
               />
             </Form.Item>

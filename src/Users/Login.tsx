@@ -1,15 +1,18 @@
-import React, { ReactElement, useContext, useState } from 'react';
-import { Alert, Button, Form, Input, message } from 'antd';
+import React, { ReactElement, useEffect } from 'react';
+import { Alert, Button, Form, Input } from 'antd';
 import { Link } from 'react-router-dom';
 import { LockTwoTone, UserOutlined } from '@ant-design/icons';
 import { Footer } from 'antd/lib/layout/layout';
-import logo from '../assets/images/logo-dark.png';
-
-import AuthContext from '../shared/components/context/auth-context';
-import axios from '../shared/utils/axios-base';
+import { useDispatch, useSelector } from 'react-redux';
+import logo from '../assets/images/logo.png';
 
 import './Login.css';
-import { SERVER_ROUTES } from '../shared/utils/constants';
+import {
+  loginUserHandler,
+  selectLoginerror,
+  selectLoginLoading,
+  setLoginError
+} from '../redux/user/userSlice';
 
 const LoginMessage: React.FC<{ content: string }> = ({
   content
@@ -27,28 +30,13 @@ const LoginMessage: React.FC<{ content: string }> = ({
 );
 
 const Login = (): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [submiting, setSubmitting] = useState(false);
-  const [userLoginState, setUserLoginState] = useState('ok');
+  const dispatch = useDispatch();
+  const loginLoading = useSelector(selectLoginLoading);
+  const loginError = useSelector(selectLoginerror);
 
-  const loginHandler = async (values: { email: string; password: string }) => {
-    setSubmitting(true);
-    setUserLoginState('ok');
-    try {
-      // 登录
-      const response = await axios.post(`${SERVER_ROUTES.USERS}/login`, {
-        user: values
-      });
-      message.success('登录成功！');
-      auth.login(response.data, undefined);
-    } catch (error) {
-      message.error('登录失败，请重试！');
-      // 如果失败去设置用户错误信息
-      setUserLoginState('error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  useEffect(() => {
+    dispatch(setLoginError(false));
+  }, [dispatch]);
 
   return (
     <div className="container">
@@ -59,13 +47,11 @@ const Login = (): ReactElement => {
               <img alt="logo" className="loginLogo" src={logo} />
             </Link>
           </div>
-          <div className="desc">Eksborder 货代物流平台管理网站</div>
+          <div className="desc">ParcelsElite 货代物流平台管理网站</div>
         </div>
         <div className="main">
-          <Form onFinish={loginHandler}>
-            {userLoginState === 'error' && (
-              <LoginMessage content="邮箱或密码错误" />
-            )}
+          <Form onFinish={(values) => dispatch(loginUserHandler(values))}>
+            {loginError && <LoginMessage content="邮箱或密码错误" />}
             <Form.Item
               name="email"
               rules={[
@@ -99,7 +85,7 @@ const Login = (): ReactElement => {
                 style={{ width: '100%' }}
                 type="primary"
                 size="large"
-                loading={submiting}
+                loading={loginLoading}
               >
                 登录
               </Button>
@@ -108,7 +94,7 @@ const Login = (): ReactElement => {
         </div>
       </div>
       <Footer style={{ textAlign: 'center' }}>
-        EksShipping Admin ©2020 Created by Eksborder
+        ParcelsElite Admin ©{new Date().getFullYear()} Created by Eksborder Inc
       </Footer>
     </div>
   );

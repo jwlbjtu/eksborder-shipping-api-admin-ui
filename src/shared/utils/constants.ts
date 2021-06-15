@@ -5,6 +5,44 @@ import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import eksShippingLogo from '../../assets/images/logo-rectangular.png';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 
+export enum Currency {
+  USD = 'USD',
+  RMB = 'RMB'
+}
+
+export const CURRENCY_SIGNS: Record<string, string> = {
+  [Currency.USD]: '$',
+  [Currency.RMB]: '￥'
+};
+
+export enum CarrierRateType {
+  FLAT = 'flat',
+  PERSENTAGE = 'persentage'
+}
+
+export const RATE_BASES = {
+  ORDER: '每票',
+  PACKAGE: '每件',
+  WEIGHT: '重量'
+};
+
+export enum Country {
+  USA = 'US',
+  CHINA = 'CN'
+}
+
+export const COUNTRY_NAMES = {
+  [Country.USA]: 'United States',
+  [Country.CHINA]: 'China'
+};
+
+export enum WeightUnit {
+  G = 'g',
+  KG = 'kg',
+  OZ = 'oz',
+  LB = 'lb'
+}
+
 export const CARRIERS = {
   DHL_ECOMMERCE: 'DHL eCommerce',
   FEDEX: 'FedEx',
@@ -28,6 +66,18 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
     default:
       return eksShippingLogo;
   }
+};
+
+export const CARRIER_REGIONS = {
+  US_DOMESTIC: 'US_DOMESTIC',
+  US_INTERNATIONAL: 'US_INTERNATIONAL',
+  CN_IMPORT: 'CN_IMPORT'
+};
+
+export const CARRIER_REGIONS_TEXTS = {
+  [CARRIER_REGIONS.US_DOMESTIC]: 'US Domestic',
+  [CARRIER_REGIONS.US_INTERNATIONAL]: 'US International',
+  [CARRIER_REGIONS.CN_IMPORT]: 'China Import'
 };
 
 export const EKSBORDER_ADDRESS = {
@@ -58,15 +108,53 @@ export const CLIENT_MANAGE_OPERATIONS = {
   SHIPPING_RECORDS: '邮递记录'
 };
 
-export const DHL_ECOMMERCE_DOMESTIC_SERVICES = [
+export const DHL_ECOMMERCE_SERVICES = [
   { key: 'FLAT', name: 'DHL Smartmail Flats' },
   { key: 'EXP', name: 'DHL Parcel Expedited' },
   { key: 'MAX', name: 'DHL Parcel Expedited Max' },
-  { key: 'GND', name: 'DHL Parcel Ground' }
+  { key: 'GND', name: 'DHL Parcel Ground' },
+  { key: 'PLT', name: 'DHL Parcel International Direct' },
+  { key: 'PLY', name: 'DHL Parcel International Standard' },
+  { key: 'PKY', name: 'DHL Packet International' }
+];
+
+export const UPS_SERVICES = [
+  { key: 'Express', id: '07', name: 'UPS Worldwide Express' },
+  { key: 'Expedited', id: '08', name: 'UPS Worldwide Expedited' },
+  { key: 'Saver', id: '65', name: 'UPS Worldwide Saver' },
+  { key: '2nd Day Air', id: '02', name: 'UPS 2nd Day Air' },
+  { key: '2nd Day Air A.M.', id: '59', name: 'UPS 2nd Day Air A.M.' },
+  { key: '3 Day Select', id: '12', name: 'UPS 3 Day Select' },
+  { key: 'Ground', id: '03', name: 'UPS Ground' },
+  { key: 'Next Day Air', id: '01', name: 'UPS Next Day Air' },
+  { key: 'Next Day Air Early', id: '14', name: 'UPS Next Day Air Early' },
+  { key: 'Next Day Air Saver', id: '13', name: 'UPS Next Day Air Saver' }
+];
+
+export const USPS_SERVICES = [
+  { key: 'PMExpress', id: '3', name: 'Priority Mail Express' },
+  { key: 'PM', id: '1', name: 'Priority Mail' },
+  { key: 'FCM', id: '61', name: 'First Class Mail' },
+  {
+    key: 'PMExpress International',
+    id: '1',
+    name: 'Priority Mail Express International'
+  },
+  { key: 'PM International', id: '2', name: 'Priority Mail International' }
+];
+
+export const USPS_INTL_SERVICE_IDS = {
+  EXPRESS_INTL: '1',
+  PRIORITY_INTL: '2'
+};
+
+export const USPS_INTL_SERVICE_IDS_LIST = [
+  USPS_INTL_SERVICE_IDS.EXPRESS_INTL,
+  USPS_INTL_SERVICE_IDS.PRIORITY_INTL
 ];
 
 export const CARRIER_SERVIES = {
-  [CARRIERS.DHL_ECOMMERCE]: DHL_ECOMMERCE_DOMESTIC_SERVICES
+  [CARRIERS.DHL_ECOMMERCE]: DHL_ECOMMERCE_SERVICES
 };
 
 export const DHL_ECOMMERCE_FACILITIES = ['USBOS1', 'USLAX1', 'USEWR1'];
@@ -102,13 +190,19 @@ export const ROLES_TO_DISPLAY = {
   [USER_ROLES.API_USER]: 'Client'
 };
 
+export const UI_ROUTES = {
+  CARRIERS: '/carriers'
+};
+
 export const SERVER_ROUTES = {
   CARRIER: '/carrier',
   USERS: '/users',
   BILLINGS: '/billings',
   API: '/api',
   ACCOUNT: '/account',
-  RECORDS: '/records'
+  RECORDS: '/records',
+  CSV: '/csv',
+  THIRDPARTY_ACCOUNTS: '/thirdparties'
 };
 
 export const DEFAULT_SERVER_HOST =
@@ -146,4 +240,30 @@ export const FEE_CALCULATE_BASE = {
     key: 'weight',
     name: '每公斤'
   }
+};
+
+export const FILE_FORMATS = {
+  standard: 'standard',
+  thermal: 'thermal'
+};
+
+export const FILE_TYPES = {
+  pdf: 'PDF',
+  png: 'PNG',
+  csv: 'CSV'
+};
+
+export const FILE_FORMAT_SIZES = {
+  [FILE_FORMATS.standard]: [8.5, 11], // A4
+  [FILE_FORMATS.thermal]: [4, 6]
+};
+
+export const FILE_FORMAT_SIZES_PDF_LIB = {
+  [FILE_FORMATS.standard]: [595.28, 841.89], // A4
+  [FILE_FORMATS.thermal]: [288, 432]
+};
+
+export const FILE_FORMAT_TEXTS = {
+  [FILE_FORMATS.standard]: '8.5x11in',
+  [FILE_FORMATS.thermal]: '4x6in'
 };

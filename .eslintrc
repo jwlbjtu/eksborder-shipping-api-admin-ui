@@ -30,6 +30,13 @@
       "jest": true,
       },
     "rules": {
-        "prettier/prettier": 2
+      "prettier/prettier": 2,
+      "no-param-reassign": 0,
+      "react/style-prop-object": 0,
+      "jsx-a11y/click-events-have-key-events": 0,
+      "jsx-a11y/no-static-element-interactions": 0,
+      "prefer-destructuring": 0,
+      "no-underscore-dangle": 0,
+      "import/no-cycle": 0
     }
   }

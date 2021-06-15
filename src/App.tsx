@@ -1,17 +1,17 @@
 import { Layout, Spin } from 'antd';
 import React, { ReactElement, useState, Suspense } from 'react';
-import { BrowserRouter, Redirect, Route, Switch, Link } from 'react-router-dom';
-import useAuth from './shared/hooks/auth-hook';
+import { Redirect, Route, Switch, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import './App.css';
 
-import logoSquare from './assets/images/logo-square.png';
+import logoSquare from './assets/images/logo.png';
 
 import MenuList from './Layout/MenuList/MenuList';
 import Header from './Layout/Header/HeaderComponent';
 import Welcome from './Welcome';
 import Login from './Users/Login';
 
-import AuthContext from './shared/components/context/auth-context';
+import { selectCurUser } from './redux/user/userSlice';
 
 const ClientUsers = React.lazy(
   () => import('./Users/ClientUsers/pages/ClientUsers')
@@ -20,6 +20,9 @@ const AdminUsers = React.lazy(
   () => import('./Users/AdminUsers/pages/AdminUsers')
 );
 const Carrier = React.lazy(() => import('./Carriers/pages/Carriers'));
+const EditCarrierPage = React.lazy(
+  () => import('./Carriers/pages/EditCarrierPage')
+);
 const AuditTrail = React.lazy(() => import('./AuditTrail/pages/AuditTrail'));
 const UserProfile = React.lazy(() => import('./Users/User/pages/UserProfile'));
 const AdminProfile = React.lazy(
@@ -32,22 +35,25 @@ const ClientManagePage = React.lazy(
 const { Sider, Content, Footer } = Layout;
 
 const App: React.FC = (): ReactElement => {
-  const { userData, setUserData, login, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
-  const collapseHandler = () => setCollapsed(!collapsed);
+  const [logoText, setLogoText] = useState<string | undefined>('ParcelsElite');
+  const curUser = useSelector(selectCurUser);
 
-  let page = null;
-  if (userData) {
-    page = (
-      <BrowserRouter>
+  const togglerLogoText = () => {
+    const text = logoText ? undefined : 'ParcelsElite';
+    setLogoText(text);
+  };
+
+  return (
+    <>
+      {curUser ? (
         <Layout style={{ minHeight: '100vh' }}>
-          <Sider collapsible collapsed={collapsed} onCollapse={collapseHandler}>
+          <Sider collapsible breakpoint="xl" onCollapse={togglerLogoText}>
             <div>
               <Link to="/" className="logo-container">
                 <img className="logo" src={logoSquare} alt="EksShipping" />
-                {!collapsed && (
+                {logoText && (
                   <h1 style={{ color: 'white' }} className="logo-text">
-                    EksShipping
+                    {logoText}
                   </h1>
                 )}
               </Link>
@@ -68,6 +74,10 @@ const App: React.FC = (): ReactElement => {
                     <Route path="/clients" component={ClientUsers} />
                     <Route path="/admins/:id" component={AdminProfile} />
                     <Route path="/admins" component={AdminUsers} />
+                    <Route
+                      path="/carriers/:carrierId"
+                      component={EditCarrierPage}
+                    />
                     <Route path="/carriers" component={Carrier} />
                     <Route path="/audit" component={AuditTrail} />
                     <Route path="/user/profile" component={UserProfile} />
@@ -77,29 +87,18 @@ const App: React.FC = (): ReactElement => {
               </Content>
             </Suspense>
             <Footer style={{ textAlign: 'center' }}>
-              EksShipping Admin ©2021 Created by Eksborder
+              ParcelsElite Admin ©{new Date().getFullYear()} Created by
+              Eksborder Inc
             </Footer>
           </Layout>
         </Layout>
-      </BrowserRouter>
-    );
-  } else {
-    page = (
-      <BrowserRouter>
+      ) : (
         <Switch>
           <Route path="/" component={Login} exact />
           <Redirect to="/" />
         </Switch>
-      </BrowserRouter>
-    );
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{ isLoggedIn: !!userData, userData, setUserData, login, logout }}
-    >
-      {page}
-    </AuthContext.Provider>
+      )}
+    </>
   );
 };
 
