@@ -1,71 +1,38 @@
 import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
 import { Button, notification, PageHeader, Table } from 'antd';
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import dayjs from 'dayjs';
-import axios from '../../../shared/utils/axios-base';
-
+import { useDispatch, useSelector } from 'react-redux';
 import ClientBillingForm from './ClientBillingForm';
-
-import { SERVER_ROUTES } from '../../../shared/utils/constants';
-import errorHandler from '../../../shared/utils/errorHandler';
 import { Billing, CreateBillingData } from '../../../shared/types/billing';
-import AuthContext from '../../../shared/components/context/auth-context';
+import {
+  createUserBillingHandler,
+  fetchUserBillingHandler,
+  selectUserBillings,
+  selectUserBillingsLoading,
+  setShowBillingForm
+} from '../../../redux/user/userBillingSlice';
 
 interface ClientBillingPanelProps {
   id: string;
   curBalance: number;
-  updateBalance: () => void;
 }
 
 const ClientBillingPanel = ({
   id,
-  curBalance,
-  updateBalance
+  curBalance
 }: ClientBillingPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [billingData, setBillingData] = useState<Billing[]>([]);
-  const [isSpin, setIsSpin] = useState(false);
+  const dispatch = useDispatch();
+  const billingData = useSelector(selectUserBillings);
+  const loading = useSelector(selectUserBillingsLoading);
 
   useEffect(() => {
-    setLoading(true);
-    axios
-      .get(`${SERVER_ROUTES.BILLINGS}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setBillingData(response.data);
-      })
-      .catch((error) => {
-        errorHandler(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [id, auth]);
+    dispatch(fetchUserBillingHandler(id));
+  }, [dispatch, id]);
 
   const refreshRecords = async () => {
-    setIsSpin(true);
-    try {
-      const response = await axios.get(`${SERVER_ROUTES.BILLINGS}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      updateBalance();
-      setBillingData(response.data);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setIsSpin(false);
-    }
+    dispatch(fetchUserBillingHandler(id));
   };
-
-  const showBillingForm = () => setShowForm(true);
-  const hideBillingForm = () => setShowForm(false);
 
   const addBillHandler = async (values: CreateBillingData) => {
     if (!values.addFund && curBalance < values.total) {
@@ -75,17 +42,7 @@ const ClientBillingPanel = ({
       });
       return;
     }
-    hideBillingForm();
-    try {
-      await axios.post(`${SERVER_ROUTES.BILLINGS}/${id}`, values, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      refreshRecords();
-    } catch (error) {
-      errorHandler(error);
-    }
+    dispatch(createUserBillingHandler(id, values));
   };
 
   const renderCell = (text: number, record: Billing) => {
@@ -166,24 +123,20 @@ const ClientBillingPanel = ({
 
   return (
     <div>
-      <ClientBillingForm
-        visible={showForm}
-        onCancel={hideBillingForm}
-        onOk={addBillHandler}
-      />
+      <ClientBillingForm onOk={addBillHandler} />
       <PageHeader
         title=""
         extra={[
           <Button
             key="1"
-            icon={<SyncOutlined spin={isSpin} />}
+            icon={<SyncOutlined spin={loading} />}
             onClick={refreshRecords}
           />,
           <Button
             key="2"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={showBillingForm}
+            onClick={() => dispatch(setShowBillingForm(true))}
           >
             添加账单信息
           </Button>

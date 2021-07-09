@@ -1,13 +1,18 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Avatar, Dropdown, Menu } from 'antd';
-import React, { ReactElement, useContext } from 'react';
+import React, { ReactElement } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import {
+  logoutUserHandler,
+  selectCurUser
+} from '../../../redux/user/userSlice';
 
-import AuthContext from '../../../shared/components/context/auth-context';
 import { DEFAULT_SERVER_HOST } from '../../../shared/utils/constants';
 
 const AvatarDropdown = (): ReactElement => {
-  const auth = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const curUser = useSelector(selectCurUser);
 
   const menuHeaderDropdown = (
     <Menu className="menu">
@@ -15,7 +20,11 @@ const AvatarDropdown = (): ReactElement => {
         <Link to="/user/profile">个人中心</Link>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={auth.logout}>
+      <Menu.Item
+        key="logout"
+        icon={<LogoutOutlined />}
+        onClick={() => dispatch(logoutUserHandler())}
+      >
         退出登录
       </Menu.Item>
     </Menu>
@@ -28,10 +37,10 @@ const AvatarDropdown = (): ReactElement => {
           size="small"
           className="avatar"
           icon={<UserOutlined />}
-          src={`${DEFAULT_SERVER_HOST}/${auth.userData?.image}`}
+          src={`${DEFAULT_SERVER_HOST}/${curUser?.logoImage}`}
           alt="avatar"
         />
-        <span className="anticon">{auth.userData?.fullName}</span>
+        <span className="anticon">{curUser?.fullName}</span>
       </span>
     </Dropdown>
   );

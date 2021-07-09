@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import {
   PageHeader,
   Button,
@@ -9,186 +9,46 @@ import {
   Popconfirm
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import CarriersList from '../components/AddAccount/CarriersLists';
-import AddCarrierModal from '../components/AddAccount/AddCarrierModal';
-import UpdateCarrierModal from '../components/UpdateAccount/UpdateCarrierModal';
-import axios from '../../shared/utils/axios-base';
-
-import { GET_CARRIER_LOGO, SERVER_ROUTES } from '../../shared/utils/constants';
-import errorHandler from '../../shared/utils/errorHandler';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import CarriersList from '../components/CarriersLists';
+import { GET_CARRIER_LOGO, UI_ROUTES } from '../../shared/utils/constants';
+import { Carrier } from '../../shared/types/carrier';
 import {
-  Carrier,
-  CarrierCreateData,
-  CarrierUpdateData
-} from '../../shared/types/carrier';
-import AuthContext from '../../shared/components/context/auth-context';
+  deleteCarrierHandler,
+  fetchCarriersHandler,
+  selectCarrierLoading,
+  selectCarriers,
+  setRedirectToCarriers,
+  setShowCarrierList,
+  updateCarrierhandler
+} from '../../redux/carrier/carrierSlice';
 
 const Carriers = (): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [carriersData, setCarriersData] = useState<Carrier[]>([]);
-  const [tableLoading, setTableLoading] = useState(false);
-  const [showCarriersList, setShowCarriersList] = useState(false);
-  const [addCarrierModal, setAddCarrierModal] = useState<ReactElement | null>(
-    null
-  );
-  const [
-    updateCarrierModal,
-    setUpdateCarrierModal
-  ] = useState<ReactElement | null>(null);
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const carriers = useSelector(selectCarriers);
+  const loading = useSelector(selectCarrierLoading);
 
   useEffect(() => {
-    setTableLoading(true);
-    axios
-      .get(SERVER_ROUTES.CARRIER, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setCarriersData(response.data);
-      })
-      .catch((error) => {
-        errorHandler(error);
-        // TODO: if 401 Unauthorized logout user
-      })
-      .finally(() => setTableLoading(false));
-  }, [auth]);
+    dispatch(fetchCarriersHandler());
+    dispatch(setRedirectToCarriers(false));
+  }, [dispatch]);
 
   const deleteAccountHandler = async (id: string) => {
-    setTableLoading(true);
-    try {
-      await axios.delete(`${SERVER_ROUTES.CARRIER}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newData = carriersData.filter((item) => item.id !== id);
-      setCarriersData(newData);
-    } catch (error) {
-      // TODO: if 401 Unauthorized logout user
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    dispatch(deleteCarrierHandler(id));
   };
 
   const statusChangeHandler = async (active: boolean, value: Carrier) => {
-    setTableLoading(true);
-    try {
-      const data = { ...value, isActive: active };
-      const response = await axios.put(SERVER_ROUTES.CARRIER, data, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const updatedCarrier = response.data;
-      const newData = [...carriersData];
-      const record = newData.find((item) => item.id === updatedCarrier.id);
-      if (record) {
-        record.isActive = updatedCarrier.isActive;
-        setCarriersData(newData);
-      }
-    } catch (error) {
-      // TODO: if 401 Unauthorized logout user
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
-
-  const showCarriersListHandler = () => setShowCarriersList(true);
-  const hideCarriersListHandler = () => setShowCarriersList(false);
-
-  const addCarrierModalBackHandler = () => {
-    setAddCarrierModal(null);
-    setShowCarriersList(true);
-  };
-  const addCarrierModalCancelHandler = () => {
-    setAddCarrierModal(null);
-  };
-  const addCarrierModalOkHandler = async (values: CarrierCreateData) => {
-    setAddCarrierModal(null);
-    setTableLoading(true);
-    try {
-      const response = await axios.post(SERVER_ROUTES.CARRIER, values, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newCarrier = response.data;
-      const newData = [...carriersData, newCarrier];
-      setCarriersData(newData);
-    } catch (error) {
-      // TODO: if 401 Unauthorized logout user
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    const data: Carrier = { ...value, isActive: active };
+    dispatch(updateCarrierhandler(data));
   };
 
   const showAddCarrierModalHandler = (carrier: string) => {
-    setShowCarriersList(false);
-    setAddCarrierModal(
-      <AddCarrierModal
-        carrier={carrier}
-        logo={GET_CARRIER_LOGO(carrier)}
-        visible
-        backClicked={addCarrierModalBackHandler}
-        cancelCliecked={addCarrierModalCancelHandler}
-        okClicked={addCarrierModalOkHandler}
-      />
-    );
-  };
-
-  const hideUpdateCarrierModal = () => {
-    setUpdateCarrierModal(null);
-  };
-  const updateCarrierModalOkHandler = async (
-    id: string,
-    values: CarrierUpdateData
-  ) => {
-    setUpdateCarrierModal(null);
-    setTableLoading(true);
-    try {
-      const response = await axios.put(
-        SERVER_ROUTES.CARRIER,
-        {
-          id,
-          ...values
-        },
-        {
-          headers: {
-            Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-          }
-        }
-      );
-      const updatedCarrier = response.data;
-
-      const newData = [...carriersData];
-      const carrier = newData.find((item) => item.id === id);
-      if (carrier) {
-        Object.keys(updatedCarrier).forEach((keyId) => {
-          // @ts-expect-error: igore
-          carrier[keyId] = updatedCarrier[keyId];
-        });
-        setCarriersData(newData);
-      }
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
-
-  const showUpdateCarrierModal = (record: Carrier) => {
-    setUpdateCarrierModal(
-      <UpdateCarrierModal
-        data={record}
-        visible
-        cancelClicked={hideUpdateCarrierModal}
-        okClicked={updateCarrierModalOkHandler}
-      />
-    );
+    dispatch(setShowCarrierList(false));
+    // setSelectedCarrier(carrier);
+    // dispatch(setShowAddModal(true));
+    history.push(`/carriers/${carrier}`);
   };
 
   const columns = [
@@ -216,6 +76,22 @@ const Carriers = (): ReactElement => {
       key: 'description'
     },
     {
+      title: '物流服务',
+      dataIndex: 'servies',
+      key: 'services',
+      render: (text: string, record: Carrier): string => {
+        return record.services.map((ele) => ele.key).join(', ');
+      }
+    },
+    {
+      title: '服务范围',
+      dataIndex: 'regions',
+      key: 'regions',
+      render: (text: string, record: Carrier): string => {
+        return record.regions.join(', ');
+      }
+    },
+    {
       title: '状态',
       dataIndex: 'isActive',
       key: 'isActive',
@@ -237,7 +113,7 @@ const Carriers = (): ReactElement => {
           <Button
             size="small"
             type="link"
-            onClick={() => showUpdateCarrierModal(record)}
+            onClick={() => history.push(`${UI_ROUTES.CARRIERS}/${record.id}`)}
           >
             修改
           </Button>
@@ -259,13 +135,7 @@ const Carriers = (): ReactElement => {
 
   return (
     <div>
-      <CarriersList
-        visible={showCarriersList}
-        handleCancel={hideCarriersListHandler}
-        imageClicked={showAddCarrierModalHandler}
-      />
-      {addCarrierModal}
-      {updateCarrierModal}
+      <CarriersList imageClicked={showAddCarrierModalHandler} />
       <PageHeader
         title="物流账号"
         subTitle="管理EksShipping的物流账号"
@@ -274,19 +144,19 @@ const Carriers = (): ReactElement => {
             key="1"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={showCarriersListHandler}
+            onClick={() => dispatch(setShowCarrierList(true))}
           >
             添加账号
           </Button>
         ]}
       />
       <Divider />
-      <Table
+      <Table<Carrier>
         rowKey={(record: Carrier) => record.id}
         columns={columns}
-        dataSource={carriersData}
+        dataSource={carriers}
         pagination={false}
-        loading={tableLoading}
+        loading={loading}
       />
     </div>
   );

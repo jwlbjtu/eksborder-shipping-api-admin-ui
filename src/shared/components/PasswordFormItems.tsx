@@ -31,7 +31,6 @@ const PasswordFormItems = ({
           { required: true, message: '请输入密码!' },
           () => ({
             validator(rule, value) {
-              // @ts-expect-error: missing type of validator
               if (!value || validateLib.isStrongPassword(value)) {
                 return Promise.resolve();
               }

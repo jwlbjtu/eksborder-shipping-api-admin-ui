@@ -1,8 +1,10 @@
 import { notification } from 'antd';
-import { ResponseError } from '../types';
+import { Dispatch } from '@reduxjs/toolkit';
 import { HTTP_ERROR_CODE_MESSAGE } from './constants';
+import { logoutUserHandler } from '../../redux/user/userSlice';
+import { ResponseError } from '../types';
 
-const errorHandler = (error: ResponseError): void => {
+const errorHandler = (error: ResponseError, dispatch: Dispatch): void => {
   const { response } = error;
   if (response && response.status) {
     let errorText =
@@ -15,6 +17,10 @@ const errorHandler = (error: ResponseError): void => {
       response.data.error.message &&
       response.data.error.message.code
     ) {
+      console.log({
+        message: `请求错误 ${status}`,
+        description: response.data.error.message
+      });
       if (response.data.error.message.code === 11000) {
         errorText = `${
           Object.values(response.data.error.message.keyValue)[0]
@@ -22,10 +28,10 @@ const errorHandler = (error: ResponseError): void => {
       }
     }
 
-    notification.error({
-      message: `请求错误 ${status}`,
-      description: errorText
-    });
+    if (status === 401) {
+      dispatch(logoutUserHandler());
+      return;
+    }
   }
 
   if (!response) {

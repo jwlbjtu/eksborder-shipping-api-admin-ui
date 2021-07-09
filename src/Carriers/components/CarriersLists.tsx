@@ -1,32 +1,38 @@
 import React, { ReactElement } from 'react';
 import { Modal, Button, Row, Image, Space, Divider } from 'antd';
-import { CARRIERS } from '../../../shared/utils/constants';
-import dhleCommerceLogo from '../../../assets/images/carriers/dhl-ecommerce-logo.svg';
-import fedexLogo from '../../../assets/images/carriers/fedex-logo.svg';
-import upsLogo from '../../../assets/images/carriers/ups-logo.svg';
-import uspsLogo from '../../../assets/images/carriers/usps-logo.svg';
-import pbLogo from '../../../assets/images/carriers/pitney-bowes-logo.png';
+import { useDispatch, useSelector } from 'react-redux';
+import { CARRIERS } from '../../shared/utils/constants';
+import dhleCommerceLogo from '../../assets/images/carriers/dhl-ecommerce-logo.svg';
+import fedexLogo from '../../assets/images/carriers/fedex-logo.svg';
+import upsLogo from '../../assets/images/carriers/ups-logo.svg';
+import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
+import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
+import {
+  selectShowCarrierList,
+  setShowCarrierList
+} from '../../redux/carrier/carrierSlice';
 
 interface CarriersListProps {
-  visible: boolean;
-  handleCancel: () => void;
   imageClicked: (carrier: string) => void;
 }
 
-const CarriersList = ({
-  visible,
-  handleCancel,
-  imageClicked
-}: CarriersListProps): ReactElement => {
+const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
+  const dispatch = useDispatch();
+  const showModal = useSelector(selectShowCarrierList);
+
   return (
     <Modal
       width={575}
       bodyStyle={{ minHeight: '300px', maxHeight: '480px' }}
       centered
       title="添加物流账号"
-      visible={visible}
+      visible={showModal}
       closable={false}
-      footer={<Button onClick={handleCancel}>取消</Button>}
+      footer={
+        <Button onClick={() => dispatch(setShowCarrierList(false))}>
+          取消
+        </Button>
+      }
       transitionName=""
       maskTransitionName=""
     >

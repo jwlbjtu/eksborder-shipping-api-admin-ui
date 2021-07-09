@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import {
   PageHeader,
   Table,
@@ -11,103 +11,36 @@ import {
 } from 'antd';
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { RouteComponentProps } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   DEFAULT_SERVER_HOST,
-  ROLES_TO_DISPLAY,
-  SERVER_ROUTES
+  ROLES_TO_DISPLAY
 } from '../../../shared/utils/constants';
 import CreateAdminForm from '../components/CreateAdminForm';
-import axios from '../../../shared/utils/axios-base';
-import errorHandler from '../../../shared/utils/errorHandler';
-import { CreateUserData, User } from '../../../shared/types/user';
-import AuthContext from '../../../shared/components/context/auth-context';
+import { User } from '../../../shared/types/user';
+import {
+  deleteUserByIdHandler,
+  fetchUsersByRoleHandler,
+  selectAdminUsers,
+  selectLoading,
+  setShowCreateAdmin,
+  updateUserHandler
+} from '../../../redux/user/userDataSlice';
 
 type AdminUsersProps = RouteComponentProps;
 
 const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [adminData, setAdminData] = useState<User[]>([]);
-  const [tableLoading, setTableLoading] = useState(false);
-  const [showCreateAdminForm, setShowCreateAdminForm] = useState(false);
+  const dispatch = useDispatch();
+  const adminUsers = useSelector(selectAdminUsers);
+  const loading = useSelector(selectLoading);
 
   useEffect(() => {
-    setTableLoading(true);
-    axios
-      .get(`${SERVER_ROUTES.USERS}/list/admins`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setAdminData(response.data);
-      })
-      .catch((error) => {
-        // TODO: 401 log out user
-        errorHandler(error);
-      })
-      .finally(() => setTableLoading(false));
-  }, [auth]);
-
-  const deleteAdminUserHandler = async (id: string) => {
-    setTableLoading(true);
-    try {
-      await axios.delete(`${SERVER_ROUTES.USERS}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newData = adminData.filter((item) => item.id !== id);
-      setAdminData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
+    dispatch(fetchUsersByRoleHandler('admins'));
+  }, [dispatch]);
 
   const statusChangeHandler = async (active: boolean, value: User) => {
-    setTableLoading(true);
-    try {
-      const data = { ...value, isActive: active };
-      const response = await axios.put(SERVER_ROUTES.USERS, data, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const updatedUser = response.data;
-      const newData = [...adminData];
-      const record = newData.find((item) => item.id === updatedUser.id);
-      if (record) {
-        record.isActive = updatedUser.isActive;
-        setAdminData(newData);
-      }
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
-
-  const hideCreateAdminFormHandler = () => setShowCreateAdminForm(false);
-  const showCreateAdminFormHandler = () => setShowCreateAdminForm(true);
-
-  const createAdminHandler = async (data: CreateUserData) => {
-    setTableLoading(true);
-    hideCreateAdminFormHandler();
-    try {
-      const response = await axios.post(SERVER_ROUTES.USERS, data, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newUser = response.data;
-      const newData = [...adminData, newUser];
-      setAdminData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    const data = { ...value, isActive: active };
+    dispatch(updateUserHandler(data));
   };
 
   const columns = [
@@ -175,7 +108,7 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
           <Popconfirm
             title="确认删除该账号?"
             placement="topRight"
-            onConfirm={() => deleteAdminUserHandler(record.id)}
+            onConfirm={() => dispatch(deleteUserByIdHandler(record.id))}
             okText="确定"
             cancelText="取消"
           >
@@ -190,11 +123,7 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
 
   return (
     <div>
-      <CreateAdminForm
-        visible={showCreateAdminForm}
-        onCancel={hideCreateAdminFormHandler}
-        onOk={createAdminHandler}
-      />
+      <CreateAdminForm />
       <PageHeader
         title="管理员账号"
         subTitle="系统内部用户账号管理"
@@ -203,7 +132,7 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
             key="1"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={showCreateAdminFormHandler}
+            onClick={() => dispatch(setShowCreateAdmin(true))}
           >
             创建账号
           </Button>
@@ -213,9 +142,9 @@ const AdminUsers = ({ history }: AdminUsersProps): ReactElement => {
       <Table
         rowKey={(record: User) => record.id}
         columns={columns}
-        dataSource={adminData}
+        dataSource={adminUsers}
         pagination={false}
-        loading={tableLoading}
+        loading={loading}
       />
     </div>
   );

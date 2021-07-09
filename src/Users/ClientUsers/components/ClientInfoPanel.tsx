@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import {
   Form,
   Avatar,
@@ -11,11 +11,12 @@ import {
   InputNumber
 } from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { useSelector } from 'react-redux';
 import PhoneNumberFormItems from '../../../shared/components/PhoneNumberItems';
 import './ClientInfoPanel.css';
 import { User, UpdateClientData } from '../../../shared/types/user';
 import { DEFAULT_SERVER_HOST } from '../../../shared/utils/constants';
-import AuthContext from '../../../shared/components/context/auth-context';
+import { selectCurUser } from '../../../redux/user/userSlice';
 
 interface InfoPanelProps {
   data: User;
@@ -28,7 +29,7 @@ const ClientInfoPanel = ({
   onUpload,
   onSubmit
 }: InfoPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
+  const curUser = useSelector(selectCurUser);
   const [active, setActive] = useState(data.isActive);
   const [uploading, setUploading] = useState(false);
   const [imageLink, setImageLink] = useState(data.logoImage);
@@ -77,7 +78,7 @@ const ClientInfoPanel = ({
           accept=".jpg,.png,.jpeg"
           action={`${DEFAULT_SERVER_HOST}/users/logo/${data.id}`}
           headers={{
-            authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
+            authorization: `${curUser?.token_type} ${curUser?.token}`
           }}
           onChange={uploadHandler}
           showUploadList={false}
@@ -142,13 +143,16 @@ const ClientInfoPanel = ({
             name="minBalance"
             rules={[{ required: true, message: '最低额度必须填！' }]}
           >
-            <InputNumber
+            <InputNumber<number>
               style={{ width: 'auto' }}
               min={0}
               formatter={(value) =>
                 `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
-              parser={(value) => (value ? value.replace(/\$\s?|(,*)/g, '') : 0)}
+              parser={(value) =>
+                value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
+              }
+              disabled={!active}
             />
           </Form.Item>
           <Form.Item name="active" style={{ marginLeft: '180px' }}>

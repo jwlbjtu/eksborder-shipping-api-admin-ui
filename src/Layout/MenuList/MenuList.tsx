@@ -13,7 +13,6 @@ const MenuList = (): ReactElement => {
   const [seletedKey, setSelectedKey] = useState('');
   const location = useLocation().pathname;
 
-  // TODO: clean up
   useEffect(() => {
     const key = _.split(location, '/')[1];
     setSelectedKey(key);

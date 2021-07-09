@@ -1,16 +1,28 @@
+import { Facility, Service } from './carrier';
+
 export interface UserLogin {
   email: string;
   password: string;
-  isActive: boolean;
 }
 
 export interface UserData {
-  userId: string;
+  id: Types.ObjectId;
   fullName: string;
-  image: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   role: string;
+  email: string;
+  countryCode: string;
+  phone: string;
+  companyName: string;
+  logoImage?: string;
+  balance: number;
+  currency: string;
+  isActive: boolean;
   token_type: string;
   token: string;
+  tokenExpire: number;
 }
 
 export interface PasswordFormValue {
@@ -26,6 +38,18 @@ export interface UpdateUserSelf {
   email: string;
   countryCode: string;
   phone: string;
+}
+
+export interface UpdateUserResponse {
+  id: string;
+  companyName: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  countryCode: string;
+  phone: string;
+  logoImage?: string;
 }
 
 export interface UpdateClientData extends UpdateUserSelf {
@@ -62,15 +86,14 @@ export interface CreateUserCarrierData {
   accountName: string;
   carrier: string;
   connectedAccount: string;
-  services: string[];
-  facilities: string[];
-  fee: number;
-  feeBase: string;
-  billingType: string;
+  services: Service[];
+  facilities?: string[];
+  rates?: FeeRate[];
+  note?: string;
+  thirdpartyPrice: boolean;
+  isActive: boolean;
   carrierRef: string;
   userRef: string;
-  note?: string;
-  isActive: boolean;
 }
 
 export interface UserCarrier extends CreateUserCarrierData {

@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import {
   Modal,
   Form,
@@ -8,76 +8,57 @@ import {
   Spin,
   Radio,
   InputNumber,
-  Result
+  Result,
+  Checkbox,
+  Divider,
+  Button
 } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import {
-  FEE_TYPE,
-  FEE_CALCULATE_BASE,
-  SERVER_ROUTES,
-  FEE_TYPE_KEYS,
-  FEE_CAL_BASE_KEYS
+  RATE_BASES,
+  WeightUnit,
+  Currency,
+  CarrierRateType
 } from '../../../shared/utils/constants';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
 import { CreateUserCarrierData } from '../../../shared/types/user.d';
-import axios from '../../../shared/utils/axios-base';
-import errorHandler from '../../../shared/utils/errorHandler';
-import AuthContext from '../../../shared/components/context/auth-context';
+import {
+  selectShowUserCarrier,
+  selectUserCarrierLoading,
+  setShowUserCarrer
+} from '../../../redux/user/userCarrierSlice';
+import {
+  fetchCarriersHandler,
+  selectCarriers
+} from '../../../redux/carrier/carrierSlice';
 
 const { Option } = Select;
 
-const radioStyle = {
-  display: 'block',
-  height: '30px',
-  lineHeight: '30px'
-};
-
 interface ClientConnectCarrierFormProps {
-  visible: boolean;
-  onCancel: () => void;
   onOk: (values: CreateUserCarrierData) => void;
 }
 
 const ClientConnectCarrierForm = ({
-  visible,
-  onCancel,
   onOk
 }: ClientConnectCarrierFormProps): ReactElement => {
-  const auth = useContext(AuthContext);
+  const dispatch = useDispatch();
   const [form] = Form.useForm();
-  const [carrierData, setCarrierData] = useState<Carrier[]>([]);
-  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [disableRadio, setDisableRadio] = useState(false);
+  const carriers = useSelector(selectCarriers);
+  const showCreate = useSelector(selectShowUserCarrier);
+  const loading = useSelector(selectUserCarrierLoading);
+  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | undefined>();
+  const [useThirdparty, setUseThirdparty] = useState<boolean>(false);
 
   useEffect(() => {
-    setLoading(true);
-    axios
-      .get(SERVER_ROUTES.CARRIER, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setCarrierData(response.data);
-      })
-      .catch((error) => {
-        errorHandler(error);
-      })
-      .finally(() => setLoading(false));
-  }, [auth]);
-
-  const feeRadioChangeHandler = (key: string) => {
-    if (key === FEE_TYPE_KEYS.PROPORTIONS) {
-      setDisableRadio(true);
-    } else {
-      setDisableRadio(false);
-    }
-  };
+    dispatch(fetchCarriersHandler());
+    setUseThirdparty(false);
+  }, [dispatch]);
 
   const cancelClickedHandler = () => {
     form.resetFields();
-    setSelectedCarrier(null);
-    onCancel();
+    setSelectedCarrier(undefined);
+    dispatch(setShowUserCarrer(false));
   };
 
   const okClickedHandler = () => {
@@ -87,12 +68,12 @@ const ClientConnectCarrierForm = ({
         form.resetFields();
         if (selectedCarrier) {
           const services = values.services.map(
-            (index: number) => selectedCarrier.services[index].key
+            (index: number) => selectedCarrier.services[index]
           );
           const facilities =
             values.facilities &&
             values.facilities.map(
-              (index: number) => selectedCarrier.facilities[index].facility
+              (index: number) => selectedCarrier.facilities![index].facility
             );
           const result: CreateUserCarrierData = {
             accountName: values.accountName,
@@ -100,28 +81,27 @@ const ClientConnectCarrierForm = ({
             connectedAccount: selectedCarrier.accountName,
             services,
             facilities,
-            fee: values.fee,
-            feeBase: values.feeBase,
-            billingType: values.billingType,
+            rates: values.rates,
             carrierRef: selectedCarrier.id,
             userRef: '',
             note: values.note,
+            thirdpartyPrice: useThirdparty,
             isActive: true
           };
           onOk(result);
-          setSelectedCarrier(null);
+          setSelectedCarrier(undefined);
         }
       })
       .catch(() => {});
   };
 
   const carrierSelectedHandler = (index: number) => {
-    setSelectedCarrier(carrierData[index]);
+    setSelectedCarrier(carriers[index]);
   };
 
   return (
     <Modal
-      width={600}
+      width={1000}
       bodyStyle={{
         minHeight: '300px',
         maxHeight: '1000px',
@@ -130,16 +110,16 @@ const ClientConnectCarrierForm = ({
       }}
       centered
       closable={false}
-      visible={visible}
+      visible={showCreate}
       okText="关联账号"
       cancelText="取消"
       title="关联物流账号"
       onCancel={cancelClickedHandler}
       onOk={okClickedHandler}
-      okButtonProps={{ disabled: !(carrierData && carrierData.length > 0) }}
+      okButtonProps={{ disabled: !(carriers && carriers.length > 0) }}
     >
       <Spin size="large" spinning={loading}>
-        {carrierData && carrierData.length > 0 ? (
+        {carriers && carriers.length > 0 ? (
           <Form form={form} layout="vertical">
             <Form.Item
               label="账号名称"
@@ -154,7 +134,7 @@ const ClientConnectCarrierForm = ({
               rules={[{ required: true, message: '请选择要关联的账号！' }]}
             >
               <Select placeholder="关联账号" onChange={carrierSelectedHandler}>
-                {carrierData.map((item: Carrier, index: number) => {
+                {carriers.map((item: Carrier, index: number) => {
                   return (
                     <Option key={item.id} value={index}>
                       {item.accountName}
@@ -223,75 +203,156 @@ const ClientConnectCarrierForm = ({
                   </Select>
                 </Form.Item>
               )}
-            <Space size="large" align="baseline" style={{ width: '100%' }}>
-              <Form.Item
-                label="费率"
-                name="fee"
-                rules={[{ required: true, message: '费率必须填！' }]}
-              >
-                <InputNumber
-                  min={0}
-                  style={{ width: '180px' }}
-                  formatter={(value) =>
-                    `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) =>
-                    value ? value.replace(/\$\s?|(,*)/g, '') : 0
-                  }
-                />
-              </Form.Item>
-              <Form.Item
-                label="费率模式"
-                name="billingType"
-                rules={[{ required: true, message: '请选择费率模式' }]}
-              >
-                <Radio.Group>
-                  {Object.values(FEE_TYPE).map((item) => {
-                    return (
-                      <Radio
-                        style={radioStyle}
-                        key={item.key}
-                        value={item.key}
-                        onClick={() => feeRadioChangeHandler(item.key)}
-                      >
-                        {item.name}
-                      </Radio>
-                    );
-                  })}
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item
-                label="费率基准"
-                name="feeBase"
-                rules={[{ required: true, message: '请选择费率基准' }]}
-              >
-                <Radio.Group>
-                  {Object.values(FEE_CALCULATE_BASE).map((item) => {
-                    let radio = (
-                      <Radio style={radioStyle} key={item.key} value={item.key}>
-                        {item.name}
-                      </Radio>
-                    );
-                    if (item.key === FEE_CAL_BASE_KEYS.WEIGHT) {
-                      radio = (
-                        <Radio
-                          style={radioStyle}
-                          key={item.key}
-                          value={item.key}
-                          disabled={disableRadio}
-                        >
-                          {item.name}
-                        </Radio>
-                      );
-                    }
-                    return radio;
-                  })}
-                </Radio.Group>
-              </Form.Item>
-            </Space>
             <Form.Item label="备注" name="note">
               <Input.TextArea autoSize placeholder="账号相关备注" />
             </Form.Item>
+            <Form.Item name="thirdpartyPrice">
+              <Checkbox
+                checked={useThirdparty}
+                onClick={() => setUseThirdparty(!useThirdparty)}
+              >
+                三方价格
+              </Checkbox>
+            </Form.Item>
+            <Divider orientation="left" plain>
+              费率
+            </Divider>
+            <Form.List name="rates">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map((field, index) => (
+                    <div key={field.key}>
+                      <Space
+                        size="large"
+                        align="baseline"
+                        style={{ width: '100%' }}
+                      >
+                        <Form.Item
+                          name={[field.name, 'ratebase']}
+                          rules={[
+                            { required: true, message: '收费基准必须选' }
+                          ]}
+                        >
+                          <Select
+                            placeholder="收费基准"
+                            style={{ width: '180px' }}
+                          >
+                            {Object.values(RATE_BASES).map((ele) => (
+                              <Option key={ele} value={ele}>
+                                {ele}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                        <Form.Item
+                          noStyle
+                          shouldUpdate={(prevValues, currentValues) => {
+                            if (currentValues.rates[index]) {
+                              return (
+                                (prevValues.rates[index] === undefined &&
+                                  currentValues.rates[index] !== undefined) ||
+                                prevValues.rates[index].ratebase !==
+                                  currentValues.rates[index].ratebase
+                              );
+                            }
+                            return false;
+                          }}
+                        >
+                          {({ getFieldValue }) =>
+                            getFieldValue('rates')[index] &&
+                            getFieldValue('rates')[index].ratebase ===
+                              RATE_BASES.WEIGHT ? (
+                              <Form.Item
+                                name={[field.name, 'weightUnit']}
+                                rules={[
+                                  { required: true, message: '重量单位必须选' }
+                                ]}
+                              >
+                                <Select
+                                  placeholder="重量单位"
+                                  style={{ width: '180px' }}
+                                >
+                                  {Object.values(WeightUnit).map((ele) => (
+                                    <Option key={ele} value={ele}>
+                                      {ele}
+                                    </Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            ) : null
+                          }
+                        </Form.Item>
+                      </Space>
+                      <Space
+                        key={field.key}
+                        size="large"
+                        align="baseline"
+                        style={{ width: '100%' }}
+                      >
+                        <Form.Item
+                          name={[field.name, 'currency']}
+                          rules={[
+                            { required: true, message: '货币种类必须填' }
+                          ]}
+                        >
+                          <Select placeholder="货币" style={{ width: '80px' }}>
+                            {Object.values(Currency).map((ele) => (
+                              <Option key={ele} value={ele}>
+                                {ele}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                        <Form.Item
+                          name={[field.name, 'rate']}
+                          rules={[{ required: true, message: '费率必须填！' }]}
+                        >
+                          <InputNumber
+                            placeholder="费率"
+                            min={0}
+                            style={{ width: '100px' }}
+                            step="0.01"
+                            precision={2}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          name={[field.name, 'ratetype']}
+                          rules={[
+                            { required: true, message: '请选择费率模式' }
+                          ]}
+                        >
+                          <Radio.Group>
+                            {Object.values(CarrierRateType).map((item) => {
+                              return (
+                                <Radio key={item} value={item}>
+                                  {item}
+                                </Radio>
+                              );
+                            })}
+                          </Radio.Group>
+                        </Form.Item>
+                        <MinusCircleOutlined
+                          onClick={() => {
+                            remove(field.name);
+                          }}
+                        />
+                      </Space>
+                      <Divider />
+                    </div>
+                  ))}
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      onClick={() => add()}
+                      block
+                      icon={<PlusOutlined />}
+                    >
+                      添加费率
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
           </Form>
         ) : (
           <Result

@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import {
   PageHeader,
   Table,
@@ -8,152 +8,68 @@ import {
   Space,
   Popconfirm
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import {
-  FEE_CALCULATE_BASE,
-  FEE_TYPE_KEYS,
-  SERVER_ROUTES
-} from '../../../shared/utils/constants';
-
+import { useDispatch, useSelector } from 'react-redux';
 import ClientConnectCarrierForm from './ClientConnectCarrierForm';
 import ClientUpdateCarrierForm from './ClientUpdateCarrierForm';
-import axios from '../../../shared/utils/axios-base';
-import errorHandler from '../../../shared/utils/errorHandler';
 import { CreateUserCarrierData, UserCarrier } from '../../../shared/types/user';
-import AuthContext from '../../../shared/components/context/auth-context';
+import {
+  selectUserCarreirs,
+  selectUserCarrierLoading,
+  fetchUserCarriersHandler,
+  deleteUserCarrierHandler,
+  updateUserCarrierHandler,
+  createUserCarrierHandler,
+  setShowUpdateUserCarrer,
+  setShowUserCarrer
+} from '../../../redux/user/userCarrierSlice';
+import { FeeRate, Service } from '../../../shared/types/carrier';
+import { displayRate } from '../../../shared/utils/helpers';
 
 interface ClientCarrierPanelProps {
   id: string;
 }
 
 const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
-  const auth = useContext(AuthContext);
-  const [data, setData] = useState<UserCarrier[]>([]);
-  const [tableLoading, setTableLoading] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [updateForm, setUpdateForm] = useState<ReactElement | null>(null);
+  const dispatch = useDispatch();
+  const data = useSelector(selectUserCarreirs);
+  const loading = useSelector(selectUserCarrierLoading);
+  const [selectedCarrier, setSelectedCarrier] = useState<
+    UserCarrier | undefined
+  >();
 
   useEffect(() => {
-    setTableLoading(true);
-    axios
-      .get(`${SERVER_ROUTES.ACCOUNT}/${id}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      })
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        errorHandler(error);
-      })
-      .finally(() => {
-        setTableLoading(false);
-      });
-  }, [id, auth]);
-
-  const deleteHandler = async (accountId: number) => {
-    setTableLoading(true);
-    try {
-      await axios.delete(`${SERVER_ROUTES.ACCOUNT}/${accountId}`, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newData = data.filter((item) => item.id !== accountId);
-      setData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
-  };
+    setSelectedCarrier(undefined);
+    dispatch(fetchUserCarriersHandler(id));
+  }, [id, dispatch]);
 
   const statusChangeHandler = async (active: boolean, values: UserCarrier) => {
-    setTableLoading(true);
-    try {
-      const updateData = { id: values.id, isActive: active };
-      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, updateData, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const updatedAccount = response.data;
-      const newData = [...data];
-      const record = newData.find((item) => item.id === updatedAccount.id);
-      if (record) {
-        record.isActive = updatedAccount.isActive;
-      }
-      setData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    const updateData = { id: values.id, isActive: active };
+    dispatch(updateUserCarrierHandler(id, updateData));
   };
 
-  const hideCreateFormHandler = () => setShowCreateForm(false);
-  const showCreateFormHandler = () => setShowCreateForm(true);
   const createHandler = async (values: CreateUserCarrierData) => {
-    setTableLoading(true);
-    hideCreateFormHandler();
-    try {
-      const account: CreateUserCarrierData = {
-        ...values,
-        userRef: id
-      };
-      const response = await axios.post(SERVER_ROUTES.ACCOUNT, account, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const newData = [...data, response.data];
-      setData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+    const account: CreateUserCarrierData = {
+      ...values,
+      userRef: id
+    };
+    dispatch(createUserCarrierHandler(id, account));
   };
 
-  const hideUpdateForm = () => setUpdateForm(null);
+  const updateHandler = async (values: UserCarrier) => {
+    setSelectedCarrier(undefined);
+    dispatch(updateUserCarrierHandler(id, values));
+  };
 
-  const updateHandler = async (values: any) => {
-    hideUpdateForm();
-    setTableLoading(true);
-    try {
-      const response = await axios.put(`${SERVER_ROUTES.ACCOUNT}`, values, {
-        headers: {
-          Authorization: `${auth.userData?.token_type} ${auth.userData?.token}`
-        }
-      });
-      const updatedRecord = response.data;
-      const newData = [...data];
-      const record = newData.find(
-        (item: UserCarrier) => item.id === updatedRecord.id
-      );
-      Object.keys(updatedRecord).forEach((key: string) => {
-        // @ts-expect-error: ignore
-        record[key] = updatedRecord[key];
-      });
-      setData(newData);
-    } catch (error) {
-      errorHandler(error);
-    } finally {
-      setTableLoading(false);
-    }
+  const updateCanceled = () => {
+    setSelectedCarrier(undefined);
+    dispatch(setShowUpdateUserCarrer(false));
   };
 
   const showUpdateForm = (record: UserCarrier) => {
-    setUpdateForm(
-      <ClientUpdateCarrierForm
-        data={record}
-        onCancel={hideUpdateForm}
-        onOk={updateHandler}
-        visible
-      />
-    );
+    setSelectedCarrier(record);
+    dispatch(setShowUpdateUserCarrer(true));
   };
 
   const columns = [
@@ -181,9 +97,12 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       title: '物流服务',
       key: 'services',
       dataIndex: 'services',
-      render: (services: string[] | undefined) => {
+      render: (services: Service[] | undefined) => {
         if (!services) return '-';
-        const result = services.length !== 0 ? services.join(', ') : '-';
+        const result =
+          services.length !== 0
+            ? services.map((ele) => ele.key).join(', ')
+            : '-';
         return result;
       }
     },
@@ -198,19 +117,27 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       }
     },
     {
+      title: '三方价格',
+      dataIndex: 'thirdpartyPrice',
+      key: 'thirdpartyPrice',
+      render: (thirdpartyPrice: boolean) => {
+        return thirdpartyPrice ? (
+          <CheckCircleTwoTone twoToneColor="#52c41a" />
+        ) : null;
+      }
+    },
+    {
       title: '费率',
-      key: 'fee',
-      dataIndex: 'fee',
-      render: (text: number, record: UserCarrier) => {
-        let prefix = '';
-        let surfix = '';
-        if (record.billingType === FEE_TYPE_KEYS.AMOUNT) {
-          prefix = '$';
-        } else {
-          surfix = '%';
+      key: 'rates',
+      dataIndex: 'rates',
+      render: (rates: FeeRate[], record: UserCarrier) => {
+        if (record.rates && record.rates.length > 0) {
+          const result = record.rates.map((rate) => (
+            <div>{displayRate(rate)}</div>
+          ));
+          return result;
         }
-        surfix += ` / ${FEE_CALCULATE_BASE[record.feeBase].name}`;
-        return `${prefix}${text}${surfix}`;
+        return '-';
       }
     },
     {
@@ -255,7 +182,7 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
           <Popconfirm
             title="确认删除该账号?"
             placement="topRight"
-            onConfirm={() => deleteHandler(record.id)}
+            onConfirm={() => dispatch(deleteUserCarrierHandler(id, record.id))}
             okText="确定"
             cancelText="取消"
           >
@@ -270,12 +197,14 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
 
   return (
     <div>
-      <ClientConnectCarrierForm
-        visible={showCreateForm}
-        onCancel={hideCreateFormHandler}
-        onOk={createHandler}
-      />
-      {updateForm}
+      <ClientConnectCarrierForm onOk={createHandler} />
+      {selectedCarrier && (
+        <ClientUpdateCarrierForm
+          data={selectedCarrier}
+          onOk={updateHandler}
+          onCancel={updateCanceled}
+        />
+      )}
       <PageHeader
         title=""
         subTitle=""
@@ -284,18 +213,18 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
             key="1"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={showCreateFormHandler}
+            onClick={() => dispatch(setShowUserCarrer(true))}
           >
             关联物流账号
           </Button>
         }
       />
-      <Table
-        rowKey={(record: UserCarrier) => record.id}
+      <Table<UserCarrier>
+        rowKey={(record) => record.id}
         columns={columns}
         dataSource={data}
         pagination={false}
-        loading={tableLoading}
+        loading={loading}
         scroll={{ x: true }}
       />
     </div>
