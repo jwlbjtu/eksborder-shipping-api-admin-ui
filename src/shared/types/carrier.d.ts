@@ -70,6 +70,23 @@ export interface ThirdPartyAccount extends ThirdPartyAccountData {
   id: Types.ObjectId;
 }
 
+export interface PriceTableData {
+  name: string;
+  carrier: string;
+  service: IService;
+  region: string;
+  condition: ThirdPartyCondition;
+  price?: ThirdPartyPrice;
+  zones?: string[];
+  zoneMap?: ThirdPartyZoneMap[];
+  rates: FeeRate[];
+  carrierRef: string;
+}
+
+export interface PriceTable extends PriceTableData {
+  id: Types.ObjectId;
+}
+
 export interface ThirdPartyCondition {
   minWeight?: number;
   maxWeight?: number;

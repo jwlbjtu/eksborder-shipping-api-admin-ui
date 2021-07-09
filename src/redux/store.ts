@@ -8,6 +8,7 @@ import userCarrierReducer from './user/userCarrierSlice';
 import userBillingReducer from './user/userBillingSlice';
 import carrierReducer from './carrier/carrierSlice';
 import thirdpartyReducer from './carrier/thirdpartySlice';
+import priceTableReducer from './carrier/priceTableSlice';
 
 const rootReducer = combineReducers({
   currentUser: userReducer,
@@ -16,7 +17,8 @@ const rootReducer = combineReducers({
   shipments: userShippingReducer,
   billing: userBillingReducer,
   carriers: carrierReducer,
-  thirdpartyAccounts: thirdpartyReducer
+  thirdpartyAccounts: thirdpartyReducer,
+  priceTabels: priceTableReducer
 });
 
 const persistConfig = {

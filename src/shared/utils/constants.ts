@@ -128,7 +128,9 @@ export const UPS_SERVICES = [
   { key: 'Ground', id: '03', name: 'UPS Ground' },
   { key: 'Next Day Air', id: '01', name: 'UPS Next Day Air' },
   { key: 'Next Day Air Early', id: '14', name: 'UPS Next Day Air Early' },
-  { key: 'Next Day Air Saver', id: '13', name: 'UPS Next Day Air Saver' }
+  { key: 'Next Day Air Saver', id: '13', name: 'UPS Next Day Air Saver' },
+  { key: 'Surepost Light', id: '92', name: 'UPS Surepost Light' },
+  { key: 'Surepost', id: '93', name: 'UPS Surepost' }
 ];
 
 export const USPS_SERVICES = [
@@ -202,7 +204,8 @@ export const SERVER_ROUTES = {
   ACCOUNT: '/account',
   RECORDS: '/records',
   CSV: '/csv',
-  THIRDPARTY_ACCOUNTS: '/thirdparties'
+  THIRDPARTY_ACCOUNTS: '/thirdparties',
+  PRICE_TABLES: '/priceTable'
 };
 
 export const DEFAULT_SERVER_HOST =
@@ -263,7 +266,51 @@ export const FILE_FORMAT_SIZES_PDF_LIB = {
   [FILE_FORMATS.thermal]: [288, 432]
 };
 
+export const PACKING_SLIP_FOMAT_SIZES = {
+  [FILE_FORMATS.standard]: {
+    fontSize: 10,
+    header: {
+      background: { x: 0.2, y: 0.2, w: 8.1, h: 0.21 },
+      content: { x: 4.25, y: 0.3 }
+    },
+    sender: { x: 0.3, y: 0.6, step: 0.17 },
+    orderInfo: { x: 6, y: 0.6, step: 0.17, distance: 0.1 },
+    receipent: { title: { x: 2.5, y: 1.6 }, x: 3.2, y: 1.6, step: 0.17 },
+    table: {
+      header: { x: 0.3, y: 2.6, x2: 4.5, step: 1 },
+      headerDivider: { x1: 0.3, y1: 2.7, x2: 8, y2: 2.7 },
+      items: { x: 0.3, y: 3, x2: 4.5, x_step: 1, y_step: 0.2 }
+    },
+    foorterDivider: { x1: 0.3, x2: 8, y_step: 0.3 },
+    subTotal: { x1: 6.5, x2: 7.5, y_step: 0.2 },
+    sample: { x: 50, y: 10, angle: 30, font_size: 180 }
+  },
+  [FILE_FORMATS.thermal]: {
+    fontSize: 8,
+    header: {
+      background: { x: 0, y: 0.1, w: 4, h: 0.21 },
+      content: { x: 2, y: 0.2 }
+    },
+    sender: { x: 0.2, y: 1.2, step: 0.14 },
+    orderInfo: { x: 1.1, y: 0.5, step: 0.14, distance: 0.05 },
+    receipent: { title: { x: 1.9, y: 1.2 }, x: 2.2, y: 1.2, step: 0.14 },
+    table: {
+      header: { x: 0.1, y: 2.1, x2: 2.5, step: 0.5 },
+      headerDivider: { x1: 0, y1: 2.2, x2: 4, y2: 2.2 },
+      items: { x: 0.1, y: 2.4, x2: 2.5, x_step: 0.5, y_step: 0.2 }
+    },
+    foorterDivider: { x1: 0, x2: 4, y_step: 0.2 },
+    subTotal: { x1: 2.5, x2: 3.5, y_step: 0.2 },
+    sample: { x: 30, y: 10, angle: 30, font_size: 80 }
+  }
+};
+
 export const FILE_FORMAT_TEXTS = {
   [FILE_FORMATS.standard]: '8.5x11in',
   [FILE_FORMATS.thermal]: '4x6in'
 };
+
+export enum ShipmentStatus {
+  PENDING = 'Pending',
+  FULFILLED = 'Shipped'
+}

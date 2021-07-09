@@ -9,7 +9,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { GET_CARRIER_LOGO } from '../../../shared/utils/constants';
 import { Address } from '../../../shared/types/carrier';
-import { ShippingRecord, Label } from '../../../shared/types/record';
+import {
+  ShippingRecord,
+  Label,
+  ShipmentRate
+} from '../../../shared/types/record';
 import {
   fetchUserShippingRecords,
   selectShippingLoading,
@@ -45,7 +49,7 @@ const ClientShippingPanel = ({
       dataIndex: 'logo',
       key: 'logo',
       render: (text: string, record: ShippingRecord) => {
-        const logo = GET_CARRIER_LOGO(record.carrier);
+        const logo = GET_CARRIER_LOGO(record.carrier!);
         return <img className="logo" src={logo} alt={record.carrier} />;
       }
     },
@@ -69,7 +73,8 @@ const ClientShippingPanel = ({
       render: (text: string, record: ShippingRecord) => {
         return (
           <div>
-            <div>{`${record.carrier} ${record.service}`}</div>
+            <div>{record.carrier}</div>
+            <div>{record.service.name}</div>
             <div>{`${record.trackingId}`}</div>
             {record.facility && <div>{`${record.facility}`}</div>}
           </div>
@@ -80,15 +85,19 @@ const ClientShippingPanel = ({
       title: '包裹信息',
       key: 'packageInfo',
       render: (text: string, record: ShippingRecord) => {
-        const { weight } = record.packageInfo;
-        const { dimension } = record.packageInfo;
+        const weight = record.packageInfo?.weight;
+        const dimension = record.packageInfo?.dimentions;
         return (
           <div>
-            <div>{`${weight.value} ${weight.unitOfMeasure.toLowerCase()}`}</div>
+            <div>{`${weight.value.toFixed(
+              2
+            )} ${weight.unitOfMeasure.toLowerCase()}`}</div>
             {dimension && (
-              <div>{`${dimension.length} x ${dimension.width} x ${
-                dimension.height
-              } ${dimension.unitOfMeasure.toLowerCase()}`}</div>
+              <div>{`${dimension.length.toFixed(2)} x ${dimension.width.toFixed(
+                2
+              )} x ${dimension.height.toFixed(
+                2
+              )} ${dimension.unitOfMeasure.toLowerCase()}`}</div>
             )}
           </div>
         );
@@ -99,9 +108,9 @@ const ClientShippingPanel = ({
       dataIndex: 'rate',
       key: 'rate',
       align: 'center',
-      render: (rate: number) => {
+      render: (rate: ShipmentRate) => {
         if (!rate && rate !== 0) return '-';
-        return `$ ${rate.toFixed(2)}`;
+        return `$ ${rate.amount.toFixed(2)}`;
       }
     },
     {
@@ -151,7 +160,7 @@ const ClientShippingPanel = ({
             >
               打印面单
             </Button>
-            {record.forms && (
+            {record.forms && record.forms.length > 0 && (
               <Button
                 type="primary"
                 icon={<PrinterOutlined />}

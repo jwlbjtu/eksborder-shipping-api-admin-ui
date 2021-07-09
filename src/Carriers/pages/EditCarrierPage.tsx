@@ -37,6 +37,7 @@ import {
   USPS_SERVICES,
   CARRIER_REGIONS
 } from '../../shared/utils/constants';
+import PriceTablePanel from '../components/PriceTablePanel';
 import ThirdPartyPanel from '../components/ThirdPartyPanel';
 
 const { Option } = Select;
@@ -727,9 +728,14 @@ const EditCarrierPage = (): ReactElement => {
           </div>
         </TabPane>
         {!isNew && curCarrier && (
-          <TabPane tab="三方账号" key="2">
-            <ThirdPartyPanel carrier={curCarrier} />
-          </TabPane>
+          <>
+            <TabPane tab="三方账号" key="2">
+              <ThirdPartyPanel carrier={curCarrier} />
+            </TabPane>
+            <TabPane tab="价格表" key="3">
+              <PriceTablePanel carrier={curCarrier} />
+            </TabPane>
+          </>
         )}
       </Tabs>
     </>

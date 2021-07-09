@@ -2,26 +2,110 @@ import { Address, Service } from './carrier';
 
 export interface ShippingRecord {
   id: string;
-  accountName: string;
-  carrierAccount: string;
-  carrier: string;
+  orderId: string;
+  accountName?: string;
+  carrierAccount?: string;
+  carrier?: string;
   provider?: string;
-  service: Service;
+  service?: IService;
   facility?: string;
-  toAddress: Address;
-  shippingId?: string;
-  trackingId: string;
-  rate: number;
-  createdAt: Date;
-  manifested: boolean;
-  labels: Label[];
-  forms?: Form[];
-  packageInfo: {
-    weight: IWeight;
-    dimension?: IDimension;
+  sender: OrderAddress;
+  toAddress: OrderAddress;
+  return: OrderAddress;
+  packageInfo?: PackageInfo;
+  morePackages?: PackageInfo[];
+  orderAmount?: number;
+  orderCurrency?: Currency;
+  shipmentOptions: {
+    shipmentDate: string;
   };
-  userRef: string;
-  billingRef: string;
+  customDeclaration?: CustomDeclaration;
+  customItems?: Item[];
+  items?: Item[];
+  status: string;
+  trackingId?: string;
+  trackingStatus?: string;
+  shippingId?: string;
+  rate?: ShipmentRate;
+  labels?: LabelData[];
+  forms?: FormData[];
+  manifested: boolean = false;
+  errors?: string[];
+  labelLoading: boolean = false;
+  createdAt: string;
+}
+
+export interface ShipmentRate {
+  amount: number;
+  currency: Currency | string;
+}
+
+export interface FormData {
+  data: string;
+  format: string;
+  encodeType: string;
+}
+
+export interface LabelData {
+  carrier: string;
+  service: string;
+  tracking: string;
+  createdOn: Date;
+  data: string;
+  format: string;
+  encodeType: string;
+  isTest: boolean;
+}
+
+export interface CustomDeclaration {
+  typeOfContent: string;
+  incoterm: string;
+  exporterRef?: string;
+  importerRef?: string;
+  invoice?: string;
+  nonDeliveryHandling: string;
+  license?: string;
+  certificate?: string;
+  signingPerson: string;
+  taxIdType?: string;
+  eelpfc?: string;
+  b13a?: string;
+  notes?: string;
+}
+
+export interface Item {
+  id?: string;
+  itemTitle: string;
+  quantity: number;
+  itemWeight: number;
+  totalWeight: number;
+  itemWeightUnit: WeightUnit;
+  itemValue: number;
+  totalValue: number;
+  itemValueCurrency: Currency;
+  country?: Country;
+  sku?: string;
+  hsTariffNumber?: string;
+}
+
+export interface OrderAddress extends Record<string, any> {
+  id?: string;
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  country: Country;
+  street1: string;
+  street2?: string;
+  city: string;
+  state?: string;
+  zip?: string;
+}
+
+export interface PackageInfo {
+  packageType: string;
+  dimentions: Dimentions;
+  weight: Weight;
 }
 
 export interface IWeight {
