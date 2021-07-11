@@ -15,7 +15,7 @@ export interface UserData {
   email: string;
   countryCode: string;
   phone: string;
-  companyName: string;
+  companyName?: string;
   logoImage?: string;
   balance: number;
   currency: string;
@@ -31,7 +31,7 @@ export interface PasswordFormValue {
 }
 
 export interface UpdateUserSelf {
-  companyName: string;
+  companyName?: string;
   userName: string;
   firstName: string;
   lastName: string;
@@ -42,7 +42,7 @@ export interface UpdateUserSelf {
 
 export interface UpdateUserResponse {
   id: string;
-  companyName: string;
+  companyName?: string;
   userName: string;
   firstName: string;
   lastName: string;

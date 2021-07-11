@@ -18,7 +18,15 @@ const ClientPageHeader = ({
 }: ClientPageHeaderProps): ReactElement => {
   const breadcrumbEles = [
     { key: '1', path: '', breadcrumbName: '货代用户' },
-    { key: '2', path: '', breadcrumbName: data.companyName }
+    {
+      key: '2',
+      path: '',
+      breadcrumbName: `${
+        data.companyName
+          ? data.companyName
+          : `${data.lastName}${data.firstName}`
+      }`
+    }
   ];
 
   const itemRender = (
