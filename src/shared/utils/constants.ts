@@ -155,6 +155,13 @@ export const USPS_INTL_SERVICE_IDS_LIST = [
   USPS_INTL_SERVICE_IDS.PRIORITY_INTL
 ];
 
+export const FEDEX_SERVICES = [
+  { key: 'INTERNATIONAL_ECONOMY', name: 'FedEx International Economy' },
+  { key: 'INTERNATIONAL_PRIORITY', name: 'FedEx International PRIORITY' },
+  { key: 'FEDEX_GROUND', name: 'FedEx Ground' },
+  { key: 'GROUND_HOME_DELIVERY', name: 'FedEx Gound Home Delivery' }
+];
+
 export const CARRIER_SERVIES = {
   [CARRIERS.DHL_ECOMMERCE]: DHL_ECOMMERCE_SERVICES
 };

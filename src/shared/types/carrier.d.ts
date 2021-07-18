@@ -15,6 +15,8 @@ export interface CarrierUpdateData {
   returnAddress?: Address;
   testClientId?: string;
   testClientSecret?: string;
+  testAccessKey?: string;
+  testAccountNum?: string;
   facilities?: Facility[];
   testFacilities?: Facility[];
   services: Service[];
