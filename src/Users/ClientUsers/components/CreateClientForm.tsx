@@ -38,6 +38,7 @@ const CreateClientForm = (): ReactElement => {
           phone: values.phone,
           minBalance: values.minBalance,
           role,
+          referalName: values.referalName,
           isActive: true
         };
         dispatch(createUserHandler(result));
@@ -104,6 +105,9 @@ const CreateClientForm = (): ReactElement => {
           <Input placeholder="邮箱" />
         </Form.Item>
         <PhoneFormItems disabled={false} />
+        <Form.Item label="推荐人" name="referalName">
+          <Input placeholder="推荐人" />
+        </Form.Item>
         <Form.Item
           label="最低额度"
           name="minBalance"

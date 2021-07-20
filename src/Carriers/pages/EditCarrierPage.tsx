@@ -35,7 +35,8 @@ import {
   UI_ROUTES,
   UPS_SERVICES,
   USPS_SERVICES,
-  CARRIER_REGIONS
+  CARRIER_REGIONS,
+  FEDEX_SERVICES
 } from '../../shared/utils/constants';
 import PriceTablePanel from '../components/PriceTablePanel';
 import ThirdPartyPanel from '../components/ThirdPartyPanel';
@@ -154,6 +155,28 @@ const EditCarrierPage = (): ReactElement => {
             services: servicesIndex
           });
         }
+
+        if (carrier.carrierName === CARRIERS.FEDEX) {
+          const serviceIndex = [];
+          for (let i = 0; i < carrier.services.length; i += 1) {
+            const service = carrier.services[i];
+            const index = FEDEX_SERVICES.findIndex(
+              (ele) => ele.key === service.key
+            );
+            serviceIndex.push(index);
+          }
+          form.setFieldsValue({
+            services: serviceIndex,
+            accountNum: carrier.accountNum,
+            accessKey: carrier.accessKey,
+            hubId: carrier.hubId,
+            testClientId: carrier.testClientId,
+            testClientSecret: carrier.testClientSecret,
+            testAccountNum: carrier.testAccountNum,
+            testAccessKey: carrier.testAccessKey,
+            testHubId: carrier.testHubId
+          });
+        }
       } else {
         history.push(UI_ROUTES.CARRIERS);
       }
@@ -172,6 +195,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = UPS_SERVICES;
     } else if (carrierType === CARRIERS.USPS) {
       carrierServices = USPS_SERVICES;
+    } else if (carrierType === CARRIERS.FEDEX) {
+      carrierServices = FEDEX_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number) => carrierServices[inds]);
@@ -219,6 +244,17 @@ const EditCarrierPage = (): ReactElement => {
     if (carrierType === CARRIERS.UPS) {
       data.accessKey = values.accessKey;
       data.accountNum = values.accountNum;
+    }
+
+    if (carrierType === CARRIERS.FEDEX) {
+      data.accessKey = values.accessKey;
+      data.accountNum = values.accountNum;
+      data.hubId = values.hubId;
+      data.testClientId = values.testClientId;
+      data.testClientSecret = values.testClientSecret;
+      data.testAccessKey = values.testAccessKey;
+      data.testAccountNum = values.testAccountNum;
+      data.testHubId = values.testHubId;
     }
 
     if (
@@ -324,7 +360,7 @@ const EditCarrierPage = (): ReactElement => {
               <Space size={[10, 2]} style={{ width: '100%' }}>
                 <Form.Item
                   style={{ width: '350px' }}
-                  label="Client ID"
+                  label="Client ID (Meter Number)"
                   name="clientId"
                   rules={[
                     { required: true, message: 'Client ID 必须填写' },
@@ -335,7 +371,7 @@ const EditCarrierPage = (): ReactElement => {
                 </Form.Item>
                 <Form.Item
                   style={{ width: '350px' }}
-                  label="Client Secret"
+                  label="Client Secret (Password)"
                   name="clientSecret"
                   rules={[
                     { required: true, message: 'Client Secret 必须填写' },
@@ -348,31 +384,51 @@ const EditCarrierPage = (): ReactElement => {
                   />
                 </Form.Item>
               </Space>
-              {carrierType === CARRIERS.UPS && (
-                <Space size={[10, 2]} style={{ width: '100%' }}>
-                  <Form.Item
-                    style={{ width: '350px' }}
-                    label="Access Key"
-                    name="accessKey"
-                    rules={[{ required: true, message: 'Access Key必须填写' }]}
-                  >
-                    <Input placeholder="Access Key" disabled={!activeSwitch} />
-                  </Form.Item>
-                  <Form.Item
-                    style={{ width: '350px' }}
-                    label="Account Number"
-                    name="accountNum"
-                    rules={[
-                      { required: true, message: 'Account Number必须填写' },
-                      { min: 3, message: 'Account Number至少3位' }
-                    ]}
-                  >
-                    <Input
-                      placeholder="Account Number"
-                      disabled={!activeSwitch}
-                    />
-                  </Form.Item>
-                </Space>
+              {(carrierType === CARRIERS.UPS ||
+                carrierType === CARRIERS.FEDEX) && (
+                <>
+                  <Space size={[10, 2]} style={{ width: '100%' }}>
+                    <Form.Item
+                      style={{ width: '350px' }}
+                      label="Access Key"
+                      name="accessKey"
+                      rules={[
+                        { required: true, message: 'Access Key必须填写' }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Access Key"
+                        disabled={!activeSwitch}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      style={{ width: '350px' }}
+                      label="Account Number"
+                      name="accountNum"
+                      rules={[
+                        { required: true, message: 'Account Number必须填写' },
+                        { min: 3, message: 'Account Number至少3位' }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Account Number"
+                        disabled={!activeSwitch}
+                      />
+                    </Form.Item>
+                  </Space>
+                  {carrierType === CARRIERS.FEDEX && (
+                    <Space size={[10, 2]} style={{ width: '100%' }}>
+                      <Form.Item
+                        style={{ width: '350px' }}
+                        label="Hub ID"
+                        name="hubId"
+                        rules={[{ required: true, message: 'Hub ID必须填写' }]}
+                      >
+                        <Input placeholder="Hub ID" disabled={!activeSwitch} />
+                      </Form.Item>
+                    </Space>
+                  )}
+                </>
               )}
               <Space size={[10, 2]} style={{ width: '100%' }}>
                 <Form.Item
@@ -413,6 +469,18 @@ const EditCarrierPage = (): ReactElement => {
                       })}
                     {carrierType === CARRIERS.USPS &&
                       USPS_SERVICES.map((service, index) => {
+                        return (
+                          <Option
+                            key={service.name}
+                            value={index}
+                            label={service.name}
+                          >
+                            {service.name}
+                          </Option>
+                        );
+                      })}
+                    {carrierType === CARRIERS.FEDEX &&
+                      FEDEX_SERVICES.map((service, index) => {
                         return (
                           <Option
                             key={service.name}
@@ -631,7 +699,8 @@ const EditCarrierPage = (): ReactElement => {
                   </Space>
                 </>
               )}
-              {carrierType === CARRIERS.DHL_ECOMMERCE && (
+              {(carrierType === CARRIERS.DHL_ECOMMERCE ||
+                carrierType === CARRIERS.FEDEX) && (
                 <>
                   <Divider orientation="left" plain>
                     测试信息
@@ -639,7 +708,7 @@ const EditCarrierPage = (): ReactElement => {
                   <Space size={[10, 2]} style={{ width: '100%' }}>
                     <Form.Item
                       style={{ width: '350px' }}
-                      label="Test Client ID"
+                      label="Test Client ID (Meter Number)"
                       name="testClientId"
                       rules={[
                         {
@@ -667,41 +736,100 @@ const EditCarrierPage = (): ReactElement => {
                       ]}
                     >
                       <Input.Password
-                        placeholder="Test Client Secret"
+                        placeholder="Test Client Secret (Password)"
                         disabled={!activeSwitch}
                       />
                     </Form.Item>
                   </Space>
-                  <Space>
-                    <Form.Item
-                      name="test-pickup-main"
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Test Pickup Code 必须填写'
-                        }
-                      ]}
-                    >
-                      <Input
-                        placeholder="Test Pickup Code"
-                        disabled={!activeSwitch}
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      name="test-facility-main"
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Test Facility Code 必须填写'
-                        }
-                      ]}
-                    >
-                      <Input
-                        placeholder="Test Facility Code"
-                        disabled={!activeSwitch}
-                      />
-                    </Form.Item>
-                  </Space>
+                  {carrierType === CARRIERS.FEDEX && (
+                    <>
+                      <Space size={[10, 2]} style={{ width: '100%' }}>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Access Key"
+                          name="testAccessKey"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Access Key必须填写'
+                            }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Access Key"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Account Number"
+                          name="testAccountNum"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Account Number必须填写'
+                            },
+                            { min: 3, message: 'Test Account Number至少3位' }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Account Number"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                      </Space>
+                      <Space size={[10, 2]} style={{ width: '100%' }}>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Hub ID"
+                          name="testHubId"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Hub ID必须填写'
+                            }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Hub ID"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                      </Space>
+                    </>
+                  )}
+                  {carrierType === CARRIERS.DHL_ECOMMERCE && (
+                    <Space>
+                      <Form.Item
+                        name="test-pickup-main"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Test Pickup Code 必须填写'
+                          }
+                        ]}
+                      >
+                        <Input
+                          placeholder="Test Pickup Code"
+                          disabled={!activeSwitch}
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        name="test-facility-main"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Test Facility Code 必须填写'
+                          }
+                        ]}
+                      >
+                        <Input
+                          placeholder="Test Facility Code"
+                          disabled={!activeSwitch}
+                        />
+                      </Form.Item>
+                    </Space>
+                  )}
                 </>
               )}
               <Divider />

@@ -74,6 +74,11 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
       dataIndex: 'email'
     },
     {
+      title: '推荐人',
+      key: 'referalName',
+      dataIndex: 'referalName'
+    },
+    {
       title: '状态',
       key: 'isActive',
       dataIndex: 'isActive',

@@ -44,6 +44,7 @@ const ClientInfoPanel = ({
       countryCode: values.countryCode,
       minBalance: values.minBalance,
       phone: values.phone,
+      referalName: values.referalName,
       isActive: active
     };
     onSubmit(updateData);
@@ -137,6 +138,9 @@ const ClientInfoPanel = ({
           <Input placeholder="邮箱" disabled={!active} />
         </Form.Item>
         <PhoneNumberFormItems disabled={!active} />
+        <Form.Item label="推荐人" name="referalName">
+          <Input placeholder="referalName" />
+        </Form.Item>
         <Space size="large" align="end" style={{ width: '100%' }}>
           <Form.Item
             label="最低额度"
