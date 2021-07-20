@@ -12,11 +12,13 @@ export interface CarrierUpdateData {
   clientSecret: string;
   accessKey?: string;
   accountNum?: string;
+  hubId?: string;
   returnAddress?: Address;
   testClientId?: string;
   testClientSecret?: string;
   testAccessKey?: string;
   testAccountNum?: string;
+  testHubId?: string;
   facilities?: Facility[];
   testFacilities?: Facility[];
   services: Service[];

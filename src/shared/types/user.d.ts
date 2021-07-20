@@ -38,6 +38,7 @@ export interface UpdateUserSelf {
   email: string;
   countryCode: string;
   phone: string;
+  referalName?: string;
 }
 
 export interface UpdateUserResponse {
@@ -50,6 +51,7 @@ export interface UpdateUserResponse {
   countryCode: string;
   phone: string;
   logoImage?: string;
+  referalName?: string;
 }
 
 export interface UpdateClientData extends UpdateUserSelf {

@@ -169,10 +169,12 @@ const EditCarrierPage = (): ReactElement => {
             services: serviceIndex,
             accountNum: carrier.accountNum,
             accessKey: carrier.accessKey,
+            hubId: carrier.hubId,
             testClientId: carrier.testClientId,
             testClientSecret: carrier.testClientSecret,
             testAccountNum: carrier.testAccountNum,
-            testAccessKey: carrier.testAccessKey
+            testAccessKey: carrier.testAccessKey,
+            testHubId: carrier.testHubId
           });
         }
       } else {
@@ -247,10 +249,12 @@ const EditCarrierPage = (): ReactElement => {
     if (carrierType === CARRIERS.FEDEX) {
       data.accessKey = values.accessKey;
       data.accountNum = values.accountNum;
+      data.hubId = values.hubId;
       data.testClientId = values.testClientId;
       data.testClientSecret = values.testClientSecret;
       data.testAccessKey = values.testAccessKey;
       data.testAccountNum = values.testAccountNum;
+      data.testHubId = values.testHubId;
     }
 
     if (
@@ -382,30 +386,49 @@ const EditCarrierPage = (): ReactElement => {
               </Space>
               {(carrierType === CARRIERS.UPS ||
                 carrierType === CARRIERS.FEDEX) && (
-                <Space size={[10, 2]} style={{ width: '100%' }}>
-                  <Form.Item
-                    style={{ width: '350px' }}
-                    label="Access Key"
-                    name="accessKey"
-                    rules={[{ required: true, message: 'Access Key必须填写' }]}
-                  >
-                    <Input placeholder="Access Key" disabled={!activeSwitch} />
-                  </Form.Item>
-                  <Form.Item
-                    style={{ width: '350px' }}
-                    label="Account Number"
-                    name="accountNum"
-                    rules={[
-                      { required: true, message: 'Account Number必须填写' },
-                      { min: 3, message: 'Account Number至少3位' }
-                    ]}
-                  >
-                    <Input
-                      placeholder="Account Number"
-                      disabled={!activeSwitch}
-                    />
-                  </Form.Item>
-                </Space>
+                <>
+                  <Space size={[10, 2]} style={{ width: '100%' }}>
+                    <Form.Item
+                      style={{ width: '350px' }}
+                      label="Access Key"
+                      name="accessKey"
+                      rules={[
+                        { required: true, message: 'Access Key必须填写' }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Access Key"
+                        disabled={!activeSwitch}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      style={{ width: '350px' }}
+                      label="Account Number"
+                      name="accountNum"
+                      rules={[
+                        { required: true, message: 'Account Number必须填写' },
+                        { min: 3, message: 'Account Number至少3位' }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Account Number"
+                        disabled={!activeSwitch}
+                      />
+                    </Form.Item>
+                  </Space>
+                  {carrierType === CARRIERS.FEDEX && (
+                    <Space size={[10, 2]} style={{ width: '100%' }}>
+                      <Form.Item
+                        style={{ width: '350px' }}
+                        label="Hub ID"
+                        name="hubId"
+                        rules={[{ required: true, message: 'Hub ID必须填写' }]}
+                      >
+                        <Input placeholder="Hub ID" disabled={!activeSwitch} />
+                      </Form.Item>
+                    </Space>
+                  )}
+                </>
               )}
               <Space size={[10, 2]} style={{ width: '100%' }}>
                 <Form.Item
@@ -719,38 +742,61 @@ const EditCarrierPage = (): ReactElement => {
                     </Form.Item>
                   </Space>
                   {carrierType === CARRIERS.FEDEX && (
-                    <Space size={[10, 2]} style={{ width: '100%' }}>
-                      <Form.Item
-                        style={{ width: '350px' }}
-                        label="Test Access Key"
-                        name="testAccessKey"
-                        rules={[
-                          { required: true, message: 'Test Access Key必须填写' }
-                        ]}
-                      >
-                        <Input
-                          placeholder="Test Access Key"
-                          disabled={!activeSwitch}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        style={{ width: '350px' }}
-                        label="Test Account Number"
-                        name="testAccountNum"
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Test Account Number必须填写'
-                          },
-                          { min: 3, message: 'Test Account Number至少3位' }
-                        ]}
-                      >
-                        <Input
-                          placeholder="Test Account Number"
-                          disabled={!activeSwitch}
-                        />
-                      </Form.Item>
-                    </Space>
+                    <>
+                      <Space size={[10, 2]} style={{ width: '100%' }}>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Access Key"
+                          name="testAccessKey"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Access Key必须填写'
+                            }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Access Key"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Account Number"
+                          name="testAccountNum"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Account Number必须填写'
+                            },
+                            { min: 3, message: 'Test Account Number至少3位' }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Account Number"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                      </Space>
+                      <Space size={[10, 2]} style={{ width: '100%' }}>
+                        <Form.Item
+                          style={{ width: '350px' }}
+                          label="Test Hub ID"
+                          name="testHubId"
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Test Hub ID必须填写'
+                            }
+                          ]}
+                        >
+                          <Input
+                            placeholder="Test Hub ID"
+                            disabled={!activeSwitch}
+                          />
+                        </Form.Item>
+                      </Space>
+                    </>
                   )}
                   {carrierType === CARRIERS.DHL_ECOMMERCE && (
                     <Space>
