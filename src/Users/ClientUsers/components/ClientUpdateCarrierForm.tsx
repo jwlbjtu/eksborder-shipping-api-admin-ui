@@ -193,7 +193,8 @@ const ClientUpdateCarrierForm = ({
                 rules={[{ required: true, message: '至少选择一个服务！' }]}
                 initialValue={data.services.map((item: Service) =>
                   selectedCarrier.services.findIndex(
-                    (ele: Service) => ele.key === item.key
+                    (ele: Service) =>
+                      ele.key === item.key && ele.name === item.name
                   )
                 )}
               >
@@ -206,7 +207,11 @@ const ClientUpdateCarrierForm = ({
                   {selectedCarrier.services.map(
                     (ser: Service, index: number) => {
                       return (
-                        <Option key={ser.key} value={index} label={ser.key}>
+                        <Option
+                          key={ser.key}
+                          value={index}
+                          label={`${ser.key} - ${ser.name}`}
+                        >
                           {`${ser.key} - ${ser.name}`}
                         </Option>
                       );

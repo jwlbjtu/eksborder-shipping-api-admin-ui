@@ -153,22 +153,15 @@ const ClientConnectCarrierForm = ({
                   mode="multiple"
                   placeholder="授权服务"
                   disabled={!selectedCarrier}
-                  optionLabelProp="label"
-                >
-                  {selectedCarrier.services.map(
+                  options={selectedCarrier.services.map(
                     (service: Service, index: number) => {
-                      return (
-                        <Option
-                          key={service.key}
-                          value={index}
-                          label={service.key}
-                        >
-                          {`${service.key} - ${service.name}`}
-                        </Option>
-                      );
+                      return {
+                        label: `${service.key} - ${service.name}`,
+                        value: index
+                      };
                     }
                   )}
-                </Select>
+                />
               </Form.Item>
             )}
             {selectedCarrier &&

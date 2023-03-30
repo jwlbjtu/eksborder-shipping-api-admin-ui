@@ -101,7 +101,7 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
         if (!services) return '-';
         const result =
           services.length !== 0
-            ? services.map((ele) => ele.key).join(', ')
+            ? services.map((ele) => `${ele.key} - ${ele.name}`).join(', ')
             : '-';
         return result;
       }
