@@ -213,13 +213,14 @@ export const SERVER_ROUTES = {
   RECORDS: '/records',
   CSV: '/csv',
   THIRDPARTY_ACCOUNTS: '/thirdparties',
-  PRICE_TABLES: '/priceTable'
+  PRICE_TABLES: '/priceTable',
+  CUSTOM_SERVICE: '/customService'
 };
 
 export const DEFAULT_SERVER_HOST =
   process.env.NODE_ENV === 'production'
     ? process.env.REACT_APP_BENKEND_URL
-    : 'http://localhost:5000';
+    : 'http://localhost:8000';
 
 export const FEE_TYPE_KEYS = {
   PROPORTIONS: 'proportions',

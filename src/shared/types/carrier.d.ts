@@ -115,3 +115,33 @@ export interface FeeRate {
   rate: number;
   ratetype: CarrierRateType;
 }
+
+export interface CustomServiceCondition {
+  type: string;
+  fields: { [key: string]: any };
+}
+
+export interface SubService {
+  name: string;
+  code: string;
+  conditions: CustomServiceCondition[];
+  isBackup: boolean;
+}
+
+export interface CustomService {
+  _id: Types.ObjectId;
+  name: string;
+  description?: string;
+  carrierId: Types.ObjectId;
+  services: SubService[];
+  active: boolean;
+}
+
+export interface CustomServiceParams {
+  _id?: Types.ObjectId;
+  name?: string;
+  description?: string;
+  carrierId?: Types.ObjectId;
+  services?: SubService[];
+  active?: boolean;
+}

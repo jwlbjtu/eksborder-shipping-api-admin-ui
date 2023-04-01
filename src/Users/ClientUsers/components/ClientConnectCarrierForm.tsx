@@ -86,7 +86,8 @@ const ClientConnectCarrierForm = ({
             userRef: '',
             note: values.note,
             thirdpartyPrice: useThirdparty,
-            isActive: true
+            isActive: true,
+            payOffline: values.payOffline
           };
           onOk(result);
           setSelectedCarrier(undefined);
@@ -153,22 +154,15 @@ const ClientConnectCarrierForm = ({
                   mode="multiple"
                   placeholder="授权服务"
                   disabled={!selectedCarrier}
-                  optionLabelProp="label"
-                >
-                  {selectedCarrier.services.map(
+                  options={selectedCarrier.services.map(
                     (service: Service, index: number) => {
-                      return (
-                        <Option
-                          key={service.key}
-                          value={index}
-                          label={service.key}
-                        >
-                          {`${service.key} - ${service.name}`}
-                        </Option>
-                      );
+                      return {
+                        label: `${service.key} - ${service.name}`,
+                        value: index
+                      };
                     }
                   )}
-                </Select>
+                />
               </Form.Item>
             )}
             {selectedCarrier &&
@@ -206,14 +200,20 @@ const ClientConnectCarrierForm = ({
             <Form.Item label="备注" name="note">
               <Input.TextArea autoSize placeholder="账号相关备注" />
             </Form.Item>
-            <Form.Item name="thirdpartyPrice">
-              <Checkbox
-                checked={useThirdparty}
-                onClick={() => setUseThirdparty(!useThirdparty)}
-              >
-                三方价格
-              </Checkbox>
-            </Form.Item>
+            <Space>
+              <Form.Item name="thirdpartyPrice">
+                <Checkbox
+                  checked={useThirdparty}
+                  onClick={() => setUseThirdparty(!useThirdparty)}
+                >
+                  三方价格
+                </Checkbox>
+              </Form.Item>
+              <Form.Item name="payOffline" valuePropName="checked">
+                <Checkbox>线下付款</Checkbox>
+              </Form.Item>
+            </Space>
+
             <Divider orientation="left" plain>
               费率
             </Divider>

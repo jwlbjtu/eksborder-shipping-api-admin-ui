@@ -96,6 +96,7 @@ export interface CreateUserCarrierData {
   isActive: boolean;
   carrierRef: string;
   userRef: string;
+  payOffline: boolean;
 }
 
 export interface UserCarrier extends CreateUserCarrierData {

@@ -1,5 +1,5 @@
 import { Billing } from './billing';
-import { Carrier, PriceTable } from './carrier';
+import { Carrier, CustomService, PriceTable } from './carrier';
 import { ShippingRecord } from './record';
 import { User, UserData } from './user';
 
@@ -19,6 +19,7 @@ export interface RootState {
   carriers: CarriersState;
   thirdpartyAccounts: ThirdPartyState;
   priceTabels: PriceTableState;
+  customServiceTable: CustomServiceTableState;
 }
 
 export interface CurrentUserState {
@@ -80,4 +81,11 @@ export interface PriceTableState {
   priceModalShow: boolean;
   priceTabelModalShow: boolean;
   zoneModal: boolean;
+}
+
+export interface CustomServiceTableState {
+  customServices: CustomService[];
+  loading: boolean;
+  showModal: boolean;
+  modalLoading: boolean;
 }

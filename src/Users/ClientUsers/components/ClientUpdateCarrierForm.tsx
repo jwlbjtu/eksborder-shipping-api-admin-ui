@@ -60,6 +60,9 @@ const ClientUpdateCarrierForm = ({
   useEffect(() => {
     setDataActive(data.isActive);
     setUseThirdparty(data.thirdpartyPrice);
+    form.setFieldsValue({
+      payOffline: data.payOffline
+    });
 
     if (!carriers) {
       dispatch(fetchCarriersHandler());
@@ -70,7 +73,7 @@ const ClientUpdateCarrierForm = ({
       );
       setSelectedCarrier(selected);
     }
-  }, [carriers, data, dispatch]);
+  }, [carriers, data, dispatch, form]);
 
   const cancelClickedHandler = () => {
     form.resetFields();
@@ -105,7 +108,8 @@ const ClientUpdateCarrierForm = ({
             thirdpartyPrice: useThirdparty,
             note: values.note,
             isActive: dataActive,
-            userRef: data.userRef
+            userRef: data.userRef,
+            payOffline: values.payOffline
           };
           onOk(result);
         }
@@ -193,7 +197,8 @@ const ClientUpdateCarrierForm = ({
                 rules={[{ required: true, message: '至少选择一个服务！' }]}
                 initialValue={data.services.map((item: Service) =>
                   selectedCarrier.services.findIndex(
-                    (ele: Service) => ele.key === item.key
+                    (ele: Service) =>
+                      ele.key === item.key && ele.name === item.name
                   )
                 )}
               >
@@ -206,7 +211,11 @@ const ClientUpdateCarrierForm = ({
                   {selectedCarrier.services.map(
                     (ser: Service, index: number) => {
                       return (
-                        <Option key={ser.key} value={index} label={ser.key}>
+                        <Option
+                          key={ser.key}
+                          value={index}
+                          label={`${ser.key} - ${ser.name}`}
+                        >
                           {`${ser.key} - ${ser.name}`}
                         </Option>
                       );
@@ -260,15 +269,20 @@ const ClientUpdateCarrierForm = ({
                 disabled={!dataActive}
               />
             </Form.Item>
-            <Form.Item name="thirdpartyPrice">
-              <Checkbox
-                checked={useThirdparty}
-                onClick={() => setUseThirdparty(!useThirdparty)}
-                disabled={!dataActive}
-              >
-                三方价格
-              </Checkbox>
-            </Form.Item>
+            <Space>
+              <Form.Item name="thirdpartyPrice">
+                <Checkbox
+                  checked={useThirdparty}
+                  onClick={() => setUseThirdparty(!useThirdparty)}
+                  disabled={!dataActive}
+                >
+                  三方价格
+                </Checkbox>
+              </Form.Item>
+              <Form.Item name="payOffline" valuePropName="checked">
+                <Checkbox>线下支付</Checkbox>
+              </Form.Item>
+            </Space>
             <Divider orientation="left" plain>
               费率
             </Divider>

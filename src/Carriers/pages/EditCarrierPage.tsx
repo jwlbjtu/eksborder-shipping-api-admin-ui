@@ -23,6 +23,10 @@ import {
   selectRedirectToCarriersPage
 } from '../../redux/carrier/carrierSlice';
 import {
+  fetchCustomServices,
+  selectCustomServices
+} from '../../redux/carrier/costumServiceTableSlice';
+import {
   Carrier,
   CarrierUpdateData,
   Facility,
@@ -38,6 +42,7 @@ import {
   CARRIER_REGIONS,
   FEDEX_SERVICES
 } from '../../shared/utils/constants';
+import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
 import ThirdPartyPanel from '../components/ThirdPartyPanel';
 
@@ -56,6 +61,40 @@ const EditCarrierPage = (): ReactElement => {
   const [carrierType, setCarrierType] = useState<string>('');
   const [curCarrier, setCurCarrier] = useState<Carrier | undefined>(undefined);
   const [activeSwitch, setActiveSwitch] = useState<boolean>(true);
+  const customServices = useSelector(selectCustomServices);
+
+  const renderCarrierServicesIndex = (carrier: Carrier) => {
+    let CARRIER_SERVICES: any[] = [];
+    switch (carrier.carrierName) {
+      case CARRIERS.DHL_ECOMMERCE:
+        CARRIER_SERVICES = DHL_ECOMMERCE_SERVICES;
+        break;
+      case CARRIERS.UPS:
+        CARRIER_SERVICES = UPS_SERVICES;
+        break;
+      case CARRIERS.USPS:
+        CARRIER_SERVICES = USPS_SERVICES;
+        break;
+      case CARRIERS.FEDEX:
+        CARRIER_SERVICES = FEDEX_SERVICES;
+        break;
+      default:
+        CARRIER_SERVICES = [];
+    }
+    const serviceIndex = [];
+    for (let i = 0; i < carrier.services.length; i += 1) {
+      const service = carrier.services[i];
+      if (service.key === 'CUSTOM') {
+        serviceIndex.push(service.name);
+      } else {
+        const index = CARRIER_SERVICES.findIndex(
+          (ele) => ele.key === service.key
+        );
+        serviceIndex.push(index);
+      }
+    }
+    return serviceIndex;
+  };
 
   useEffect(() => {
     let newFlag = false;
@@ -71,12 +110,14 @@ const EditCarrierPage = (): ReactElement => {
         setCurCarrier(carrier);
         setCarrierType(carrier.carrierName);
         setActiveSwitch(carrier.isActive);
+        dispatch(fetchCustomServices(carrier.id));
         form.setFieldsValue({
           accountName: carrier.accountName,
           description: carrier.description,
           clientId: carrier.clientId,
           clientSecret: carrier.clientSecret,
-          regions: carrier.regions
+          regions: carrier.regions,
+          services: renderCarrierServicesIndex(carrier)
         });
 
         if (
@@ -104,17 +145,7 @@ const EditCarrierPage = (): ReactElement => {
           }
           const firstEle = carrier.facilities![0];
 
-          const serviceIndex = [];
-          for (let i = 0; i < carrier.services.length; i += 1) {
-            const service = carrier.services[i];
-            const index = DHL_ECOMMERCE_SERVICES.findIndex(
-              (ele) => ele.key === service.key
-            );
-            serviceIndex.push(index);
-          }
-
           form.setFieldsValue({
-            services: serviceIndex,
             testClientId: carrier.testClientId,
             testClientSecret: carrier.testClientSecret,
             'pickup-main': firstEle?.pickup,
@@ -126,47 +157,14 @@ const EditCarrierPage = (): ReactElement => {
         }
 
         if (carrier.carrierName === CARRIERS.UPS) {
-          const servicesIndex = [];
-          for (let i = 0; i < carrier.services.length; i += 1) {
-            const service = carrier.services[i];
-            const index = UPS_SERVICES.findIndex(
-              (ele) => ele.key === service.key
-            );
-            servicesIndex.push(index);
-          }
-
           form.setFieldsValue({
             accountNum: carrier.accountNum,
-            accessKey: carrier.accessKey,
-            services: servicesIndex
-          });
-        }
-
-        if (carrier.carrierName === CARRIERS.USPS) {
-          const servicesIndex = [];
-          for (let i = 0; i < carrier.services.length; i += 1) {
-            const service = carrier.services[i];
-            const index = USPS_SERVICES.findIndex(
-              (ele) => ele.key === service.key
-            );
-            servicesIndex.push(index);
-          }
-          form.setFieldsValue({
-            services: servicesIndex
+            accessKey: carrier.accessKey
           });
         }
 
         if (carrier.carrierName === CARRIERS.FEDEX) {
-          const serviceIndex = [];
-          for (let i = 0; i < carrier.services.length; i += 1) {
-            const service = carrier.services[i];
-            const index = FEDEX_SERVICES.findIndex(
-              (ele) => ele.key === service.key
-            );
-            serviceIndex.push(index);
-          }
           form.setFieldsValue({
-            services: serviceIndex,
             accountNum: carrier.accountNum,
             accessKey: carrier.accessKey,
             hubId: carrier.hubId,
@@ -184,7 +182,7 @@ const EditCarrierPage = (): ReactElement => {
       setCarrierType(carrierId);
       setActiveSwitch(true);
     }
-  }, [carrierId, carriers, history, isNew, form]);
+  }, [carrierId, carriers, history, isNew, form, dispatch]);
 
   const buildCarrierUpdateData = (values: any): CarrierUpdateData => {
     let carrierServices: Service[] = [];
@@ -199,7 +197,11 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = FEDEX_SERVICES;
     }
     if (carrierServices.length > 0) {
-      services = values.services.map((inds: number) => carrierServices[inds]);
+      services = values.services.map((inds: number | string) =>
+        typeof inds === 'number'
+          ? carrierServices[inds]
+          : { key: 'CUSTOM', name: inds }
+      );
     }
 
     const facilities: Facility[] = [];
@@ -297,6 +299,42 @@ const EditCarrierPage = (): ReactElement => {
         dispatch(updateCarrierhandler(carrierData));
       }
     });
+  };
+
+  const renderCarrierSerivcersOptions = () => {
+    const options = [];
+    let defaultServices: { label: string; value: number }[] = [];
+    if (carrierType === CARRIERS.DHL_ECOMMERCE) {
+      defaultServices = DHL_ECOMMERCE_SERVICES.map((service, index) => {
+        return { label: `${service.key} - ${service.name}`, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.UPS) {
+      defaultServices = UPS_SERVICES.map((service, index) => {
+        return { label: service.name, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.USPS) {
+      defaultServices = USPS_SERVICES.map((service, index) => {
+        return { label: service.name, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.FEDEX) {
+      defaultServices = FEDEX_SERVICES.map((service, index) => {
+        return { label: service.name, value: index };
+      });
+    }
+
+    const custServices = customServices
+      .filter((item) => item.active)
+      .map((service) => {
+        return { label: service.name, value: service.name };
+      });
+
+    options.push({ label: '默认服务', options: defaultServices });
+    options.push({ label: '定制服务', options: custServices });
+
+    return options;
   };
 
   if (redirectToCarrierPage) {
@@ -442,56 +480,8 @@ const EditCarrierPage = (): ReactElement => {
                     optionLabelProp="label"
                     disabled={!activeSwitch}
                     allowClear
-                  >
-                    {carrierType === CARRIERS.DHL_ECOMMERCE &&
-                      DHL_ECOMMERCE_SERVICES.map((service, index) => {
-                        return (
-                          <Option
-                            key={service.key}
-                            value={index}
-                            label={service.key}
-                          >
-                            {`${service.key} - ${service.name}`}
-                          </Option>
-                        );
-                      })}
-                    {carrierType === CARRIERS.UPS &&
-                      UPS_SERVICES.map((service, index) => {
-                        return (
-                          <Option
-                            key={service.name}
-                            value={index}
-                            label={service.name}
-                          >
-                            {service.name}
-                          </Option>
-                        );
-                      })}
-                    {carrierType === CARRIERS.USPS &&
-                      USPS_SERVICES.map((service, index) => {
-                        return (
-                          <Option
-                            key={service.name}
-                            value={index}
-                            label={service.name}
-                          >
-                            {service.name}
-                          </Option>
-                        );
-                      })}
-                    {carrierType === CARRIERS.FEDEX &&
-                      FEDEX_SERVICES.map((service, index) => {
-                        return (
-                          <Option
-                            key={service.name}
-                            value={index}
-                            label={service.name}
-                          >
-                            {service.name}
-                          </Option>
-                        );
-                      })}
-                  </Select>
+                    options={renderCarrierSerivcersOptions()}
+                  />
                 </Form.Item>
                 <Form.Item
                   style={{ width: '350px' }}
@@ -862,6 +852,9 @@ const EditCarrierPage = (): ReactElement => {
             </TabPane>
             <TabPane tab="价格表" key="3">
               <PriceTablePanel carrier={curCarrier} />
+            </TabPane>
+            <TabPane tab="定制服务" key="4">
+              <CustomServicePanel carrier={curCarrier} />
             </TabPane>
           </>
         )}
