@@ -6,7 +6,8 @@ import {
   Button,
   Switch,
   Space,
-  Popconfirm
+  Popconfirm,
+  Tag
 } from 'antd';
 import { CheckCircleTwoTone, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -124,6 +125,17 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
         return thirdpartyPrice ? (
           <CheckCircleTwoTone twoToneColor="#52c41a" />
         ) : null;
+      }
+    },
+    {
+      title: '支付方式',
+      dataIndex: 'payOffline',
+      render: (payOffline: boolean) => {
+        return payOffline ? (
+          <Tag color="yellow">线下支付</Tag>
+        ) : (
+          <Tag color="green">线上支付</Tag>
+        );
       }
     },
     {
