@@ -61,6 +61,7 @@ const EditCarrierPage = (): ReactElement => {
   const [carrierType, setCarrierType] = useState<string>('');
   const [curCarrier, setCurCarrier] = useState<Carrier | undefined>(undefined);
   const [activeSwitch, setActiveSwitch] = useState<boolean>(true);
+  const [newAPISwitch, setNewAPISwitch] = useState<boolean>(false);
   const customServices = useSelector(selectCustomServices);
 
   const renderCarrierServicesIndex = (carrier: Carrier) => {
@@ -110,6 +111,7 @@ const EditCarrierPage = (): ReactElement => {
         setCurCarrier(carrier);
         setCarrierType(carrier.carrierName);
         setActiveSwitch(carrier.isActive);
+        setNewAPISwitch(carrier.isNewAPI);
         dispatch(fetchCustomServices(carrier.id));
         form.setFieldsValue({
           accountName: carrier.accountName,
@@ -233,7 +235,8 @@ const EditCarrierPage = (): ReactElement => {
       clientSecret: values.clientSecret,
       services,
       regions: values.regions,
-      isActive: true
+      isActive: true,
+      isNewAPI: newAPISwitch
     };
 
     if (carrierType === CARRIERS.DHL_ECOMMERCE) {
@@ -367,6 +370,17 @@ const EditCarrierPage = (): ReactElement => {
                     unCheckedChildren="停用"
                     checked={activeSwitch}
                     onClick={() => setActiveSwitch(!activeSwitch)}
+                  />
+                </div>
+              )}
+              {carrierType === CARRIERS.FEDEX && (
+                <div>
+                  使用新API:{' '}
+                  <Switch
+                    checkedChildren="是"
+                    unCheckedChildren="否"
+                    checked={newAPISwitch}
+                    onClick={() => setNewAPISwitch(!newAPISwitch)}
                   />
                 </div>
               )}
