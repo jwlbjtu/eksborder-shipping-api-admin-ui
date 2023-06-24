@@ -25,6 +25,7 @@ export interface CarrierUpdateData {
   shipperId?: string;
   regions: string[];
   isActive: boolean;
+  isNewAPI: boolean;
 }
 
 export interface Facility {

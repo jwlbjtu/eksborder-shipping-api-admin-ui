@@ -159,7 +159,7 @@ export const FEDEX_SERVICES = [
   { key: 'INTERNATIONAL_ECONOMY', name: 'FedEx International Economy' },
   { key: 'INTERNATIONAL_PRIORITY', name: 'FedEx International PRIORITY' },
   { key: 'FEDEX_GROUND', name: 'FedEx Ground' },
-  { key: 'GROUND_HOME_DELIVERY', name: 'FedEx Gound Home Delivery' },
+  { key: 'GROUND_HOME_DELIVERY', name: 'FedEx Ground Home Delivery' },
   { key: 'SMART_POST', name: 'FedEx Ground Economy' }
 ];
 
