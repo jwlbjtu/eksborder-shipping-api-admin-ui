@@ -27,7 +27,8 @@ const ClientBillingForm = ({ onOk }: CreateClientFormProps): ReactElement => {
       .then((values) => {
         form.resetFields();
         const result: CreateBillingData = {
-          total: values.total,
+          total: values.total ? values.total : 0,
+          deposit: values.deposit ? values.deposit : 0,
           addFund: values.addFund === 2,
           description: values.description
         };
@@ -60,7 +61,29 @@ const ClientBillingForm = ({ onOk }: CreateClientFormProps): ReactElement => {
             <Form.Item
               label="账单金额"
               name="total"
-              rules={[{ required: true, message: '账单金额必须填！' }]}
+              rules={[
+                {
+                  required: false,
+                  message: '账单金额必须填！'
+                }
+              ]}
+            >
+              <InputNumber<number>
+                style={{ width: 'auto' }}
+                autoFocus
+                min={0}
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) =>
+                  value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              label="账单押金"
+              name="deposit"
+              rules={[{ required: false }]}
             >
               <InputNumber<number>
                 style={{ width: 'auto' }}

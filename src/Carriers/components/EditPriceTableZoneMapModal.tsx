@@ -55,6 +55,7 @@ const EditPriceTableZoneMapModal = ({
       } else {
         cc = [{ zone, maps: row.maps }];
       }
+      console.log(cc);
       const data: PriceTable = { ...account, zoneMap: cc };
       dispatch(updatePriceTableAccountHandler(data));
       setEditingKey('');

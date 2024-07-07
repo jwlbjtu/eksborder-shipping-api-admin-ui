@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   PageHeader,
+  Popconfirm,
   Space,
   Switch,
   Table
@@ -18,6 +19,7 @@ import {
 } from '../../../shared/utils/constants';
 import { User } from '../../../shared/types/user';
 import {
+  deleteUserByIdHandler,
   fetchUsersByRoleHandler,
   selectClientUsers,
   selectLoading,
@@ -105,6 +107,17 @@ const ClientUsers = ({ history }: ClientUsersProps): ReactElement => {
           >
             管理
           </Button>
+          <Popconfirm
+            title="确认删除该用户吗?"
+            placement="topRight"
+            onConfirm={() => dispatch(deleteUserByIdHandler(record.id))}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button size="small" type="link">
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       )
     }

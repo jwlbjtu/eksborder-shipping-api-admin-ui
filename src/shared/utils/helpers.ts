@@ -28,6 +28,12 @@ export const displayRate = (rate: FeeRate): string => {
   return data;
 };
 
+export const opentLabelUrlHandler = (shipment: ShippingRecord): void => {
+  if (shipment.labelUrlList) {
+    shipment.labelUrlList.forEach((url) => window.open(url.labelUrl));
+  }
+};
+
 export const downloadLabelsHandler = async (
   shipment: ShippingRecord
 ): Promise<void> => {

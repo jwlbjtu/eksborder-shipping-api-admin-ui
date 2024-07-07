@@ -7,7 +7,7 @@ import {
   SyncOutlined
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { GET_CARRIER_LOGO } from '../../../shared/utils/constants';
+import { CARRIERS, GET_CARRIER_LOGO } from '../../../shared/utils/constants';
 import { Address } from '../../../shared/types/carrier';
 import {
   ShippingRecord,
@@ -21,7 +21,8 @@ import {
 } from '../../../redux/user/userShippingSlice';
 import {
   downloadLabelsHandler,
-  downloadShipmentForms
+  downloadShipmentForms,
+  opentLabelUrlHandler
 } from '../../../shared/utils/helpers';
 
 interface ClientShippingPanelProps {
@@ -52,6 +53,11 @@ const ClientShippingPanel = ({
         const logo = GET_CARRIER_LOGO(record.carrier!);
         return <img className="logo" src={logo} alt={record.carrier} />;
       }
+    },
+    {
+      title: '订单号',
+      dataIndex: 'orderId',
+      key: 'orderId'
     },
     {
       title: '账号',
@@ -85,20 +91,12 @@ const ClientShippingPanel = ({
       title: '包裹信息',
       key: 'packageInfo',
       render: (text: string, record: ShippingRecord) => {
-        const weight = record.packageInfo?.weight;
-        const dimension = record.packageInfo?.dimentions;
+        const weight = record.packageList[0].weight;
         return (
           <div>
             <div>{`${weight.value.toFixed(
               2
             )} ${weight.unitOfMeasure.toLowerCase()}`}</div>
-            {dimension && (
-              <div>{`${dimension.length.toFixed(2)} x ${dimension.width.toFixed(
-                2
-              )} x ${dimension.height.toFixed(
-                2
-              )} ${dimension.unitOfMeasure.toLowerCase()}`}</div>
-            )}
           </div>
         );
       }
@@ -155,7 +153,11 @@ const ClientShippingPanel = ({
             <Button
               type="primary"
               icon={<PrinterOutlined />}
-              onClick={() => downloadLabelsHandler(record)}
+              onClick={() =>
+                record.carrier === CARRIERS.RUI_YUN
+                  ? opentLabelUrlHandler(record)
+                  : downloadLabelsHandler(record)
+              }
               ghost
             >
               打印面单

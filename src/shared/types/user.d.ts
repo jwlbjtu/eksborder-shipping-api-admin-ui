@@ -79,6 +79,7 @@ export interface User extends CreateUserData {
   };
   logoImage?: string;
   balance: number;
+  deposit: number;
   currency: string;
   apiToken?: string;
   updatedAt: Date;
@@ -86,10 +87,11 @@ export interface User extends CreateUserData {
 
 export interface CreateUserCarrierData {
   accountName: string;
+  accountId: string;
   carrier: string;
   connectedAccount: string;
-  services: Service[];
-  facilities?: string[];
+  service: Service;
+  facility?: string;
   rates?: FeeRate[];
   note?: string;
   thirdpartyPrice: boolean;

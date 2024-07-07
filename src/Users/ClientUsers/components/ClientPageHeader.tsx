@@ -1,4 +1,12 @@
-import { Col, Descriptions, PageHeader, Row, Statistic, Tag } from 'antd';
+import {
+  Col,
+  Descriptions,
+  PageHeader,
+  Row,
+  Space,
+  Statistic,
+  Tag
+} from 'antd';
 import { Link } from 'react-router-dom';
 import { Route } from 'antd/lib/breadcrumb/Breadcrumb';
 import React, { ReactElement } from 'react';
@@ -61,7 +69,7 @@ const ClientPageHeader = ({
       footer={footer}
     >
       <Row>
-        <Col span={18}>
+        <Col span={12}>
           <Descriptions size="small" column={3}>
             <Descriptions.Item label="联系人">{`${data.lastName}${data.firstName}`}</Descriptions.Item>
             <Descriptions.Item label="最低额度">
@@ -74,20 +82,37 @@ const ClientPageHeader = ({
             <Descriptions.Item label="手机">{`+${data.countryCode} ${data.phone}`}</Descriptions.Item>
           </Descriptions>
         </Col>
-        <Col span={6}>
-          <Statistic
-            style={{
-              border: '2px solid rgb(220 220 220)',
-              textAlign: 'center'
-            }}
-            valueStyle={{
-              color: data.balance > data.minBalance ? 'black' : '#cf1322'
-            }}
-            title="账户余额"
-            precision={2}
-            prefix="$"
-            value={data.balance}
-          />
+        <Col span={12}>
+          <Space>
+            <Statistic
+              style={{
+                border: '2px solid rgb(220 220 220)',
+                textAlign: 'center',
+                width: 200
+              }}
+              valueStyle={{
+                color: data.balance > data.minBalance ? 'black' : '#cf1322'
+              }}
+              title="账户余额"
+              precision={2}
+              prefix="$"
+              value={data.balance}
+            />
+            <Statistic
+              style={{
+                border: '2px solid rgb(220 220 220)',
+                textAlign: 'center',
+                width: 200
+              }}
+              valueStyle={{
+                color: data.balance > data.minBalance ? 'black' : '#cf1322'
+              }}
+              title="账户押金"
+              precision={2}
+              prefix="$"
+              value={data.deposit}
+            />
+          </Space>
         </Col>
       </Row>
     </PageHeader>

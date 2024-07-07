@@ -27,6 +27,7 @@ import {
 } from '../../../redux/user/userCarrierSlice';
 import { FeeRate, Service } from '../../../shared/types/carrier';
 import { displayRate } from '../../../shared/utils/helpers';
+import { CARRIERS } from '../../../shared/utils/constants';
 
 interface ClientCarrierPanelProps {
   id: string;
@@ -80,7 +81,7 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       dataIndex: 'accountName'
     },
     {
-      title: '账号',
+      title: '渠道号',
       key: 'accountId',
       dataIndex: 'accountId'
     },
@@ -96,25 +97,22 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
     },
     {
       title: '物流服务',
-      key: 'services',
-      dataIndex: 'services',
-      render: (services: Service[] | undefined) => {
-        if (!services) return '-';
-        const result =
-          services.length !== 0
-            ? services.map((ele) => `${ele.key} - ${ele.name}`).join(', ')
-            : '-';
-        return result;
+      key: 'service',
+      dataIndex: 'service',
+      render: (service: Service, record: UserCarrier) => {
+        if (record.carrier === CARRIERS.RUI_YUN) {
+          return `${service.name}-${service.id}`;
+        }
+        return `${service.key}-${service.id}`;
       }
     },
     {
       title: '操作中心',
-      key: 'facilities',
-      dataIndex: 'facilities',
-      render: (facilities: string[] | undefined) => {
-        if (!facilities) return '-';
-        const result = facilities.length !== 0 ? facilities.join(', ') : '-';
-        return result;
+      key: 'facility',
+      dataIndex: 'facility',
+      render: (facility: string[] | undefined) => {
+        if (!facility) return '-';
+        return facility;
       }
     },
     {

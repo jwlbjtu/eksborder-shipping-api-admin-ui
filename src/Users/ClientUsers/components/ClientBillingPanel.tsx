@@ -105,10 +105,22 @@ const ClientBillingPanel = ({
       render: renderCell
     },
     {
+      title: '押金变化',
+      key: 'deposit',
+      dataIndex: 'deposit',
+      render: renderCell
+    },
+    {
       title: '余额',
       key: 'balance',
       dataIndex: 'balance',
       render: (value: number) => value.toFixed(2)
+    },
+    {
+      title: '押金',
+      key: 'clientDeposit',
+      dataIndex: 'clientDeposit',
+      render: (value: number) => (value !== undefined ? value.toFixed(2) : '-')
     }
   ];
 

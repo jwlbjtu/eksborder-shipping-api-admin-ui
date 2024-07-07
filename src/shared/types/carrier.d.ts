@@ -63,6 +63,7 @@ export interface ThirdPartyAccountData {
   countryCode?: string;
   service: Service;
   region: string;
+  zoneMode: string;
   condition: ThirdPartyCondition;
   price?: ThirdPartyPrice;
   zones?: string[];

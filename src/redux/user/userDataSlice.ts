@@ -205,7 +205,10 @@ export const deleteUserByIdHandler =
             Authorization: `${user.token_type} ${user.token}`
           }
         })
-        .then(() => dispatch(fetchUsersByRoleHandler('admins')))
+        .then(() => {
+          dispatch(fetchUsersByRoleHandler('admins'));
+          dispatch(fetchUsersByRoleHandler(USER_ROLES.API_USER));
+        })
         .catch((error) => errorHandler(error, dispatch))
         .finally(() => dispatch(setLoading(false)));
     }

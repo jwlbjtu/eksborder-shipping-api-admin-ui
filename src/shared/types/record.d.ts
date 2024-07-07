@@ -12,8 +12,7 @@ export interface ShippingRecord {
   sender: OrderAddress;
   toAddress: OrderAddress;
   return: OrderAddress;
-  packageInfo?: PackageInfo;
-  morePackages?: PackageInfo[];
+  packageList: PackageInfo[];
   orderAmount?: number;
   orderCurrency?: Currency;
   shipmentOptions: {
@@ -28,11 +27,18 @@ export interface ShippingRecord {
   shippingId?: string;
   rate?: ShipmentRate;
   labels?: LabelData[];
+  labelUrlList?: RuiYunLableUrl[];
+  invoiceUrl?: string;
   forms?: FormData[];
   manifested: boolean = false;
   errors?: string[];
   labelLoading: boolean = false;
   createdAt: string;
+}
+
+export interface RuiYunLableUrl {
+  labelUrl: string;
+  type: string;
 }
 
 export interface ShipmentRate {

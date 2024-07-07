@@ -87,22 +87,18 @@ const ClientUpdateCarrierForm = ({
       .then((values) => {
         // form.resetFields();
         if (selectedCarrier) {
-          const services = values.services.map(
-            (index: number) => selectedCarrier.services[index]
-          );
-          const facilities =
-            values.facilities &&
-            values.facilities.map(
-              (index: number) => selectedCarrier.facilities![index].facility
-            );
+          const service = selectedCarrier.services[values.service];
+          const facility =
+            values.facilty &&
+            selectedCarrier.facilities![values.facility].facility;
           const result: UserCarrier = {
             id: data.id,
             accountId: data.accountId,
             accountName: data.accountName,
             carrier: selectedCarrier.carrierName,
             connectedAccount: selectedCarrier.accountName,
-            services,
-            facilities,
+            service,
+            facility,
             rates: values.rates,
             carrierRef: selectedCarrier.id,
             thirdpartyPrice: useThirdparty,
@@ -193,17 +189,15 @@ const ClientUpdateCarrierForm = ({
             {selectedCarrier && selectedCarrier.services && (
               <Form.Item
                 label="授权服务"
-                name="services"
-                rules={[{ required: true, message: '至少选择一个服务！' }]}
-                initialValue={data.services.map((item: Service) =>
-                  selectedCarrier.services.findIndex(
-                    (ele: Service) =>
-                      ele.key === item.key && ele.name === item.name
-                  )
+                name="service"
+                rules={[{ required: true, message: '请选择一个服务！' }]}
+                initialValue={selectedCarrier.services.findIndex(
+                  (ele: Service) =>
+                    ele.key === data.service.key &&
+                    ele.name === data.service.name
                 )}
               >
                 <Select
-                  mode="multiple"
                   placeholder="授权服务"
                   disabled={!dataActive}
                   optionLabelProp="label"
@@ -214,9 +208,9 @@ const ClientUpdateCarrierForm = ({
                         <Option
                           key={ser.key}
                           value={index}
-                          label={`${ser.key} - ${ser.name}`}
+                          label={`${ser.key} - ${ser.id}`}
                         >
-                          {`${ser.key} - ${ser.name}`}
+                          {`${ser.key} - ${ser.id}`}
                         </Option>
                       );
                     }
@@ -227,21 +221,16 @@ const ClientUpdateCarrierForm = ({
             {selectedCarrier &&
               selectedCarrier.facilities &&
               selectedCarrier.facilities.length > 0 &&
-              data.facilities && (
+              data.facility && (
                 <Form.Item
                   label="操作中心"
-                  name="facilities"
-                  rules={[
-                    { required: true, message: '至少选择一个操作中心！' }
-                  ]}
-                  initialValue={data.facilities.map((item: string) =>
-                    selectedCarrier.facilities!.findIndex(
-                      (ele: Facility) => ele.facility === item
-                    )
+                  name="facility"
+                  rules={[{ required: true, message: '请选择一个操作中心！' }]}
+                  initialValue={selectedCarrier.facilities.findIndex(
+                    (ele: Facility) => ele.facility === data.facility
                   )}
                 >
                   <Select
-                    mode="multiple"
                     placeholder="操作中心"
                     disabled={!dataActive}
                     optionLabelProp="label"

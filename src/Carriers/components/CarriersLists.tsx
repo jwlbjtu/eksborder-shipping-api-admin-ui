@@ -7,6 +7,7 @@ import fedexLogo from '../../assets/images/carriers/fedex-logo.svg';
 import upsLogo from '../../assets/images/carriers/ups-logo.svg';
 import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
+import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import {
   selectShowCarrierList,
   setShowCarrierList
@@ -78,7 +79,7 @@ const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
       </Row>
       <Divider />
       <Row>
-        <Space>
+        <Space size="middle">
           <Image
             onClick={() => imageClicked(CARRIERS.PITNEY_BOWES)}
             style={{ cursor: 'pointer' }}
@@ -87,6 +88,15 @@ const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
             preview={false}
             src={pbLogo}
             alt={CARRIERS.PITNEY_BOWES}
+          />
+          <Image
+            onClick={() => imageClicked(CARRIERS.RUI_YUN)}
+            style={{ cursor: 'pointer' }}
+            width={120}
+            height={73.84}
+            preview={false}
+            src={ruiYunLogo}
+            alt={CARRIERS.RUI_YUN}
           />
         </Space>
       </Row>

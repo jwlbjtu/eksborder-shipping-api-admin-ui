@@ -30,6 +30,7 @@ import {
 } from '../../shared/types/carrier';
 import {
   CARRIER_REGIONS_TEXTS,
+  CARRIER_ZONE_MODE_TEXTS,
   GET_CARRIER_LOGO
 } from '../../shared/utils/constants';
 import { displayRate } from '../../shared/utils/helpers';
@@ -150,6 +151,14 @@ const ThirdPartyPanel = ({ carrier }: ThirdPartyPanelProps): ReactElement => {
       dataIndex: 'region',
       render: (region: string) => {
         return CARRIER_REGIONS_TEXTS[region];
+      }
+    },
+    {
+      title: '分区模式',
+      key: 'zoneMode',
+      dataIndex: 'zoneMode',
+      render: (zoneMode: string) => {
+        return CARRIER_ZONE_MODE_TEXTS[zoneMode];
       }
     },
     {

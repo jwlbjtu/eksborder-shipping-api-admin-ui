@@ -1,5 +1,6 @@
 export interface CreateBillingData {
   total: number;
+  deposit: number;
   addFund?: boolean;
   description: string;
 }

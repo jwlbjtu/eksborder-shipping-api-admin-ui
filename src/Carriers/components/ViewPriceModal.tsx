@@ -50,7 +50,7 @@ const ViewPriceModal = ({
             dataIndex: 'weight',
             fixed: 'left',
             render: (weight: string, record) => {
-              return record[Object.keys(record)[0]];
+              return record.weight;
             }
           },
           ...columns

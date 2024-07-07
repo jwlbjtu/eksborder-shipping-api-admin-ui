@@ -40,7 +40,8 @@ import {
   UPS_SERVICES,
   USPS_SERVICES,
   CARRIER_REGIONS,
-  FEDEX_SERVICES
+  FEDEX_SERVICES,
+  RUI_YUN_SERVICES
 } from '../../shared/utils/constants';
 import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
@@ -78,6 +79,9 @@ const EditCarrierPage = (): ReactElement => {
         break;
       case CARRIERS.FEDEX:
         CARRIER_SERVICES = FEDEX_SERVICES;
+        break;
+      case CARRIERS.RUI_YUN:
+        CARRIER_SERVICES = RUI_YUN_SERVICES;
         break;
       default:
         CARRIER_SERVICES = [];
@@ -177,6 +181,23 @@ const EditCarrierPage = (): ReactElement => {
             testHubId: carrier.testHubId
           });
         }
+
+        if (carrier.carrierName === CARRIERS.RUI_YUN) {
+          const servicesIndex = [];
+          for (let i = 0; i < carrier.services.length; i += 1) {
+            const service = carrier.services[i];
+            const index = RUI_YUN_SERVICES.findIndex(
+              (ele) => ele.key === service.key
+            );
+            servicesIndex.push(index);
+          }
+
+          form.setFieldsValue({
+            accountNum: carrier.accountNum,
+            accessKey: carrier.accessKey,
+            services: servicesIndex
+          });
+        }
       } else {
         history.push(UI_ROUTES.CARRIERS);
       }
@@ -197,6 +218,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = USPS_SERVICES;
     } else if (carrierType === CARRIERS.FEDEX) {
       carrierServices = FEDEX_SERVICES;
+    } else if (carrierType === CARRIERS.RUI_YUN) {
+      carrierServices = RUI_YUN_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number | string) =>
@@ -246,7 +269,7 @@ const EditCarrierPage = (): ReactElement => {
       data.testFacilities = testFacilities;
     }
 
-    if (carrierType === CARRIERS.UPS) {
+    if (carrierType === CARRIERS.UPS || carrierType === CARRIERS.RUI_YUN) {
       data.accessKey = values.accessKey;
       data.accountNum = values.accountNum;
     }
@@ -325,6 +348,11 @@ const EditCarrierPage = (): ReactElement => {
     if (carrierType === CARRIERS.FEDEX) {
       defaultServices = FEDEX_SERVICES.map((service, index) => {
         return { label: service.name, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.RUI_YUN) {
+      defaultServices = RUI_YUN_SERVICES.map((service, index) => {
+        return { label: `${service.name}-${service.id}`, value: index };
       });
     }
 
@@ -412,7 +440,7 @@ const EditCarrierPage = (): ReactElement => {
               <Space size={[10, 2]} style={{ width: '100%' }}>
                 <Form.Item
                   style={{ width: '350px' }}
-                  label="Client ID (Meter Number)"
+                  label="Client ID (Meter Number, userId)"
                   name="clientId"
                   rules={[
                     { required: true, message: 'Client ID 必须填写' },
@@ -423,7 +451,7 @@ const EditCarrierPage = (): ReactElement => {
                 </Form.Item>
                 <Form.Item
                   style={{ width: '350px' }}
-                  label="Client Secret (Password)"
+                  label="Client Secret (Password, bankerId)"
                   name="clientSecret"
                   rules={[
                     { required: true, message: 'Client Secret 必须填写' },
@@ -437,19 +465,20 @@ const EditCarrierPage = (): ReactElement => {
                 </Form.Item>
               </Space>
               {(carrierType === CARRIERS.UPS ||
-                carrierType === CARRIERS.FEDEX) && (
+                carrierType === CARRIERS.FEDEX ||
+                carrierType === CARRIERS.RUI_YUN) && (
                 <>
                   <Space size={[10, 2]} style={{ width: '100%' }}>
                     <Form.Item
                       style={{ width: '350px' }}
-                      label="Access Key"
+                      label="Access Key (plantKey)"
                       name="accessKey"
                       rules={[
                         { required: true, message: 'Access Key必须填写' }
                       ]}
                     >
                       <Input
-                        placeholder="Access Key"
+                        placeholder="Access Key (plantKey)"
                         disabled={!activeSwitch}
                       />
                     </Form.Item>

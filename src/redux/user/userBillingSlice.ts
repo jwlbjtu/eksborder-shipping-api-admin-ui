@@ -4,11 +4,11 @@ import {
   RootState,
   UserBillingState
 } from '../../shared/types/redux-types';
-import { SERVER_ROUTES } from '../../shared/utils/constants';
+import { SERVER_ROUTES, USER_ROLES } from '../../shared/utils/constants';
 import axios from '../../shared/utils/axios-base';
 import errorHandler from '../../shared/utils/errorHandler';
 import { Billing, CreateBillingData } from '../../shared/types/billing';
-import { getUserByIdHandler } from './userDataSlice';
+import { fetchUsersByRoleHandler, getUserByIdHandler } from './userDataSlice';
 
 const initialState: UserBillingState = {
   billings: [],
@@ -73,7 +73,8 @@ export const createUserBillingHandler =
         })
         .then(() => {
           dispatch(fetchUserBillingHandler(id));
-          dispatch(getUserByIdHandler(id));
+          dispatch(fetchUsersByRoleHandler(USER_ROLES.API_USER));
+          // dispatch(getUserByIdHandler(id));
         })
         .catch((error) => errorHandler(error, dispatch))
         .finally(() => {

@@ -12,7 +12,11 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import CarriersList from '../components/CarriersLists';
-import { GET_CARRIER_LOGO, UI_ROUTES } from '../../shared/utils/constants';
+import {
+  CARRIERS,
+  GET_CARRIER_LOGO,
+  UI_ROUTES
+} from '../../shared/utils/constants';
 import { Carrier } from '../../shared/types/carrier';
 import {
   deleteCarrierHandler,
@@ -80,6 +84,9 @@ const Carriers = (): ReactElement => {
       dataIndex: 'servies',
       key: 'services',
       render: (text: string, record: Carrier): string => {
+        if (record.carrierName === CARRIERS.RUI_YUN) {
+          return record.services.map((ele) => ele.name).join(', ');
+        }
         return record.services.map((ele) => ele.key).join(', ');
       }
     },

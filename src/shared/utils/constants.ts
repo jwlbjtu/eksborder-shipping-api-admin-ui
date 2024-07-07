@@ -4,6 +4,7 @@ import upsLogo from '../../assets/images/carriers/ups-logo.svg';
 import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import eksShippingLogo from '../../assets/images/logo-rectangular.png';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
+import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 
 export enum Currency {
   USD = 'USD',
@@ -48,7 +49,8 @@ export const CARRIERS = {
   FEDEX: 'FedEx',
   UPS: 'UPS',
   USPS: 'USPS',
-  PITNEY_BOWES: 'Pitney Bowes'
+  PITNEY_BOWES: 'Pitney Bowes',
+  RUI_YUN: 'Rui Yun'
 };
 
 export const GET_CARRIER_LOGO = (carrier: string): string => {
@@ -63,6 +65,8 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
       return uspsLogo;
     case CARRIERS.PITNEY_BOWES:
       return pbLogo;
+    case CARRIERS.RUI_YUN:
+      return ruiYunLogo;
     default:
       return eksShippingLogo;
   }
@@ -78,6 +82,16 @@ export const CARRIER_REGIONS_TEXTS = {
   [CARRIER_REGIONS.US_DOMESTIC]: 'US Domestic',
   [CARRIER_REGIONS.US_INTERNATIONAL]: 'US International',
   [CARRIER_REGIONS.CN_IMPORT]: 'China Import'
+};
+
+export const CARRIER_ZONE_MODE = {
+  ZIP: 'zip',
+  COUNTRY: 'country'
+};
+
+export const CARRIER_ZONE_MODE_TEXTS = {
+  [CARRIER_ZONE_MODE.ZIP]: '邮编',
+  [CARRIER_ZONE_MODE.COUNTRY]: '国家'
 };
 
 export const EKSBORDER_ADDRESS = {
@@ -161,6 +175,22 @@ export const FEDEX_SERVICES = [
   { key: 'FEDEX_GROUND', name: 'FedEx Ground' },
   { key: 'GROUND_HOME_DELIVERY', name: 'FedEx Ground Home Delivery' },
   { key: 'SMART_POST', name: 'FedEx Ground Economy' }
+];
+
+export const RUI_YUN_SERVICES = [
+  { key: 'UPS', id: 'AA06pkt00C', name: '美国UPS-MI-ORD(BX) Lenexa' },
+  { key: 'UPS', id: 'AA06ups2XJ', name: '美国UPS-MI-E-ORD' },
+  { key: 'UPS', id: 'AA06pkt00H', name: '美国UPS-MI-LAX Q(Shalla) 92337' },
+  { key: 'UPS', id: 'AA06pkt037', name: '美国UPS-MI-LAX Q (LYT) 91710' },
+  { key: 'UPS', id: 'AA06pkt03D', name: '美国UPS-MI-LAX Q (LYT) 92503' },
+  { key: 'UPS', id: 'AA06pkt01F', name: '美国UPS-MI-LAX Q (Shalla) 91745' },
+  { key: 'UPS', id: 'AA06ups2XB', name: '美国UPS-MI-E-LAX' },
+  { key: 'UPS', id: 'AA06pkt010', name: '美国UPS-MI-MD (Shalla) 21227' },
+  { key: 'UPS', id: 'AA06pkt036', name: '美国UPS-MI-MD (Shalla) 21076' },
+  { key: 'UPS', id: 'AA06pkt019', name: '美国UPS-MI-GA Q (LYT)30549' },
+  { key: 'UPS', id: 'AA06pkt01X', name: '美国UPS-MI-NY Q (Shalla) 11226' },
+  { key: 'UPS', id: 'AA06ups2XI', name: '美国UPS-MI-E-NY' },
+  { key: 'UPS', id: 'AA06pkt01Y', name: '美国UPS-MI-NJ Q (Shalla) 08840' }
 ];
 
 export const CARRIER_SERVIES = {

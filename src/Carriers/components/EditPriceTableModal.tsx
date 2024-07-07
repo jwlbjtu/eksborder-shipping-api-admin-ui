@@ -21,6 +21,8 @@ import {
   ThirdPartyAccountData
 } from '../../shared/types/carrier';
 import {
+  CARRIER_ZONE_MODE,
+  CARRIER_ZONE_MODE_TEXTS,
   CarrierRateType,
   Country,
   COUNTRY_NAMES,
@@ -93,6 +95,7 @@ const EditPriceTableModal = ({
           zipCode: values.zipCode,
           service: serviceObj,
           region: values.region,
+          zoneMode: values.zoneMode,
           condition: noCondition
             ? {}
             : {
@@ -122,6 +125,7 @@ const EditPriceTableModal = ({
         zipCode: values.zipCode,
         service: serviceObject,
         region: values.region,
+        zoneMode: values.zoneMode,
         condition: noCondition
           ? {}
           : {
@@ -192,6 +196,23 @@ const EditPriceTableModal = ({
                 </Option>
               );
             })}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          label="分区模式"
+          name="zoneMode"
+          rules={[{ required: true, message: '分区模式必须填' }]}
+        >
+          <Select>
+            <Option key={CARRIER_ZONE_MODE.ZIP} value={CARRIER_ZONE_MODE.ZIP}>
+              {CARRIER_ZONE_MODE_TEXTS[CARRIER_ZONE_MODE.ZIP]}
+            </Option>
+            <Option
+              key={CARRIER_ZONE_MODE.COUNTRY}
+              value={CARRIER_ZONE_MODE.COUNTRY}
+            >
+              {CARRIER_ZONE_MODE_TEXTS[CARRIER_ZONE_MODE.COUNTRY]}
+            </Option>
           </Select>
         </Form.Item>
         <Divider orientation="left" plain>

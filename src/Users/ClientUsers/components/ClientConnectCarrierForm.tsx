@@ -19,7 +19,8 @@ import {
   RATE_BASES,
   WeightUnit,
   Currency,
-  CarrierRateType
+  CarrierRateType,
+  CARRIERS
 } from '../../../shared/utils/constants';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
 import { CreateUserCarrierData } from '../../../shared/types/user.d';
@@ -67,20 +68,15 @@ const ClientConnectCarrierForm = ({
       .then((values) => {
         form.resetFields();
         if (selectedCarrier) {
-          const services = values.services.map(
-            (index: number) => selectedCarrier.services[index]
-          );
-          const facilities =
-            values.facilities &&
-            values.facilities.map(
-              (index: number) => selectedCarrier.facilities![index].facility
-            );
+          const service = selectedCarrier.services[values.service];
+          const facility = values.facility;
           const result: CreateUserCarrierData = {
             accountName: values.accountName,
+            accountId: values.accountId,
             carrier: selectedCarrier.carrierName,
             connectedAccount: selectedCarrier.accountName,
-            services,
-            facilities,
+            service,
+            facility,
             rates: values.rates,
             carrierRef: selectedCarrier.id,
             userRef: '',
@@ -130,6 +126,13 @@ const ClientConnectCarrierForm = ({
               <Input placeholder="账号名称" />
             </Form.Item>
             <Form.Item
+              label="渠道代码"
+              name="accountId"
+              rules={[{ required: true, message: '渠道代码必须填！' }]}
+            >
+              <Input placeholder="渠道代码" />
+            </Form.Item>
+            <Form.Item
               label="选择要关联的账号"
               name="connectedAccount"
               rules={[{ required: true, message: '请选择要关联的账号！' }]}
@@ -147,17 +150,22 @@ const ClientConnectCarrierForm = ({
             {selectedCarrier && selectedCarrier.services && (
               <Form.Item
                 label="授权服务"
-                name="services"
-                rules={[{ required: true, message: '至少选择一个服务！' }]}
+                name="service"
+                rules={[{ required: true, message: '请选择一个服务！' }]}
               >
                 <Select
-                  mode="multiple"
                   placeholder="授权服务"
                   disabled={!selectedCarrier}
                   options={selectedCarrier.services.map(
                     (service: Service, index: number) => {
+                      if (selectedCarrier.carrierName === CARRIERS.RUI_YUN) {
+                        return {
+                          label: `${service.name} - ${service.id}`,
+                          value: index
+                        };
+                      }
                       return {
-                        label: `${service.key} - ${service.name}`,
+                        label: `${service.key} - ${service.id}`,
                         value: index
                       };
                     }
@@ -170,13 +178,10 @@ const ClientConnectCarrierForm = ({
               selectedCarrier.facilities.length > 0 && (
                 <Form.Item
                   label="操作中心"
-                  name="facilities"
-                  rules={[
-                    { required: true, message: '至少选择一个操作中心！' }
-                  ]}
+                  name="facility"
+                  rules={[{ required: true, message: '请选择一个操作中心！' }]}
                 >
                   <Select
-                    mode="multiple"
                     placeholder="操作中心"
                     disabled={!selectedCarrier}
                     optionLabelProp="label"
