@@ -41,7 +41,8 @@ import {
   USPS_SERVICES,
   CARRIER_REGIONS,
   FEDEX_SERVICES,
-  RUI_YUN_SERVICES
+  RUI_YUN_SERVICES,
+  USPS3_SERVICES
 } from '../../shared/utils/constants';
 import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
@@ -82,6 +83,9 @@ const EditCarrierPage = (): ReactElement => {
         break;
       case CARRIERS.RUI_YUN:
         CARRIER_SERVICES = RUI_YUN_SERVICES;
+        break;
+      case CARRIERS.USPS3:
+        CARRIER_SERVICES = USPS3_SERVICES;
         break;
       default:
         CARRIER_SERVICES = [];
@@ -220,6 +224,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = FEDEX_SERVICES;
     } else if (carrierType === CARRIERS.RUI_YUN) {
       carrierServices = RUI_YUN_SERVICES;
+    } else if (carrierType === CARRIERS.USPS3) {
+      carrierServices = USPS3_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number | string) =>
@@ -303,6 +309,11 @@ const EditCarrierPage = (): ReactElement => {
       };
     }
 
+    if (carrierType === CARRIERS.USPS3) {
+      data.clientId = values.clientId;
+      data.clientSecret = values.clientSecret;
+    }
+
     return data;
   };
 
@@ -353,6 +364,14 @@ const EditCarrierPage = (): ReactElement => {
     if (carrierType === CARRIERS.RUI_YUN) {
       defaultServices = RUI_YUN_SERVICES.map((service, index) => {
         return { label: `${service.name}-${service.id}`, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.USPS3) {
+      defaultServices = USPS3_SERVICES.map((service, index) => {
+        return {
+          label: `${service.key!}-${service.name}-${service.id}`,
+          value: index
+        };
       });
     }
 

@@ -182,7 +182,7 @@ const EditThirdPartyModal = ({
           <Form.Item
             label="国家代码"
             name="countryCode"
-            rules={[{ required: true, message: '国家代码必须填' }]}
+            rules={[{ required: false, message: '国家代码必须填' }]}
             style={{ width: '215px' }}
           >
             <Select placeholder="国家代码">
@@ -202,7 +202,7 @@ const EditThirdPartyModal = ({
             style={{ width: '215px' }}
             label="邮政编码"
             name="zipCode"
-            rules={[{ required: true, message: '邮政编码' }]}
+            rules={[{ required: false, message: '邮政编码' }]}
           >
             <Input placeholder="邮政编码" />
           </Form.Item>

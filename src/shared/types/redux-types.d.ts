@@ -71,6 +71,7 @@ export interface ThirdPartyState {
   priceModalShow: boolean;
   priceTabelModalShow: boolean;
   zoneModal: boolean;
+  zoneUploadModal: boolean;
 }
 
 export interface PriceTableState {

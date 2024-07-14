@@ -19,7 +19,8 @@ const initialState: ThirdPartyState = {
   modalLoading: false,
   priceModalShow: false,
   priceTabelModalShow: false,
-  zoneModal: false
+  zoneModal: false,
+  zoneUploadModal: false
 };
 
 export const thirdpartySlice = createSlice({
@@ -46,6 +47,9 @@ export const thirdpartySlice = createSlice({
     },
     setZoneModalShow: (state, action: PayloadAction<boolean>) => {
       state.zoneModal = action.payload;
+    },
+    setZoneUploadModalShow: (state, action: PayloadAction<boolean>) => {
+      state.zoneUploadModal = action.payload;
     }
   }
 });
@@ -57,7 +61,8 @@ export const {
   setModalLoading,
   setPriceModalShow,
   setPriceTableModalShow,
-  setZoneModalShow
+  setZoneModalShow,
+  setZoneUploadModalShow
 } = thirdpartySlice.actions;
 
 export const fetchThirdPartyAccounts =
@@ -173,5 +178,7 @@ export const selectThirdpartyPriceTableModal = (state: RootState): boolean =>
   state.thirdpartyAccounts.priceTabelModalShow;
 export const selectZoneModal = (state: RootState): boolean =>
   state.thirdpartyAccounts.zoneModal;
+export const selectZoneUploadModal = (state: RootState): boolean =>
+  state.thirdpartyAccounts.zoneUploadModal;
 
 export default thirdpartySlice.reducer;

@@ -1,4 +1,4 @@
-import { Facility, Service } from './carrier';
+import { Address, Facility, IAddress, Service } from './carrier';
 
 export interface UserLogin {
   email: string;
@@ -92,6 +92,7 @@ export interface CreateUserCarrierData {
   connectedAccount: string;
   service: Service;
   facility?: string;
+  address: IAddress;
   rates?: FeeRate[];
   note?: string;
   thirdpartyPrice: boolean;

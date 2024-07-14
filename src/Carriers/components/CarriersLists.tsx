@@ -8,6 +8,7 @@ import upsLogo from '../../assets/images/carriers/ups-logo.svg';
 import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
+import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 import {
   selectShowCarrierList,
   setShowCarrierList
@@ -97,6 +98,15 @@ const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
             preview={false}
             src={ruiYunLogo}
             alt={CARRIERS.RUI_YUN}
+          />
+          <Image
+            onClick={() => imageClicked(CARRIERS.USPS3)}
+            style={{ cursor: 'pointer' }}
+            width={120}
+            height={73.84}
+            preview={false}
+            src={usps3Logo}
+            alt={CARRIERS.USPS3}
           />
         </Space>
       </Row>

@@ -12,6 +12,8 @@ import {
   selectUserBillingsLoading,
   setShowBillingForm
 } from '../../../redux/user/userBillingSlice';
+import { USER_ROLES } from '../../../shared/utils/constants';
+import { fetchUsersByRoleHandler } from '../../../redux/user/userDataSlice';
 
 interface ClientBillingPanelProps {
   id: string;
@@ -32,6 +34,7 @@ const ClientBillingPanel = ({
 
   const refreshRecords = async () => {
     dispatch(fetchUserBillingHandler(id));
+    dispatch(fetchUsersByRoleHandler(USER_ROLES.API_USER));
   };
 
   const addBillHandler = async (values: CreateBillingData) => {

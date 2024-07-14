@@ -87,6 +87,11 @@ const Carriers = (): ReactElement => {
         if (record.carrierName === CARRIERS.RUI_YUN) {
           return record.services.map((ele) => ele.name).join(', ');
         }
+        if (record.carrierName === CARRIERS.USPS3) {
+          return record.services
+            .map((ele) => `${ele.key}-${ele.name}`)
+            .join(', ');
+        }
         return record.services.map((ele) => ele.key).join(', ');
       }
     },

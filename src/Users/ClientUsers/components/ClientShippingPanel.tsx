@@ -154,7 +154,8 @@ const ClientShippingPanel = ({
               type="primary"
               icon={<PrinterOutlined />}
               onClick={() =>
-                record.carrier === CARRIERS.RUI_YUN
+                record.carrier === CARRIERS.RUI_YUN ||
+                record.carrier === CARRIERS.USPS3
                   ? opentLabelUrlHandler(record)
                   : downloadLabelsHandler(record)
               }

@@ -20,7 +20,9 @@ import {
   CarrierRateType,
   Currency,
   WeightUnit,
-  RATE_BASES
+  RATE_BASES,
+  Country,
+  COUNTRY_NAMES
 } from '../../../shared/utils/constants';
 import { UserCarrier } from '../../../shared/types/user';
 import { Carrier, Facility, Service } from '../../../shared/types/carrier';
@@ -99,6 +101,16 @@ const ClientUpdateCarrierForm = ({
             connectedAccount: selectedCarrier.accountName,
             service,
             facility,
+            address: {
+              name: values.name,
+              company: values.company,
+              street1: values.street1,
+              street2: values.street2,
+              city: values.city,
+              state: values.state,
+              zip: values.zip,
+              country: data.address.country
+            },
             rates: values.rates,
             carrierRef: selectedCarrier.id,
             thirdpartyPrice: useThirdparty,
@@ -156,14 +168,24 @@ const ClientUpdateCarrierForm = ({
       <Spin size="large" spinning={loading}>
         {carriers && carriers.length > 0 ? (
           <Form form={form} layout="vertical">
-            <Form.Item
-              label="账号名称"
-              name="accountName"
-              rules={[{ required: true, message: '账号名称必须填！' }]}
-              initialValue={data.accountName}
-            >
-              <Input placeholder="账号名称" disabled />
-            </Form.Item>
+            <Space size="large">
+              <Form.Item
+                label="账号名称"
+                name="accountName"
+                rules={[{ required: true, message: '账号名称必须填！' }]}
+                initialValue={data.accountName}
+              >
+                <Input placeholder="账号名称" disabled />
+              </Form.Item>
+              <Form.Item
+                label="渠道代码"
+                name="accountId"
+                rules={[{ required: true, message: '渠道代码必须填！' }]}
+                initialValue={data.accountId}
+              >
+                <Input placeholder="渠道代码" disabled />
+              </Form.Item>
+            </Space>
             <Form.Item
               label="选择要关联的账号"
               name="connectedAcconut"
@@ -270,6 +292,88 @@ const ClientUpdateCarrierForm = ({
               </Form.Item>
               <Form.Item name="payOffline" valuePropName="checked">
                 <Checkbox>线下支付</Checkbox>
+              </Form.Item>
+            </Space>
+            <Divider orientation="left" plain>
+              备案地址
+            </Divider>
+            <Space size="large">
+              <Form.Item
+                label="姓名"
+                name="name"
+                rules={[{ required: true, message: '姓名必须填！' }]}
+                initialValue={data.address.name}
+              >
+                <Input placeholder="姓名" />
+              </Form.Item>
+              <Form.Item
+                label="公司名"
+                name="company"
+                rules={[{ required: true, message: '公司名必须填！' }]}
+                initialValue={data.address.company}
+              >
+                <Input placeholder="公司名" />
+              </Form.Item>
+            </Space>
+            <Form.Item
+              label="地址1"
+              name="street1"
+              rules={[{ required: true, message: '地址1必须填！' }]}
+              initialValue={data.address.street1}
+            >
+              <Input placeholder="地址1" />
+            </Form.Item>
+            <Form.Item
+              label="地址2"
+              name="street2"
+              initialValue={data.address.street2}
+            >
+              <Input placeholder="地址2" />
+            </Form.Item>
+            <Space size="large">
+              <Form.Item
+                label="城市"
+                name="city"
+                rules={[{ required: true, message: '城市必须填！' }]}
+                initialValue={data.address.city}
+              >
+                <Input placeholder="城市" />
+              </Form.Item>
+              <Form.Item
+                label="州"
+                name="state"
+                rules={[{ required: true, message: '州必须填！' }]}
+                initialValue={data.address.state}
+              >
+                <Input placeholder="州" />
+              </Form.Item>
+              <Form.Item
+                label="邮编"
+                name="zip"
+                rules={[{ required: true, message: '邮编必须填！' }]}
+                initialValue={data.address.zip}
+              >
+                <Input placeholder="邮编" />
+              </Form.Item>
+              <Form.Item
+                label="国家代码"
+                name="country"
+                rules={[{ required: false, message: '国家代码必须填' }]}
+                style={{ width: '215px' }}
+                initialValue={data.address.country}
+              >
+                <Select placeholder="国家代码">
+                  return (
+                  <>
+                    <Option value={Country.USA}>
+                      {COUNTRY_NAMES[Country.USA]}
+                    </Option>
+                    <Option value={Country.CHINA}>
+                      {COUNTRY_NAMES[Country.CHINA]}
+                    </Option>
+                  </>
+                  );
+                </Select>
               </Form.Item>
             </Space>
             <Divider orientation="left" plain>

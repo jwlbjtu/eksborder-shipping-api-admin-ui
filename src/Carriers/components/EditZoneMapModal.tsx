@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Button, Form, Input, Modal, Table } from 'antd';
+import { Button, Form, Input, Modal, notification, Table } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,12 +24,14 @@ const EditZoneMapModal = ({ account }: EditZoneMapModalProps): ReactElement => {
   const showModal = useSelector(selectZoneModal);
   const thirdpartyAccounts = useSelector(selectAccounts);
   const [tabelData, setTableData] = useState<ThirdPartyZoneMap[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<ThirdPartyAccount>();
   const [editingKey, setEditingKey] = useState('');
 
   useEffect(() => {
     const accountData = thirdpartyAccounts.find((ele) => ele.id === account.id);
     if (accountData) {
       setTableData(accountData.zoneMap || []);
+      setSelectedAccount(accountData);
     } else {
       setTableData([]);
     }
@@ -47,20 +49,29 @@ const EditZoneMapModal = ({ account }: EditZoneMapModalProps): ReactElement => {
   };
 
   const save = async (zone: string) => {
-    try {
-      const row = (await form.validateFields()) as Record<string, string>;
-      let cc = account.zoneMap ? [...account.zoneMap] : [];
-      if (account.zoneMap) {
-        const index = account.zoneMap.findIndex((ele) => ele.zone === zone);
-        cc[index] = { zone, maps: row.maps };
-      } else {
-        cc = [{ zone, maps: row.maps }];
+    if (selectedAccount) {
+      try {
+        const row = (await form.validateFields()) as Record<string, string>;
+        let cc = selectedAccount.zoneMap ? [...selectedAccount.zoneMap] : [];
+        if (selectedAccount.zoneMap) {
+          const index = selectedAccount.zoneMap.findIndex(
+            (ele) => ele.zone === zone
+          );
+          cc[index] = { zone, maps: row.maps };
+        } else {
+          cc = [{ zone, maps: row.maps }];
+        }
+        const data: ThirdPartyAccount = { ...selectedAccount, zoneMap: cc };
+        dispatch(updateThirdPartyAccountHandler(data));
+        setEditingKey('');
+      } catch (errInfo) {
+        console.log('Validate Failed:', errInfo);
       }
-      const data: ThirdPartyAccount = { ...account, zoneMap: cc };
-      dispatch(updateThirdPartyAccountHandler(data));
-      setEditingKey('');
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
+    } else {
+      notification.error({
+        message: '错误',
+        description: '请先选择账户'
+      });
     }
   };
 
@@ -109,13 +120,18 @@ const EditZoneMapModal = ({ account }: EditZoneMapModalProps): ReactElement => {
     {
       title: '分区',
       dataIndex: 'zone',
-      width: '25%'
+      width: '50'
     },
     {
       title: '分区表',
       dataIndex: 'maps',
-      width: '50%',
-      editable: true
+      width: '200',
+      editable: true,
+      render: (text: string, record: ThirdPartyZoneMap) => (
+        <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
+          {text}
+        </div>
+      )
     },
     {
       title: '操作',

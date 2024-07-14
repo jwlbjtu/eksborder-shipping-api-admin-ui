@@ -19,7 +19,8 @@ import {
   setPriceModalShow,
   setPriceTableModalShow,
   setShowModal,
-  setZoneModalShow
+  setZoneModalShow,
+  setZoneUploadModalShow
 } from '../../redux/carrier/thirdpartySlice';
 import {
   Carrier,
@@ -38,6 +39,7 @@ import EditThirdPartyModal from './EditThridPartyModal';
 import EditZoneMapModal from './EditZoneMapModal';
 import ThirdPartyPriceUploadModal from './ThirdPartyPriceUploadModal';
 import ViewPriceModal from './ViewPriceModal';
+import ThirdPartyZoneUploadModal from './ThirdPartyZoneUploadModal';
 
 interface ThirdPartyPanelProps {
   carrier: Carrier;
@@ -69,6 +71,11 @@ const ThirdPartyPanel = ({ carrier }: ThirdPartyPanelProps): ReactElement => {
     dispatch(setPriceModalShow(true));
   };
 
+  const showZoneUploadHandler = (record: ThirdPartyAccount) => {
+    setCurAccount(record);
+    dispatch(setZoneUploadModalShow(true));
+  };
+
   const showPriceTableHandler = (record: ThirdPartyAccount) => {
     setCurAccount(record);
     dispatch(setPriceTableModalShow(true));
@@ -88,6 +95,15 @@ const ThirdPartyPanel = ({ carrier }: ThirdPartyPanelProps): ReactElement => {
           onClick={() => showPriceUploadHandler(record)}
         >
           上传价格
+        </Button>
+      </Menu.Item>
+      <Menu.Item key="0">
+        <Button
+          type="link"
+          size="small"
+          onClick={() => showZoneUploadHandler(record)}
+        >
+          上传分区
         </Button>
       </Menu.Item>
       {record.price && record.price.data.length && (
@@ -259,6 +275,9 @@ const ThirdPartyPanel = ({ carrier }: ThirdPartyPanelProps): ReactElement => {
       )}
       {carrier.isActive && curAccount && (
         <ThirdPartyPriceUploadModal carrier={carrier} account={curAccount} />
+      )}
+      {carrier.isActive && curAccount && (
+        <ThirdPartyZoneUploadModal carrier={carrier} account={curAccount} />
       )}
       {curAccount && curAccount.price && curAccount.zones && (
         <>

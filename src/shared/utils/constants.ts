@@ -5,6 +5,7 @@ import uspsLogo from '../../assets/images/carriers/usps-logo.svg';
 import eksShippingLogo from '../../assets/images/logo-rectangular.png';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
+import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 
 export enum Currency {
   USD = 'USD',
@@ -50,7 +51,8 @@ export const CARRIERS = {
   UPS: 'UPS',
   USPS: 'USPS',
   PITNEY_BOWES: 'Pitney Bowes',
-  RUI_YUN: 'Rui Yun'
+  RUI_YUN: 'Rui Yun',
+  USPS3: 'USPS3'
 };
 
 export const GET_CARRIER_LOGO = (carrier: string): string => {
@@ -67,6 +69,8 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
       return pbLogo;
     case CARRIERS.RUI_YUN:
       return ruiYunLogo;
+    case CARRIERS.USPS3:
+      return usps3Logo;
     default:
       return eksShippingLogo;
   }
@@ -193,6 +197,8 @@ export const RUI_YUN_SERVICES = [
   { key: 'UPS', id: 'AA06pkt01Y', name: '美国UPS-MI-NJ Q (Shalla) 08840' }
 ];
 
+export const USPS3_SERVICES = [{ key: 'USPS', id: '11429', name: 'GA' }];
+
 export const CARRIER_SERVIES = {
   [CARRIERS.DHL_ECOMMERCE]: DHL_ECOMMERCE_SERVICES
 };
@@ -242,6 +248,7 @@ export const SERVER_ROUTES = {
   ACCOUNT: '/account',
   RECORDS: '/records',
   CSV: '/csv',
+  ZONE: '/zone',
   THIRDPARTY_ACCOUNTS: '/thirdparties',
   PRICE_TABLES: '/priceTable',
   CUSTOM_SERVICE: '/customService'

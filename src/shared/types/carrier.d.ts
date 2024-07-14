@@ -55,6 +55,22 @@ export interface Address {
   shipperNum?: string;
 }
 
+export interface IAddress {
+  id?: string;
+  name?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  country: string;
+  street1: string;
+  street2?: string;
+  city: string;
+  state?: string;
+  zip: string;
+  taxNumber?: string;
+  isResidential?: boolean;
+}
+
 export interface ThirdPartyAccountData {
   name: string;
   carrier: string;
