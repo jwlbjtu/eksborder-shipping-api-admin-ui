@@ -12,6 +12,7 @@ import Welcome from './Welcome';
 import Login from './Users/Login';
 
 import { selectCurUser } from './redux/user/userSlice';
+import { USER_ROLES } from './shared/utils/constants';
 
 const ClientUsers = React.lazy(
   () => import('./Users/ClientUsers/pages/ClientUsers')
@@ -72,14 +73,19 @@ const App: React.FC = (): ReactElement => {
                     <Route path="/" component={Welcome} exact />
                     <Route path="/clients/:id" component={ClientManagePage} />
                     <Route path="/clients" component={ClientUsers} />
-                    <Route path="/admins/:id" component={AdminProfile} />
-                    <Route path="/admins" component={AdminUsers} />
-                    <Route
-                      path="/carriers/:carrierId"
-                      component={EditCarrierPage}
-                    />
-                    <Route path="/carriers" component={Carrier} />
-                    <Route path="/audit" component={AuditTrail} />
+                    {curUser.role === USER_ROLES.ADMIN_SUPER && (
+                      <>
+                        <Route path="/admins/:id" component={AdminProfile} />
+                        <Route path="/admins" component={AdminUsers} />
+
+                        <Route
+                          path="/carriers/:carrierId"
+                          component={EditCarrierPage}
+                        />
+                        <Route path="/carriers" component={Carrier} />
+                        <Route path="/audit" component={AuditTrail} />
+                      </>
+                    )}
                     <Route path="/user/profile" component={UserProfile} />
                     <Redirect to="/" />
                   </Switch>
