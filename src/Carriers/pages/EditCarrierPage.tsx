@@ -95,6 +95,14 @@ const EditCarrierPage = (): ReactElement => {
       const service = carrier.services[i];
       if (service.key === 'CUSTOM') {
         serviceIndex.push(service.name);
+      } else if (
+        carrier.carrierName === CARRIERS.RUI_YUN ||
+        carrier.carrierName === CARRIERS.USPS3
+      ) {
+        const index = CARRIER_SERVICES.findIndex(
+          (ele) => ele.id === service.id
+        );
+        serviceIndex.push(index);
       } else {
         const index = CARRIER_SERVICES.findIndex(
           (ele) => ele.key === service.key
@@ -102,6 +110,7 @@ const EditCarrierPage = (): ReactElement => {
         serviceIndex.push(index);
       }
     }
+    console.log(serviceIndex);
     return serviceIndex;
   };
 
@@ -183,23 +192,6 @@ const EditCarrierPage = (): ReactElement => {
             testAccountNum: carrier.testAccountNum,
             testAccessKey: carrier.testAccessKey,
             testHubId: carrier.testHubId
-          });
-        }
-
-        if (carrier.carrierName === CARRIERS.RUI_YUN) {
-          const servicesIndex = [];
-          for (let i = 0; i < carrier.services.length; i += 1) {
-            const service = carrier.services[i];
-            const index = RUI_YUN_SERVICES.findIndex(
-              (ele) => ele.key === service.key
-            );
-            servicesIndex.push(index);
-          }
-
-          form.setFieldsValue({
-            accountNum: carrier.accountNum,
-            accessKey: carrier.accessKey,
-            services: servicesIndex
           });
         }
       } else {

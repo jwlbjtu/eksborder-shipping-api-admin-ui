@@ -197,7 +197,10 @@ export const RUI_YUN_SERVICES = [
   { key: 'UPS', id: 'AA06pkt01Y', name: '美国UPS-MI-NJ Q (Shalla) 08840' }
 ];
 
-export const USPS3_SERVICES = [{ key: 'USPS', id: '11429', name: 'GA' }];
+export const USPS3_SERVICES = [
+  { key: 'USPS', id: '11429', name: 'GA' },
+  { key: 'USPS', id: '11107', name: 'PM' }
+];
 
 export const CARRIER_SERVIES = {
   [CARRIERS.DHL_ECOMMERCE]: DHL_ECOMMERCE_SERVICES
