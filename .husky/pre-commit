@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run TypeScript checks excluding node_modules
+npx tsc --noEmit --skipLibCheck --exclude node_modules
