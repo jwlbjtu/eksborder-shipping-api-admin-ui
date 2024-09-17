@@ -24,8 +24,6 @@ import {
   CARRIER_ZONE_MODE,
   CARRIER_ZONE_MODE_TEXTS,
   CarrierRateType,
-  Country,
-  COUNTRY_NAMES,
   Currency,
   RATE_BASES,
   WeightUnit

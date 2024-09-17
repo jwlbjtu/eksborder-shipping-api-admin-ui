@@ -43,6 +43,7 @@ const ClientPageHeader = ({
     routes: Route[],
     paths: string[]
   ) => {
+    console.log(paths);
     const last = routes.indexOf(route) === routes.length - 1;
     return last ? (
       <span key={route.breadcrumbName}>{route.breadcrumbName}</span>

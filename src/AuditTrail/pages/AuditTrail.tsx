@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { PageHeader, Table, Divider } from 'antd';
 

@@ -36,7 +36,6 @@ import { displayRate } from '../../shared/utils/helpers';
 import EditPriceTableModal from './EditPriceTableModal';
 import EditPriceTableZoneMapModal from './EditPriceTableZoneMapModal';
 import PriceTablePriceUploadModal from './PriceTablePriceUploadModal';
-import ViewPriceModal from './ViewPriceModal';
 import ViewPriceTableModal from './ViewPriceTableModal';
 
 interface PriceTablePanelProps {

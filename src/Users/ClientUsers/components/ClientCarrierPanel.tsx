@@ -160,7 +160,12 @@ const ClientCarrierPanel = ({ id }: ClientCarrierPanelProps): ReactElement => {
       key: 'updatedAt',
       dataIndex: 'updatedAt',
       render: (date: string) => {
-        return dayjs(date).format('YYYY/MM/DD');
+        return (
+          <Space direction="vertical" size="small">
+            <div>{dayjs(date).format('YYYY/MM/DD')}</div>
+            <div>{dayjs(date).format('HH:mm:ss')}</div>
+          </Space>
+        );
       }
     },
     {

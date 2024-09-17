@@ -97,25 +97,27 @@ const ThirdPartyPanel = ({ carrier }: ThirdPartyPanelProps): ReactElement => {
           上传价格
         </Button>
       </Menu.Item>
-      <Menu.Item key="0">
-        <Button
-          type="link"
-          size="small"
-          onClick={() => showZoneUploadHandler(record)}
-        >
-          上传分区
-        </Button>
-      </Menu.Item>
       {record.price && record.price.data.length && (
-        <Menu.Item key="1">
-          <Button
-            type="link"
-            size="small"
-            onClick={() => showZoneMapModalHandler(record)}
-          >
-            编辑分区
-          </Button>
-        </Menu.Item>
+        <>
+          <Menu.Item key="0">
+            <Button
+              type="link"
+              size="small"
+              onClick={() => showZoneUploadHandler(record)}
+            >
+              上传分区
+            </Button>
+          </Menu.Item>
+          <Menu.Item key="1">
+            <Button
+              type="link"
+              size="small"
+              onClick={() => showZoneMapModalHandler(record)}
+            >
+              编辑分区
+            </Button>
+          </Menu.Item>
+        </>
       )}
     </Menu>
   );

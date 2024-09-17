@@ -90,3 +90,22 @@ export interface CustomServiceTableState {
   showModal: boolean;
   modalLoading: boolean;
 }
+
+export interface UserShippingRecordsSearchQuery {
+  startDate: string;
+  endDate: string;
+  orderId?: string;
+  name?: string;
+  phone?: string;
+  trackingId?: string;
+  zip?: string;
+  status: string;
+}
+
+export interface UserBillingRecordsSearchQuery {
+  startDate: string;
+  endDate: string;
+  status?: string;
+  orderId?: string;
+  channel?: string;
+}

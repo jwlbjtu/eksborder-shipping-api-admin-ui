@@ -1,21 +1,35 @@
-import React, { ReactElement, useEffect } from 'react';
-import { PageHeader, Table, Button, Space } from 'antd';
+import React, { ReactElement, useEffect, useState } from 'react';
+import {
+  PageHeader,
+  Table,
+  Button,
+  Space,
+  Form,
+  Input,
+  DatePicker,
+  Tabs,
+  Popconfirm,
+  Tag
+} from 'antd';
+import { useForm } from 'antd/lib/form/Form';
 import dayjs from 'dayjs';
+import moment from 'moment';
 import {
   CheckCircleTwoTone,
+  DeleteFilled,
   PrinterOutlined,
+  SearchOutlined,
   SyncOutlined
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { CARRIERS, GET_CARRIER_LOGO } from '../../../shared/utils/constants';
-import { Address } from '../../../shared/types/carrier';
 import {
   ShippingRecord,
   Label,
   ShipmentRate
 } from '../../../shared/types/record';
 import {
-  fetchUserShippingRecords,
+  cancelShippingRecord,
+  searchUserShippingRecords,
   selectShippingLoading,
   selectShippingRecords
 } from '../../../redux/user/userShippingSlice';
@@ -24,6 +38,13 @@ import {
   downloadShipmentForms,
   opentLabelUrlHandler
 } from '../../../shared/utils/helpers';
+import {
+  CARRIERS,
+  GET_CARRIER_LOGO,
+  ShipmentStatus
+} from '../../../shared/utils/constants';
+import { IAddress } from '../../../shared/types/carrier';
+import { UserShippingRecordsSearchQuery } from '../../../shared/types/redux-types';
 
 interface ClientShippingPanelProps {
   id: string;
@@ -33,15 +54,73 @@ const ClientShippingPanel = ({
   id
 }: ClientShippingPanelProps): ReactElement => {
   const dispatch = useDispatch();
+  const [form] = useForm();
   const recordsData = useSelector(selectShippingRecords);
   const loading = useSelector(selectShippingLoading);
+  const [startDate, setStartDate] = React.useState<string>(
+    dayjs().subtract(1, 'month').format('YYYY-MM-DD')
+  );
+  const [endDate, setEndDate] = React.useState<string>(
+    dayjs().format('YYYY-MM-DD')
+  );
+  const [searchStatus, setSearchStatus] = useState<string>(
+    ShipmentStatus.FULFILLED
+  );
 
   useEffect(() => {
-    dispatch(fetchUserShippingRecords(id));
-  }, [id, dispatch]);
+    // form.resetFields();
+    form.validateFields().then((values: any) => {
+      const searchValues: UserShippingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status: searchStatus
+      };
+      console.log('search values:', searchValues);
+      dispatch(searchUserShippingRecords(id, searchValues));
+    });
+  }, [id, dispatch, startDate, endDate, form, searchStatus]);
 
   const refreshRecords = async () => {
-    dispatch(fetchUserShippingRecords(id));
+    form.resetFields();
+    setStartDate(dayjs().subtract(1, 'month').format('YYYY-MM-DD'));
+    setEndDate(dayjs().format('YYYY-MM-DD'));
+    dispatch(
+      searchUserShippingRecords(id, {
+        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        endDate: dayjs().format('YYYY-MM-DD'),
+        status: searchStatus
+      })
+    );
+  };
+
+  const searchRecords = async () => {
+    form.validateFields().then((values: any) => {
+      const searchValues: UserShippingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status: searchStatus
+      };
+      console.log('search values:', searchValues);
+      dispatch(searchUserShippingRecords(id, searchValues));
+    });
+  };
+
+  const tabChangeHandler = async (key: string) => {
+    setSearchStatus(key);
+  };
+
+  const cancelLabelHandler = (record: ShippingRecord) => {
+    form.validateFields().then((values: any) => {
+      const searchValues: UserShippingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status: searchStatus
+      };
+      dispatch(cancelShippingRecord(id, searchValues, record));
+    });
   };
 
   const columns = [
@@ -92,11 +171,14 @@ const ClientShippingPanel = ({
       key: 'packageInfo',
       render: (text: string, record: ShippingRecord) => {
         const weight = record.packageList[0].weight;
+        // console.log(`${record.orderId}-${record.packageList[0].weight.value}`);
         return (
           <div>
-            <div>{`${weight.value.toFixed(
-              2
-            )} ${weight.unitOfMeasure.toLowerCase()}`}</div>
+            <div>{`${
+              typeof weight.value === 'string'
+                ? weight.value
+                : weight.value.toFixed(2)
+            } ${weight.unitOfMeasure.toLowerCase()}`}</div>
           </div>
         );
       }
@@ -115,23 +197,30 @@ const ClientShippingPanel = ({
       title: '收件地址',
       dataIndex: 'toAddress',
       key: 'toAddress',
-      render: (address: Address) => {
+      render: (address: IAddress) => {
         return (
           <div>
             <div>
               <strong>{`${address.name}`}</strong>
             </div>
-            <div>{`${address.city}, ${address.state} ${address.postalCode}`}</div>
+            {address.phone && <div>{address.phone}</div>}
+            {address.email && <div>{address.email}</div>}
+            <div>{`${address.city}, ${address.state} ${address.zip}`}</div>
           </div>
         );
       }
     },
     {
       title: '日期',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
       render: (date: string) => {
-        return dayjs(date).format('YYYY/MM/DD');
+        return (
+          <Space direction="vertical" size="small">
+            <div>{dayjs(date).format('YYYY/MM/DD')}</div>
+            <div>{dayjs(date).format('HH:mm:ss')}</div>
+          </Space>
+        );
       }
     },
     {
@@ -141,6 +230,20 @@ const ClientShippingPanel = ({
       align: 'center',
       render: (manifested: boolean) => {
         return manifested ? <CheckCircleTwoTone /> : '-';
+      }
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        if (status === ShipmentStatus.FULFILLED) {
+          return <Tag color="green">已邮寄</Tag>;
+        }
+        if (status === ShipmentStatus.DEL_PENDING) {
+          return <Tag color="yellow">待删除</Tag>;
+        }
+        return <Tag color="red">已删除</Tag>;
       }
     },
     {
@@ -173,6 +276,21 @@ const ClientShippingPanel = ({
                 打印发票
               </Button>
             )}
+            {(record.status === ShipmentStatus.FULFILLED ||
+              record.status === ShipmentStatus.DEL_PENDING) && (
+              <Popconfirm
+                key="确认删除"
+                title="确认删除?"
+                placement="topRight"
+                onConfirm={() => cancelLabelHandler(record)}
+                okText="确定"
+                cancelText="取消"
+              >
+                <Button type="primary" icon={<DeleteFilled />} ghost>
+                  取消面单
+                </Button>
+              </Popconfirm>
+            )}
           </Space>
         );
       }
@@ -189,6 +307,14 @@ const ClientShippingPanel = ({
             icon={<SyncOutlined spin={loading} />}
             onClick={refreshRecords}
           />,
+          <Button
+            key="create"
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={searchRecords}
+          >
+            查询
+          </Button>,
           <Button key="create" type="primary" disabled>
             生成 Manifest
           </Button>,
@@ -196,7 +322,50 @@ const ClientShippingPanel = ({
             查看 Manifest
           </Button>
         ]}
-      />
+      >
+        <Form form={form} layout="horizontal">
+          <Space direction="horizontal" size="middle">
+            <Form.Item label="开始日期" name="startDate">
+              <DatePicker
+                defaultValue={moment(startDate)}
+                onChange={(_, dateString) => {
+                  // console.log('start date:', dateString);
+                  setStartDate(dateString);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label="结束日期" name="endDate">
+              <DatePicker
+                defaultValue={moment(endDate)}
+                onChange={(_, dateString) => {
+                  // console.log('start date:', dateString);
+                  setEndDate(dateString);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label="订单号" name="orderId">
+              <Input type="text" placeholder="订单号" />
+            </Form.Item>
+            <Form.Item label="面单号" name="trackingId">
+              <Input type="text" placeholder="面单号" />
+            </Form.Item>
+            <Form.Item label="收件人" name="name">
+              <Input type="text" placeholder="收件人" />
+            </Form.Item>
+            <Form.Item label="电话" name="phone">
+              <Input type="text" placeholder="电话" />
+            </Form.Item>
+            <Form.Item label="邮编" name="zip">
+              <Input type="text" placeholder="邮编" />
+            </Form.Item>
+          </Space>
+        </Form>
+      </PageHeader>
+      <Tabs defaultActiveKey="1" onChange={tabChangeHandler}>
+        <Tabs.TabPane tab="已邮寄" key={ShipmentStatus.FULFILLED} />
+        <Tabs.TabPane tab="待取消" key={ShipmentStatus.DEL_PENDING} />
+        <Tabs.TabPane tab="已取消" key={ShipmentStatus.DELETED} />
+      </Tabs>
       <Table<ShippingRecord>
         rowKey={(record: ShippingRecord) => record.id}
         // @ts-expect-error: ignore

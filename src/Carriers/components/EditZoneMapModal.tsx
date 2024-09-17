@@ -127,7 +127,7 @@ const EditZoneMapModal = ({ account }: EditZoneMapModalProps): ReactElement => {
       dataIndex: 'maps',
       width: '200',
       editable: true,
-      render: (text: string, record: ThirdPartyZoneMap) => (
+      render: (text: string) => (
         <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
           {text}
         </div>

@@ -1,19 +1,32 @@
-import { PlusOutlined, SyncOutlined } from '@ant-design/icons';
-import { Button, notification, PageHeader, Table } from 'antd';
-import React, { ReactElement, useEffect } from 'react';
+import { PlusOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  notification,
+  PageHeader,
+  Space,
+  Table,
+  Tabs
+} from 'antd';
+import moment from 'moment';
+import React, { ReactElement, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+import { useForm } from 'antd/lib/form/Form';
 import { useDispatch, useSelector } from 'react-redux';
 import ClientBillingForm from './ClientBillingForm';
 import { Billing, CreateBillingData } from '../../../shared/types/billing';
 import {
   createUserBillingHandler,
-  fetchUserBillingHandler,
+  searchUserBillingHandler,
   selectUserBillings,
   selectUserBillingsLoading,
   setShowBillingForm
 } from '../../../redux/user/userBillingSlice';
-import { USER_ROLES } from '../../../shared/utils/constants';
+import { ShipmentStatus, USER_ROLES } from '../../../shared/utils/constants';
 import { fetchUsersByRoleHandler } from '../../../redux/user/userDataSlice';
+import { UserBillingRecordsSearchQuery } from '../../../shared/types/redux-types';
 
 interface ClientBillingPanelProps {
   id: string;
@@ -25,16 +38,55 @@ const ClientBillingPanel = ({
   curBalance
 }: ClientBillingPanelProps): ReactElement => {
   const dispatch = useDispatch();
+  const [form] = useForm();
   const billingData = useSelector(selectUserBillings);
   const loading = useSelector(selectUserBillingsLoading);
+  const [startDate, setStartDate] = React.useState<string>(
+    dayjs().subtract(1, 'month').format('YYYY-MM-DD')
+  );
+  const [endDate, setEndDate] = React.useState<string>(
+    dayjs().format('YYYY-MM-DD')
+  );
+  const [status, setStatus] = useState<string | undefined>();
 
   useEffect(() => {
-    dispatch(fetchUserBillingHandler(id));
-  }, [dispatch, id]);
+    form.validateFields().then((values: any) => {
+      const searchValues: UserBillingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status
+      };
+      console.log('search values:', searchValues);
+      dispatch(searchUserBillingHandler(id, searchValues));
+    });
+  }, [dispatch, id, status, startDate, endDate, form]);
 
   const refreshRecords = async () => {
-    dispatch(fetchUserBillingHandler(id));
+    form.resetFields();
+    setStartDate(dayjs().subtract(1, 'month').format('YYYY-MM-DD'));
+    setEndDate(dayjs().format('YYYY-MM-DD'));
+    dispatch(
+      searchUserBillingHandler(id, {
+        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        endDate: dayjs().format('YYYY-MM-DD'),
+        status
+      })
+    );
     dispatch(fetchUsersByRoleHandler(USER_ROLES.API_USER));
+  };
+
+  const searchRecords = async () => {
+    form.validateFields().then((values: any) => {
+      const searchValues: UserBillingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status
+      };
+      console.log('search values:', searchValues);
+      dispatch(searchUserBillingHandler(id, searchValues));
+    });
   };
 
   const addBillHandler = async (values: CreateBillingData) => {
@@ -58,13 +110,26 @@ const ClientBillingPanel = ({
     );
   };
 
+  const tabChangeHandler = (key: string) => {
+    if (key === ShipmentStatus.DELETED) {
+      setStatus(ShipmentStatus.DELETED);
+    } else {
+      setStatus(undefined);
+    }
+  };
+
   const columns = [
     {
       title: '生成日期',
-      key: 'createdAt',
-      dataIndex: 'createdAt',
+      key: 'updatedAt',
+      dataIndex: 'updatedAt',
       render: (date: string) => {
-        return dayjs(date).format('YYYY/MM/DD');
+        return (
+          <Space direction="vertical" size="small">
+            <div>{dayjs(date).format('YYYY/MM/DD')}</div>
+            <div>{dayjs(date).format('HH:mm:ss')}</div>
+          </Space>
+        );
       }
     },
     {
@@ -148,6 +213,14 @@ const ClientBillingPanel = ({
             onClick={refreshRecords}
           />,
           <Button
+            key="create"
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={searchRecords}
+          >
+            查询
+          </Button>,
+          <Button
             key="2"
             type="primary"
             icon={<PlusOutlined />}
@@ -156,7 +229,40 @@ const ClientBillingPanel = ({
             添加账单信息
           </Button>
         ]}
-      />
+      >
+        <Form form={form} layout="horizontal">
+          <Space direction="horizontal" size="middle">
+            <Form.Item label="开始日期" name="startDate">
+              <DatePicker
+                defaultValue={moment(startDate)}
+                onChange={(_, dateString) => {
+                  // console.log('start date:', dateString);
+                  setStartDate(dateString);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label="结束日期" name="endDate">
+              <DatePicker
+                defaultValue={moment(endDate)}
+                onChange={(_, dateString) => {
+                  // console.log('start date:', dateString);
+                  setEndDate(dateString);
+                }}
+              />
+            </Form.Item>
+            <Form.Item label="订单号" name="orderId">
+              <Input type="text" placeholder="订单号" />
+            </Form.Item>
+            <Form.Item label="物流渠道" name="channel">
+              <Input type="text" placeholder="物流渠道" />
+            </Form.Item>
+          </Space>
+        </Form>
+      </PageHeader>
+      <Tabs defaultActiveKey="1" onChange={tabChangeHandler}>
+        <Tabs.TabPane tab="已扣款" key={ShipmentStatus.FULFILLED} />
+        <Tabs.TabPane tab="已取消" key={ShipmentStatus.DELETED} />
+      </Tabs>
       {table}
     </div>
   );

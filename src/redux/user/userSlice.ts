@@ -50,10 +50,7 @@ export const userSlice = createSlice({
     setLoginError: (state, action: PayloadAction<boolean>) => {
       state.loginError = action.payload;
     },
-    setUserTimeout: (
-      state,
-      action: PayloadAction<NodeJS.Timeout | undefined>
-    ) => {
+    setUserTimeout: (state, action: PayloadAction<any | undefined>) => {
       state.userTimeout = action.payload;
     }
   }

@@ -182,19 +182,8 @@ export const FEDEX_SERVICES = [
 ];
 
 export const RUI_YUN_SERVICES = [
-  { key: 'UPS', id: 'AA06pkt00C', name: '美国UPS-MI-ORD(BX) Lenexa' },
-  { key: 'UPS', id: 'AA06ups2XJ', name: '美国UPS-MI-E-ORD' },
-  { key: 'UPS', id: 'AA06pkt00H', name: '美国UPS-MI-LAX Q(Shalla) 92337' },
-  { key: 'UPS', id: 'AA06pkt037', name: '美国UPS-MI-LAX Q (LYT) 91710' },
-  { key: 'UPS', id: 'AA06pkt03D', name: '美国UPS-MI-LAX Q (LYT) 92503' },
-  { key: 'UPS', id: 'AA06pkt01F', name: '美国UPS-MI-LAX Q (Shalla) 91745' },
-  { key: 'UPS', id: 'AA06ups2XB', name: '美国UPS-MI-E-LAX' },
-  { key: 'UPS', id: 'AA06pkt010', name: '美国UPS-MI-MD (Shalla) 21227' },
-  { key: 'UPS', id: 'AA06pkt036', name: '美国UPS-MI-MD (Shalla) 21076' },
-  { key: 'UPS', id: 'AA06pkt019', name: '美国UPS-MI-GA Q (LYT)30549' },
-  { key: 'UPS', id: 'AA06pkt01X', name: '美国UPS-MI-NY Q (Shalla) 11226' },
-  { key: 'UPS', id: 'AA06ups2XI', name: '美国UPS-MI-E-NY' },
-  { key: 'UPS', id: 'AA06pkt01Y', name: '美国UPS-MI-NJ Q (Shalla) 08840' }
+  { key: 'UPS', id: 'AA06pkt03N', name: 'UPS MI JFK Q （MLF）08840' },
+  { key: 'UPS', id: 'AA06pkt041', name: 'UPS MI CA  Q （MLF）91732' }
 ];
 
 export const USPS3_SERVICES = [
@@ -361,5 +350,7 @@ export const FILE_FORMAT_TEXTS = {
 
 export enum ShipmentStatus {
   PENDING = 'Pending',
-  FULFILLED = 'Shipped'
+  FULFILLED = 'Shipped',
+  DEL_PENDING = 'Del_Pending',
+  DELETED = 'Deleted'
 }

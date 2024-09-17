@@ -1,5 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Alert, Button, Form, Modal, Select, Upload } from 'antd';
+import { Alert, Button, Form, Modal, Upload } from 'antd';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -11,13 +11,9 @@ import {
 import { selectCurUser } from '../../redux/user/userSlice';
 import { Carrier, ThirdPartyAccount } from '../../shared/types/carrier';
 import {
-  Currency,
   DEFAULT_SERVER_HOST,
-  SERVER_ROUTES,
-  WeightUnit
+  SERVER_ROUTES
 } from '../../shared/utils/constants';
-
-const { Option } = Select;
 
 interface ThirdPartyZoneUploadModalProps {
   account: ThirdPartyAccount;

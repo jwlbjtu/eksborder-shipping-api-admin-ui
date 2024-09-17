@@ -59,7 +59,7 @@ export const fetchCustomServices =
         dispatch(setLoading(false));
       }
     } catch (err) {
-      errorHandler(err, dispatch);
+      errorHandler(err as any, dispatch);
     }
   };
 
@@ -86,7 +86,7 @@ export const createCustomService =
         dispatch(setModalLoading(false));
       }
     } catch (err) {
-      errorHandler(err, dispatch);
+      errorHandler(err as any, dispatch);
     }
   };
 
@@ -109,7 +109,7 @@ export const deleteCustomService =
         dispatch(setLoading(false));
       }
     } catch (err) {
-      errorHandler(err, dispatch);
+      errorHandler(err as any, dispatch);
       dispatch(setLoading(false));
     }
   };
@@ -140,7 +140,7 @@ export const updateCustomService =
         dispatch(setModalLoading(false));
       }
     } catch (err) {
-      errorHandler(err, dispatch);
+      errorHandler(err as any, dispatch);
       dispatch(setModalLoading(false));
     }
   };

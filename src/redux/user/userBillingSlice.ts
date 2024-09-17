@@ -2,13 +2,14 @@ import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import {
   AppThunk,
   RootState,
+  UserBillingRecordsSearchQuery,
   UserBillingState
 } from '../../shared/types/redux-types';
 import { SERVER_ROUTES, USER_ROLES } from '../../shared/utils/constants';
 import axios from '../../shared/utils/axios-base';
 import errorHandler from '../../shared/utils/errorHandler';
 import { Billing, CreateBillingData } from '../../shared/types/billing';
-import { fetchUsersByRoleHandler, getUserByIdHandler } from './userDataSlice';
+import { fetchUsersByRoleHandler } from './userDataSlice';
 
 const initialState: UserBillingState = {
   billings: [],
@@ -47,6 +48,34 @@ export const fetchUserBillingHandler =
             Authorization: `${user.token_type} ${user.token}`
           }
         })
+        .then((response) => {
+          dispatch(setUserBillings(response.data));
+        })
+        .catch((error) => {
+          errorHandler(error, dispatch);
+        })
+        .finally(() => {
+          dispatch(setUserBillingLoading(false));
+        });
+    }
+  };
+
+export const searchUserBillingHandler =
+  (id: string, searchQuery: UserBillingRecordsSearchQuery): AppThunk =>
+  (dispatch: Dispatch, getState: () => RootState) => {
+    const user = getState().currentUser.curUser;
+    if (user) {
+      dispatch(setUserBillingLoading(true));
+      axios
+        .post(
+          `${SERVER_ROUTES.BILLINGS}/search`,
+          { id, searchQuery },
+          {
+            headers: {
+              Authorization: `${user.token_type} ${user.token}`
+            }
+          }
+        )
         .then((response) => {
           dispatch(setUserBillings(response.data));
         })

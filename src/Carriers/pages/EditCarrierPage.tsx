@@ -175,7 +175,10 @@ const EditCarrierPage = (): ReactElement => {
           });
         }
 
-        if (carrier.carrierName === CARRIERS.UPS) {
+        if (
+          carrier.carrierName === CARRIERS.UPS ||
+          carrier.carrierName === CARRIERS.RUI_YUN
+        ) {
           form.setFieldsValue({
             accountNum: carrier.accountNum,
             accessKey: carrier.accessKey

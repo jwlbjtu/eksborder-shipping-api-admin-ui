@@ -1,15 +1,14 @@
 import { notification } from 'antd';
 import { Dispatch } from '@reduxjs/toolkit';
-import { HTTP_ERROR_CODE_MESSAGE } from './constants';
 import { logoutUserHandler } from '../../redux/user/userSlice';
 import { ResponseError } from '../types';
 
 const errorHandler = (error: ResponseError, dispatch: Dispatch): void => {
   const { response } = error;
   if (response && response.status) {
-    let errorText =
-      HTTP_ERROR_CODE_MESSAGE[response.status] || response.statusText;
-    const { status, url } = response;
+    // let errorText =
+    //   HTTP_ERROR_CODE_MESSAGE[response.status] || response.statusText;
+    const { status } = response;
 
     if (
       response.data &&
@@ -22,9 +21,9 @@ const errorHandler = (error: ResponseError, dispatch: Dispatch): void => {
         description: response.data.error.message
       });
       if (response.data.error.message.code === 11000) {
-        errorText = `${
-          Object.values(response.data.error.message.keyValue)[0]
-        } 已存在！`;
+        // errorText = `${
+        //   Object.values(response.data.error.message.keyValue)[0]
+        // } 已存在！`;
       }
     }
 
