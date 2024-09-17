@@ -39,11 +39,6 @@
     "lint:prettier": "prettier --write src/**/*.ts{,x}",
     "lint:style": "stylelint --fix \"src/**/*.css\" --syntax css"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint:prettier && npm run lint && npm run lint:style"
-    }
-  },
   "eslintConfig": {
     "extends": [
       "react-app",
