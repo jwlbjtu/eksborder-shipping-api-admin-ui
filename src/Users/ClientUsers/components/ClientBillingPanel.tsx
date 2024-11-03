@@ -42,7 +42,7 @@ const ClientBillingPanel = ({
   const billingData = useSelector(selectUserBillings);
   const loading = useSelector(selectUserBillingsLoading);
   const [startDate, setStartDate] = React.useState<string>(
-    dayjs().subtract(1, 'month').format('YYYY-MM-DD')
+    dayjs().subtract(1, 'day').format('YYYY-MM-DD')
   );
   const [endDate, setEndDate] = React.useState<string>(
     dayjs().format('YYYY-MM-DD')
@@ -64,11 +64,11 @@ const ClientBillingPanel = ({
 
   const refreshRecords = async () => {
     form.resetFields();
-    setStartDate(dayjs().subtract(1, 'month').format('YYYY-MM-DD'));
+    setStartDate(dayjs().subtract(1, 'day').format('YYYY-MM-DD'));
     setEndDate(dayjs().format('YYYY-MM-DD'));
     dispatch(
       searchUserBillingHandler(id, {
-        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        startDate: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         status
       })

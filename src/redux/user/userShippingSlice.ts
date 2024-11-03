@@ -103,6 +103,34 @@ export const cancelShippingRecord =
     }
   };
 
+export const revertShippingRecord =
+  (
+    id: string,
+    searchQuery: UserShippingRecordsSearchQuery,
+    record: ShippingRecord
+  ): AppThunk =>
+  (dispatch: Dispatch, getState: () => RootState) => {
+    const user = getState().currentUser.curUser;
+    if (user) {
+      dispatch(setShippingLoading(true));
+      axios
+        .put(
+          `${SERVER_ROUTES.RECORDS}/update`,
+          { id, recordId: record.id, status: ShipmentStatus.FULFILLED },
+          {
+            headers: {
+              Authorization: `${user.token_type} ${user.token}`
+            }
+          }
+        )
+        .then(() => {
+          dispatch(searchUserShippingRecords(id, searchQuery));
+        })
+        .catch((error) => errorHandler(error, dispatch))
+        .finally(() => dispatch(setShippingLoading(false)));
+    }
+  };
+
 export const selectShippingRecords = (state: RootState): ShippingRecord[] =>
   state.shipments.shippingRecords;
 export const selectShippingLoading = (state: RootState): boolean =>

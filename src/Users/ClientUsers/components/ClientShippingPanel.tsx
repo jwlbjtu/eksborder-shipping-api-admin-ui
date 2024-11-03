@@ -15,6 +15,7 @@ import { useForm } from 'antd/lib/form/Form';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import {
+  BarcodeOutlined,
   CheckCircleTwoTone,
   DeleteFilled,
   PrinterOutlined,
@@ -29,6 +30,7 @@ import {
 } from '../../../shared/types/record';
 import {
   cancelShippingRecord,
+  revertShippingRecord,
   searchUserShippingRecords,
   selectShippingLoading,
   selectShippingRecords
@@ -58,7 +60,7 @@ const ClientShippingPanel = ({
   const recordsData = useSelector(selectShippingRecords);
   const loading = useSelector(selectShippingLoading);
   const [startDate, setStartDate] = React.useState<string>(
-    dayjs().subtract(1, 'month').format('YYYY-MM-DD')
+    dayjs().subtract(1, 'day').format('YYYY-MM-DD')
   );
   const [endDate, setEndDate] = React.useState<string>(
     dayjs().format('YYYY-MM-DD')
@@ -83,11 +85,11 @@ const ClientShippingPanel = ({
 
   const refreshRecords = async () => {
     form.resetFields();
-    setStartDate(dayjs().subtract(1, 'month').format('YYYY-MM-DD'));
+    setStartDate(dayjs().subtract(1, 'day').format('YYYY-MM-DD'));
     setEndDate(dayjs().format('YYYY-MM-DD'));
     dispatch(
       searchUserShippingRecords(id, {
-        startDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+        startDate: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
         endDate: dayjs().format('YYYY-MM-DD'),
         status: searchStatus
       })
@@ -123,7 +125,26 @@ const ClientShippingPanel = ({
     });
   };
 
+  const revertLabelHandler = (record: ShippingRecord) => {
+    form.validateFields().then((values: any) => {
+      const searchValues: UserShippingRecordsSearchQuery = {
+        ...values,
+        startDate,
+        endDate,
+        status: searchStatus
+      };
+      dispatch(revertShippingRecord(id, searchValues, record));
+    });
+  };
+
   const columns = [
+    {
+      title: '序号',
+      key: 'index',
+      render: (text: string, record: ShippingRecord, index: number) => {
+        return <div>{index + 1}</div>;
+      }
+    },
     {
       title: '',
       dataIndex: 'logo',
@@ -274,6 +295,15 @@ const ClientShippingPanel = ({
                 ghost
               >
                 打印发票
+              </Button>
+            )}
+            {record.status === ShipmentStatus.DEL_PENDING && (
+              <Button
+                type="primary"
+                icon={<BarcodeOutlined />}
+                onClick={() => revertLabelHandler(record)}
+              >
+                恢复面单
               </Button>
             )}
             {(record.status === ShipmentStatus.FULFILLED ||
