@@ -243,7 +243,9 @@ export const SERVER_ROUTES = {
   ZONE: '/zone',
   THIRDPARTY_ACCOUNTS: '/thirdparties',
   PRICE_TABLES: '/priceTable',
-  CUSTOM_SERVICE: '/customService'
+  CUSTOM_SERVICE: '/customService',
+  ACCOUNTING: '/accounting',
+  RECONCILIATION_CSV: '/reconciliation_csv'
 };
 
 export const DEFAULT_SERVER_HOST =

@@ -6,7 +6,7 @@ import { User, UserData } from './user';
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
   RootState,
-  unknown,
+  unknown, 
   Action<string>
 >;
 
@@ -20,6 +20,7 @@ export interface RootState {
   thirdpartyAccounts: ThirdPartyState;
   priceTabels: PriceTableState;
   customServiceTable: CustomServiceTableState;
+  accounting: AccountingState;
 }
 
 export interface CurrentUserState {
@@ -108,4 +109,51 @@ export interface UserBillingRecordsSearchQuery {
   status?: string;
   orderId?: string;
   channel?: string;
+}
+
+export interface AccountingItem {
+  id: string;
+  weight: number;
+  weightType: string;
+  uspsState: string;
+  pieceId: string;
+  orderDate: string;
+  date: Date;
+  orderId: string;
+  channel: string;
+  amount: number; // total amount (应收账款)
+  baseAmount: number; // base amount
+  servicePayment: number; // service payment (应付账款)
+  status: number; // 0: success, 1: failed
+  trackingNumber: string;
+  recordRef: string;
+  userRef?: string;
+  userName?: string;
+  remark?: string;
+  zone?: string;
+  docName?: string;
+}
+
+export interface ReconciliationRecord {
+  id: string;
+  date: Date;
+  name: string;
+  status: number; // 0: pending, 1: finished
+  sucessCount: number;
+  failedCount: number;
+}
+
+export interface AccountingState {
+  loading: boolean;
+  showReconciliationModal: boolean;
+  reconciliationRecords: ReconciliationRecord[];
+  accountingItems: AccountingItem[];
+}
+
+export interface AccountingItemSearchQuery {
+  userName?: string;
+  orderId?: string;
+  trackingNumber?: string;
+  status?: number;
+  docName?: string;
 }

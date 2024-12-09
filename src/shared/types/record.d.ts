@@ -22,6 +22,10 @@ export interface ShippingRecord {
   customItems?: Item[];
   items?: Item[];
   status: string;
+  accountingStatus?: string;
+  accountingDiff?: number;
+  accountingWeight?: number;
+  accountingWeightUnit?: WeightUnit;
   trackingId?: string;
   trackingStatus?: string;
   shippingId?: string;
@@ -34,6 +38,7 @@ export interface ShippingRecord {
   errors?: string[];
   labelLoading: boolean = false;
   createdAt: string;
+  updatedAt: Date;
 }
 
 export interface RuiYunLableUrl {

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {
   AccountBookOutlined,
-  AuditOutlined,
+  MoneyCollectOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { Menu } from 'antd';
@@ -39,8 +39,8 @@ const MenuList = (): ReactElement => {
           <Menu.Item key="carriers" icon={<AccountBookOutlined />}>
             <Link to="/carriers">物流账号</Link>
           </Menu.Item>
-          <Menu.Item key="audit" icon={<AuditOutlined />}>
-            <Link to="/audit">操作记录</Link>
+          <Menu.Item key="accounting" icon={<MoneyCollectOutlined />}>
+            <Link to="/accounting">财务对账</Link>
           </Menu.Item>
         </>
       )}

@@ -13,6 +13,8 @@ import Login from './Users/Login';
 
 import { selectCurUser } from './redux/user/userSlice';
 import { USER_ROLES } from './shared/utils/constants';
+import AccountingPage from './Accounting/pages/Accounting';
+import AccountingManagePage from './Accounting/pages/AccountingManagePage';
 
 const ClientUsers = React.lazy(
   () => import('./Users/ClientUsers/pages/ClientUsers')
@@ -24,7 +26,7 @@ const Carrier = React.lazy(() => import('./Carriers/pages/Carriers'));
 const EditCarrierPage = React.lazy(
   () => import('./Carriers/pages/EditCarrierPage')
 );
-const AuditTrail = React.lazy(() => import('./AuditTrail/pages/AuditTrail'));
+// const AuditTrail = React.lazy(() => import('./AuditTrail/pages/AuditTrail'));
 const UserProfile = React.lazy(() => import('./Users/User/pages/UserProfile'));
 const AdminProfile = React.lazy(
   () => import('./Users/AdminUsers/pages/AdminProfile')
@@ -74,7 +76,7 @@ const App: React.FC = (): ReactElement => {
                     <Route path="/clients/:id" component={ClientManagePage} />
                     <Route path="/clients" component={ClientUsers} />
                     {curUser.role === USER_ROLES.ADMIN_SUPER && (
-                      <>
+                      <Switch>
                         <Route path="/admins/:id" component={AdminProfile} />
                         <Route path="/admins" component={AdminUsers} />
 
@@ -83,8 +85,12 @@ const App: React.FC = (): ReactElement => {
                           component={EditCarrierPage}
                         />
                         <Route path="/carriers" component={Carrier} />
-                        <Route path="/audit" component={AuditTrail} />
-                      </>
+                        <Route
+                          path="/accounting/:id"
+                          component={AccountingManagePage}
+                        />
+                        <Route path="/accounting" component={AccountingPage} />
+                      </Switch>
                     )}
                     <Route path="/user/profile" component={UserProfile} />
                     <Redirect to="/" />

@@ -11,6 +11,8 @@ export interface Billing extends CreateBillingData {
   account?: string;
   balance: number;
   currency: string;
+  accountingStatus?: string;
+  accountingDiff?: number;
   details?: {
     shippingCost?: {
       amount: number;

@@ -27,6 +27,7 @@ import {
 import { ShipmentStatus, USER_ROLES } from '../../../shared/utils/constants';
 import { fetchUsersByRoleHandler } from '../../../redux/user/userDataSlice';
 import { UserBillingRecordsSearchQuery } from '../../../shared/types/redux-types';
+import DownloadCSVButton from './DownloadCSVButton';
 
 interface ClientBillingPanelProps {
   id: string;
@@ -173,33 +174,43 @@ const ClientBillingPanel = ({
       render: renderCell
     },
     {
-      title: '押金变化',
-      key: 'deposit',
-      dataIndex: 'deposit',
-      render: renderCell
-    },
-    {
-      title: '余额',
-      key: 'balance',
-      dataIndex: 'balance',
-      render: (value: number) => value.toFixed(2)
-    },
-    {
-      title: '押金',
-      key: 'clientDeposit',
-      dataIndex: 'clientDeposit',
-      render: (value: number) => (value !== undefined ? value.toFixed(2) : '-')
+      title: '财务状态',
+      dataIndex: 'accountingStatus',
+      key: 'accountingStatus',
+      render: (accountingStatus: string, record: Billing) => {
+        if (!accountingStatus) return '-';
+        return (
+          <div>{`${accountingStatus} (${record.accountingDiff?.toFixed(
+            2
+          )})`}</div>
+        );
+      }
     }
   ];
 
   const table = (
-    <Table
+    <Table<Billing>
       rowKey={(record: Billing) => record.id}
       columns={columns}
       dataSource={billingData}
       loading={loading}
     />
   );
+
+  const generateCSVData = (data: Billing[]) => {
+    const output: any[] = [];
+    output.push(['序号', '日期', '物流账号', '订单号', '邮寄费用']);
+    data.forEach((record, index) => {
+      output.push([
+        index + 1,
+        dayjs(record.updatedAt).format('YYYY/MM/DD HH:mm:ss'),
+        record.account,
+        record.description,
+        record.total
+      ]);
+    });
+    return output;
+  };
 
   return (
     <div>
@@ -227,7 +238,12 @@ const ClientBillingPanel = ({
             onClick={() => dispatch(setShowBillingForm(true))}
           >
             添加账单信息
-          </Button>
+          </Button>,
+          <DownloadCSVButton
+            label="导出账单"
+            data={generateCSVData(billingData)}
+            fileName="账单记录"
+          />
         ]}
       >
         <Form form={form} layout="horizontal">

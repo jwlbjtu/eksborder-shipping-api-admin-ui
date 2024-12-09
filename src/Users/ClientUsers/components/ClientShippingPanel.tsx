@@ -47,6 +47,7 @@ import {
 } from '../../../shared/utils/constants';
 import { IAddress } from '../../../shared/types/carrier';
 import { UserShippingRecordsSearchQuery } from '../../../shared/types/redux-types';
+import DownloadCSVButton from './DownloadCSVButton';
 
 interface ClientShippingPanelProps {
   id: string;
@@ -191,6 +192,15 @@ const ClientShippingPanel = ({
       title: '包裹信息',
       key: 'packageInfo',
       render: (text: string, record: ShippingRecord) => {
+        if (record.accountingWeight && record.accountingWeightUnit) {
+          return (
+            <div>
+              <div>{`${record.accountingWeight.toFixed(2)} ${
+                record.accountingWeightUnit
+              }`}</div>
+            </div>
+          );
+        }
         const weight = record.packageList[0].weight;
         // console.log(`${record.orderId}-${record.packageList[0].weight.value}`);
         return (
@@ -268,6 +278,19 @@ const ClientShippingPanel = ({
       }
     },
     {
+      title: '财务状态',
+      dataIndex: 'accountingStatus',
+      key: 'accountingStatus',
+      render: (accountingStatus: string, record: ShippingRecord) => {
+        if (!accountingStatus) return '-';
+        return (
+          <div>{`${accountingStatus} (${record.accountingDiff?.toFixed(
+            2
+          )})`}</div>
+        );
+      }
+    },
+    {
       title: '操作',
       dataIndex: 'labels',
       key: 'labels',
@@ -327,6 +350,31 @@ const ClientShippingPanel = ({
     }
   ];
 
+  const generateCSVData = (data: ShippingRecord[]) => {
+    const output: any[] = [];
+    output.push([
+      '序号',
+      '日期',
+      '订单号',
+      '面单号',
+      '收件人',
+      '邮编',
+      '邮寄费'
+    ]);
+    data.forEach((record, index) => {
+      output.push([
+        index + 1,
+        dayjs(record.updatedAt).format('YYYY/MM/DD HH:mm:ss'),
+        record.orderId,
+        record.trackingId,
+        record.toAddress.name,
+        record.toAddress.zip,
+        record.rate!.amount.toFixed(2)
+      ]);
+    });
+    return output;
+  };
+
   return (
     <div>
       <PageHeader
@@ -345,6 +393,11 @@ const ClientShippingPanel = ({
           >
             查询
           </Button>,
+          <DownloadCSVButton
+            label="导出订单"
+            data={generateCSVData(recordsData)}
+            fileName="订单记录"
+          />,
           <Button key="create" type="primary" disabled>
             生成 Manifest
           </Button>,
