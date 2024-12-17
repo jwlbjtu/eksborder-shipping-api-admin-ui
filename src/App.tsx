@@ -15,6 +15,7 @@ import { selectCurUser } from './redux/user/userSlice';
 import { USER_ROLES } from './shared/utils/constants';
 import AccountingPage from './Accounting/pages/Accounting';
 import AccountingManagePage from './Accounting/pages/AccountingManagePage';
+import BatchPage from './Batch/pages/BatchPage';
 
 const ClientUsers = React.lazy(
   () => import('./Users/ClientUsers/pages/ClientUsers')
@@ -90,6 +91,7 @@ const App: React.FC = (): ReactElement => {
                           component={AccountingManagePage}
                         />
                         <Route path="/accounting" component={AccountingPage} />
+                        <Route path="/batch" component={BatchPage} />
                       </Switch>
                     )}
                     <Route path="/user/profile" component={UserProfile} />

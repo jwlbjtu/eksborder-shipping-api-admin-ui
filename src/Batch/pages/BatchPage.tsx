@@ -1,141 +1,137 @@
-import React, { ReactElement, useEffect, useState } from 'react';
-import {
-  PageHeader,
-  Table,
-  Button,
-  Space,
-  Form,
-  Input,
-  DatePicker,
-  Tabs,
-  Popconfirm,
-  Tag
-} from 'antd';
-import { useForm } from 'antd/lib/form/Form';
-import dayjs from 'dayjs';
-import moment from 'moment';
 import {
   BarcodeOutlined,
   CheckCircleTwoTone,
   DeleteFilled,
   PrinterOutlined,
-  SearchOutlined,
-  SyncOutlined
+  SearchOutlined
 } from '@ant-design/icons';
+import {
+  Button,
+  Divider,
+  Form,
+  notification,
+  PageHeader,
+  Popconfirm,
+  Space,
+  Table,
+  TableProps,
+  Tag
+} from 'antd';
+import dayjs from 'dayjs';
+import React from 'react';
+import TextArea from 'antd/lib/input/TextArea';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  ShippingRecord,
-  Label,
-  ShipmentRate
-} from '../../../shared/types/record';
-import {
-  cancelShippingRecord,
-  revertShippingRecord,
-  searchUserShippingRecords,
-  selectShippingLoading,
-  selectShippingRecords
-} from '../../../redux/user/userShippingSlice';
+import { Label, ShipmentRate, ShippingRecord } from '../../shared/types/record';
 import {
   downloadLabelsHandler,
   downloadShipmentForms,
   opentLabelUrlHandler
-} from '../../../shared/utils/helpers';
+} from '../../shared/utils/helpers';
 import {
   CARRIERS,
   GET_CARRIER_LOGO,
   ShipmentStatus
-} from '../../../shared/utils/constants';
-import { IAddress } from '../../../shared/types/carrier';
-import { UserShippingRecordsSearchQuery } from '../../../shared/types/redux-types';
-import DownloadCSVButton from './DownloadCSVButton';
+} from '../../shared/utils/constants';
+import { IAddress } from '../../shared/types/carrier';
+import {
+  batchCancelShippingRecords,
+  batchRevertSingleShippingRecord,
+  BatchSearchQuery,
+  searchBatchShippingRecords,
+  selectBatchLoading,
+  selectBatchShippingRecords
+} from '../../redux/batch/batchSlice';
 
-interface ClientShippingPanelProps {
-  id: string;
-}
-
-const ClientShippingPanel = ({
-  id
-}: ClientShippingPanelProps): ReactElement => {
+const BatchPage = () => {
   const dispatch = useDispatch();
-  const [form] = useForm();
-  const recordsData = useSelector(selectShippingRecords);
-  const loading = useSelector(selectShippingLoading);
-  const [startDate, setStartDate] = React.useState<string>(
-    dayjs().subtract(1, 'day').format('YYYY-MM-DD')
-  );
-  const [endDate, setEndDate] = React.useState<string>(
-    dayjs().format('YYYY-MM-DD')
-  );
-  const [searchStatus, setSearchStatus] = useState<string>(
-    ShipmentStatus.FULFILLED
-  );
+  const [form] = Form.useForm();
+  const records = useSelector(selectBatchShippingRecords);
+  const loading = useSelector(selectBatchLoading);
+  const [selectedShippingRecords, setSelectedShippingRecords] = React.useState<
+    ShippingRecord[]
+  >([]);
 
-  useEffect(() => {
-    // form.resetFields();
-    form.validateFields().then((values: any) => {
-      const searchValues: UserShippingRecordsSearchQuery = {
-        ...values,
-        startDate,
-        endDate,
-        status: searchStatus
-      };
-      console.log('search values:', searchValues);
-      dispatch(searchUserShippingRecords(id, searchValues));
-    });
-  }, [id, dispatch, startDate, endDate, form, searchStatus]);
-
-  const refreshRecords = async () => {
-    form.resetFields();
-    setStartDate(dayjs().subtract(1, 'day').format('YYYY-MM-DD'));
-    setEndDate(dayjs().format('YYYY-MM-DD'));
-    dispatch(
-      searchUserShippingRecords(id, {
-        startDate: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-        endDate: dayjs().format('YYYY-MM-DD'),
-        status: searchStatus
+  const searchLabelsHandler = async () => {
+    form
+      .validateFields()
+      .then((values: any) => {
+        const searchValues: BatchSearchQuery = {
+          trackingNumbers: values.trackingNumbers.split(',')
+        };
+        console.log(searchValues);
+        dispatch(searchBatchShippingRecords(searchValues));
       })
-    );
+      .catch((error) => {
+        notification.error({
+          message: `格式错误：${(error as Error).message}`
+        });
+      });
   };
 
-  const searchRecords = async () => {
-    form.validateFields().then((values: any) => {
-      const searchValues: UserShippingRecordsSearchQuery = {
-        ...values,
-        startDate,
-        endDate,
-        status: searchStatus
-      };
-      console.log('search values:', searchValues);
-      dispatch(searchUserShippingRecords(id, searchValues));
-    });
-  };
-
-  const tabChangeHandler = async (key: string) => {
-    setSearchStatus(key);
+  const batchCancelLabelHandler = () => {
+    form
+      .validateFields()
+      .then((values: any) => {
+        const searchValues: BatchSearchQuery = {
+          trackingNumbers: values.trackingNumbers.split(',')
+        };
+        dispatch(
+          batchCancelShippingRecords(searchValues, selectedShippingRecords)
+        );
+      })
+      .catch((error) => {
+        notification.error({
+          message: `格式错误：${(error as Error).message}`
+        });
+      });
   };
 
   const cancelLabelHandler = (record: ShippingRecord) => {
-    form.validateFields().then((values: any) => {
-      const searchValues: UserShippingRecordsSearchQuery = {
-        ...values,
-        startDate,
-        endDate,
-        status: searchStatus
-      };
-      dispatch(cancelShippingRecord(id, searchValues, record));
-    });
+    form
+      .validateFields()
+      .then((values: any) => {
+        const searchValues: BatchSearchQuery = {
+          trackingNumbers: values.trackingNumbers.split(',')
+        };
+        dispatch(batchCancelShippingRecords(searchValues, [record]));
+      })
+      .catch((error) => {
+        notification.error({
+          message: `格式错误：${(error as Error).message}`
+        });
+      });
   };
 
   const revertLabelHandler = (record: ShippingRecord) => {
-    form.validateFields().then((values: any) => {
-      const searchValues: UserShippingRecordsSearchQuery = {
-        ...values,
-        startDate,
-        endDate,
-        status: searchStatus
-      };
-      dispatch(revertShippingRecord(id, searchValues, record));
-    });
+    form
+      .validateFields()
+      .then((values: any) => {
+        const searchValues: BatchSearchQuery = {
+          trackingNumbers: values.trackingNumbers.split(',')
+        };
+        console.log(searchValues);
+        dispatch(batchRevertSingleShippingRecord(searchValues, record));
+      })
+      .catch((error) => {
+        notification.error({
+          message: `格式错误：${(error as Error).message}`
+        });
+      });
+  };
+
+  // rowSelection object indicates the need for row selection
+  const rowSelection: TableProps<ShippingRecord>['rowSelection'] = {
+    onChange: (
+      selectedRowKeys: React.Key[],
+      selectedRows: ShippingRecord[]
+    ) => {
+      console.log(
+        `selectedRowKeys: ${selectedRowKeys}`,
+        'selectedRows: ',
+        selectedRows
+      );
+      setSelectedShippingRecords([...selectedRows]);
+    }
   };
 
   const columns = [
@@ -218,7 +214,6 @@ const ClientShippingPanel = ({
       title: '邮寄费',
       dataIndex: 'rate',
       key: 'rate',
-      align: 'center',
       render: (rate: ShipmentRate) => {
         if (!rate && rate !== 0) return '-';
         return `$ ${rate.amount.toFixed(2)}`;
@@ -258,7 +253,6 @@ const ClientShippingPanel = ({
       title: 'Manifested',
       dataIndex: 'manifested',
       key: 'manifested',
-      align: 'center',
       render: (manifested: boolean) => {
         return manifested ? <CheckCircleTwoTone /> : '-';
       }
@@ -351,110 +345,46 @@ const ClientShippingPanel = ({
     }
   ];
 
-  const generateCSVData = (data: ShippingRecord[]) => {
-    const output: any[] = [];
-    output.push([
-      '序号',
-      '日期',
-      '订单号',
-      '面单号',
-      '收件人',
-      '邮编',
-      '邮寄费'
-    ]);
-    data.forEach((record, index) => {
-      output.push([
-        index + 1,
-        dayjs(record.updatedAt).format('YYYY/MM/DD HH:mm:ss'),
-        record.orderId,
-        record.trackingId,
-        record.toAddress.name,
-        record.toAddress.zip,
-        record.rate!.amount.toFixed(2)
-      ]);
-    });
-    return output;
-  };
-
   return (
     <div>
       <PageHeader
-        title=""
+        title="财务对账"
+        subTitle="财务对账记录管理"
         extra={[
-          <Button
-            key="1"
-            icon={<SyncOutlined spin={loading} />}
-            onClick={refreshRecords}
-          />,
           <Button
             key="create"
             type="primary"
             icon={<SearchOutlined />}
-            onClick={searchRecords}
+            onClick={searchLabelsHandler}
           >
             查询
-          </Button>,
-          <DownloadCSVButton
-            label="导出订单"
-            data={generateCSVData(recordsData)}
-            fileName="订单记录"
-          />,
-          <Button key="create" type="primary" disabled>
-            生成 Manifest
-          </Button>,
-          <Button key="view" type="primary" disabled>
-            查看 Manifest
           </Button>
         ]}
       >
         <Form form={form} layout="horizontal">
-          <Space direction="horizontal" size="middle">
-            <Form.Item label="开始日期" name="startDate">
-              <DatePicker
-                defaultValue={moment(startDate)}
-                onChange={(_, dateString) => {
-                  // console.log('start date:', dateString);
-                  setStartDate(dateString);
-                }}
-              />
-            </Form.Item>
-            <Form.Item label="结束日期" name="endDate">
-              <DatePicker
-                defaultValue={moment(endDate)}
-                onChange={(_, dateString) => {
-                  // console.log('start date:', dateString);
-                  setEndDate(dateString);
-                }}
-              />
-            </Form.Item>
-            <Form.Item label="订单号" name="orderId">
-              <Input type="text" placeholder="订单号" />
-            </Form.Item>
-            <Form.Item label="面单号" name="trackingId">
-              <Input type="text" placeholder="面单号" />
-            </Form.Item>
-            <Form.Item label="收件人" name="name">
-              <Input type="text" placeholder="收件人" />
-            </Form.Item>
-            <Form.Item label="电话" name="phone">
-              <Input type="text" placeholder="电话" />
-            </Form.Item>
-            <Form.Item label="邮编" name="zip">
-              <Input type="text" placeholder="邮编" />
-            </Form.Item>
-          </Space>
+          <Form.Item label="订单号" name="trackingNumbers">
+            <TextArea
+              rows={4}
+              placeholder="请输入订单号，多个订单号请用逗号隔开"
+            />
+          </Form.Item>
         </Form>
       </PageHeader>
-      <Tabs defaultActiveKey="1" onChange={tabChangeHandler}>
-        <Tabs.TabPane tab="已邮寄" key={ShipmentStatus.FULFILLED} />
-        <Tabs.TabPane tab="待取消" key={ShipmentStatus.DEL_PENDING} />
-        <Tabs.TabPane tab="已取消" key={ShipmentStatus.DELETED} />
-      </Tabs>
+      <Divider />
+      <Button
+        type="primary"
+        onClick={() => {
+          batchCancelLabelHandler();
+        }}
+        disabled={selectedShippingRecords.length === 0}
+      >
+        批量取消订单
+      </Button>
       <Table<ShippingRecord>
-        rowKey={(record: ShippingRecord) => record.id}
-        // @ts-expect-error: ignore
+        rowSelection={{ type: 'checkbox', ...rowSelection }}
+        rowKey={(record) => record.id}
         columns={columns}
-        dataSource={recordsData}
+        dataSource={records}
         loading={loading}
         scroll={{ x: true }}
       />
@@ -462,4 +392,4 @@ const ClientShippingPanel = ({
   );
 };
 
-export default ClientShippingPanel;
+export default BatchPage;

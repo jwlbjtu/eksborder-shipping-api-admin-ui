@@ -11,6 +11,7 @@ import thirdpartyReducer from './carrier/thirdpartySlice';
 import priceTableReducer from './carrier/priceTableSlice';
 import customServiceTableReducer from './carrier/costumServiceTableSlice';
 import accountingReducer from './accounting/accountingSlice';
+import batchReducer from './batch/batchSlice';
 
 const rootReducer = combineReducers({
   currentUser: userReducer,
@@ -22,7 +23,8 @@ const rootReducer = combineReducers({
   thirdpartyAccounts: thirdpartyReducer,
   priceTabels: priceTableReducer,
   customServiceTable: customServiceTableReducer,
-  accounting: accountingReducer
+  accounting: accountingReducer,
+  batch: batchReducer
 });
 
 const persistConfig = {

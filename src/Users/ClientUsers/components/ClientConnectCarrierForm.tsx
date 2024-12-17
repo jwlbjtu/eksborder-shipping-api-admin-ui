@@ -82,6 +82,7 @@ const ClientConnectCarrierForm = ({
             address: {
               name: values.name,
               company: values.company,
+              phone: values.phone,
               street1: values.street1,
               street2: values.street2,
               city: values.city,
@@ -250,6 +251,9 @@ const ClientConnectCarrierForm = ({
                 rules={[{ required: true, message: '公司名必须填！' }]}
               >
                 <Input placeholder="公司名" />
+              </Form.Item>
+              <Form.Item label="电话" name="phone">
+                <Input placeholder="电话" />
               </Form.Item>
             </Space>
             <Form.Item

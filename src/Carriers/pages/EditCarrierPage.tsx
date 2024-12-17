@@ -42,7 +42,8 @@ import {
   CARRIER_REGIONS,
   FEDEX_SERVICES,
   RUI_YUN_SERVICES,
-  USPS3_SERVICES
+  USPS3_SERVICES,
+  MAO_YUAN_SERVICES
 } from '../../shared/utils/constants';
 import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
@@ -86,6 +87,9 @@ const EditCarrierPage = (): ReactElement => {
         break;
       case CARRIERS.USPS3:
         CARRIER_SERVICES = USPS3_SERVICES;
+        break;
+      case CARRIERS.MAO_YUAN:
+        CARRIER_SERVICES = MAO_YUAN_SERVICES;
         break;
       default:
         CARRIER_SERVICES = [];
@@ -185,6 +189,12 @@ const EditCarrierPage = (): ReactElement => {
           });
         }
 
+        if (carrier.carrierName === CARRIERS.MAO_YUAN) {
+          form.setFieldsValue({
+            accessKey: carrier.accessKey
+          });
+        }
+
         if (carrier.carrierName === CARRIERS.FEDEX) {
           form.setFieldsValue({
             accountNum: carrier.accountNum,
@@ -221,6 +231,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = RUI_YUN_SERVICES;
     } else if (carrierType === CARRIERS.USPS3) {
       carrierServices = USPS3_SERVICES;
+    } else if (carrierType === CARRIERS.MAO_YUAN) {
+      carrierServices = MAO_YUAN_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number | string) =>
@@ -273,6 +285,10 @@ const EditCarrierPage = (): ReactElement => {
     if (carrierType === CARRIERS.UPS || carrierType === CARRIERS.RUI_YUN) {
       data.accessKey = values.accessKey;
       data.accountNum = values.accountNum;
+    }
+
+    if (carrierType === CARRIERS.MAO_YUAN) {
+      data.accessKey = values.accessKey;
     }
 
     if (carrierType === CARRIERS.FEDEX) {
@@ -358,6 +374,11 @@ const EditCarrierPage = (): ReactElement => {
     }
     if (carrierType === CARRIERS.RUI_YUN) {
       defaultServices = RUI_YUN_SERVICES.map((service, index) => {
+        return { label: `${service.name}-${service.id}`, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.MAO_YUAN) {
+      defaultServices = MAO_YUAN_SERVICES.map((service, index) => {
         return { label: `${service.name}-${service.id}`, value: index };
       });
     }
@@ -478,6 +499,21 @@ const EditCarrierPage = (): ReactElement => {
                   />
                 </Form.Item>
               </Space>
+              {carrierType === CARRIERS.MAO_YUAN && (
+                <Space size={[10, 2]} style={{ width: '100%' }}>
+                  <Form.Item
+                    style={{ width: '350px' }}
+                    label="Access Key (plantKey)"
+                    name="accessKey"
+                    rules={[{ required: true, message: 'Access Key必须填写' }]}
+                  >
+                    <Input
+                      placeholder="Access Key (plantKey)"
+                      disabled={!activeSwitch}
+                    />
+                  </Form.Item>
+                </Space>
+              )}
               {(carrierType === CARRIERS.UPS ||
                 carrierType === CARRIERS.FEDEX ||
                 carrierType === CARRIERS.RUI_YUN) && (

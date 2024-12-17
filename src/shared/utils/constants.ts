@@ -6,6 +6,7 @@ import eksShippingLogo from '../../assets/images/logo-rectangular.png';
 import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
+import maoYuanLogo from '../../assets/images/carriers/maoyuan-logo.png';
 
 export enum Currency {
   USD = 'USD',
@@ -52,7 +53,8 @@ export const CARRIERS = {
   USPS: 'USPS',
   PITNEY_BOWES: 'Pitney Bowes',
   RUI_YUN: 'Rui Yun',
-  USPS3: 'USPS3'
+  USPS3: 'USPS3',
+  MAO_YUAN: 'Mao Yuan'
 };
 
 export const GET_CARRIER_LOGO = (carrier: string): string => {
@@ -71,6 +73,8 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
       return ruiYunLogo;
     case CARRIERS.USPS3:
       return usps3Logo;
+    case CARRIERS.MAO_YUAN:
+      return maoYuanLogo;
     default:
       return eksShippingLogo;
   }
@@ -189,6 +193,11 @@ export const RUI_YUN_SERVICES = [
 export const USPS3_SERVICES = [
   { key: 'USPS', id: '11429', name: 'GA' },
   { key: 'USPS', id: '11107', name: 'PM' }
+];
+ 
+export const MAO_YUAN_SERVICES = [
+  { key: 'FEDEX', id: '169', name: 'FEDEX GROUND' },
+  { key: 'UPS', id: '170', name: 'UPS GROUND' }
 ];
 
 export const CARRIER_SERVIES = {

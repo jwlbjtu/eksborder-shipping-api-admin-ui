@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {
   AccountBookOutlined,
+  FileOutlined,
   MoneyCollectOutlined,
   TeamOutlined
 } from '@ant-design/icons';
@@ -34,6 +35,9 @@ const MenuList = (): ReactElement => {
           </Menu.Item>
         )}
       </SubMenu>
+      <Menu.Item key="batch" icon={<FileOutlined />}>
+        <Link to="/batch">批量操作</Link>
+      </Menu.Item>
       {curUser!.role === USER_ROLES.ADMIN_SUPER && (
         <>
           <Menu.Item key="carriers" icon={<AccountBookOutlined />}>

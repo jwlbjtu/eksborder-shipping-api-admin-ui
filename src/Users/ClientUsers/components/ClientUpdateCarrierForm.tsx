@@ -104,6 +104,7 @@ const ClientUpdateCarrierForm = ({
             address: {
               name: values.name,
               company: values.company,
+              phone: values.phone,
               street1: values.street1,
               street2: values.street2,
               city: values.city,
@@ -313,6 +314,13 @@ const ClientUpdateCarrierForm = ({
                 initialValue={data.address.company}
               >
                 <Input placeholder="公司名" />
+              </Form.Item>
+              <Form.Item
+                label="电话"
+                name="phone"
+                initialValue={data.address.phone}
+              >
+                <Input placeholder="电话" />
               </Form.Item>
             </Space>
             <Form.Item

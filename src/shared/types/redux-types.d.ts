@@ -21,6 +21,7 @@ export interface RootState {
   priceTabels: PriceTableState;
   customServiceTable: CustomServiceTableState;
   accounting: AccountingState;
+  batch: BatchState;
 }
 
 export interface CurrentUserState {
@@ -44,6 +45,11 @@ export interface UsersState {
   loading: boolean;
   showCreateAdmin: boolean;
   showCreateClient: boolean;
+}
+
+export interface BatchState {
+  batchLoading : boolean;
+  batchShippingRecords : ShippingRecord[]
 }
 
 export interface UserShippingState {
