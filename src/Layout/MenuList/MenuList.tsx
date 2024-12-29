@@ -38,6 +38,9 @@ const MenuList = (): ReactElement => {
       <Menu.Item key="batch" icon={<FileOutlined />}>
         <Link to="/batch">批量操作</Link>
       </Menu.Item>
+      <Menu.Item key="shippingFee" icon={<FileOutlined />}>
+        <Link to="/shippingFee">运费查询</Link>
+      </Menu.Item>
       {curUser!.role === USER_ROLES.ADMIN_SUPER && (
         <>
           <Menu.Item key="carriers" icon={<AccountBookOutlined />}>

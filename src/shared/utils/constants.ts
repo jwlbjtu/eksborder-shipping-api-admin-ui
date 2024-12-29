@@ -254,7 +254,8 @@ export const SERVER_ROUTES = {
   PRICE_TABLES: '/priceTable',
   CUSTOM_SERVICE: '/customService',
   ACCOUNTING: '/accounting',
-  RECONCILIATION_CSV: '/reconciliation_csv'
+  RECONCILIATION_CSV: '/reconciliation_csv',
+    CLIENT_SHIPMENTS: '/clientShipment',
 };
 
 export const DEFAULT_SERVER_HOST =

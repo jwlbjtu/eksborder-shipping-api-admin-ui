@@ -22,6 +22,7 @@ export interface RootState {
   customServiceTable: CustomServiceTableState;
   accounting: AccountingState;
   batch: BatchState;
+  rate: RateCheckState;
 }
 
 export interface CurrentUserState {
@@ -162,4 +163,26 @@ export interface AccountingItemSearchQuery {
   trackingNumber?: string;
   status?: number;
   docName?: string;
+}
+
+export interface RateCheckState {
+  loading: boolean;
+  rates: RateInfo;
+}
+
+export interface RateInfo {
+  rate: number;
+  currency: string;
+  fee: number;
+  baseRate: number;
+  details?: any;
+}
+
+export interface UserShippingRateRequest {
+  channel: string;
+  toAddress: OrderAddress;
+  weight: number; // LB
+  length: number; // IN
+  width: number; // IN
+  height: number; // IN
 }

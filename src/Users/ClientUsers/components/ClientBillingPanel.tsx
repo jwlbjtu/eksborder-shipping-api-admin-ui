@@ -267,7 +267,7 @@ const ClientBillingPanel = ({
               />
             </Form.Item>
             <Form.Item label="订单号" name="orderId">
-              <Input type="text" placeholder="订单号" />
+              <Input type="text" placeholder="订单号" style={{ width: 300 }} />
             </Form.Item>
             <Form.Item label="物流渠道" name="channel">
               <Input type="text" placeholder="物流渠道" />

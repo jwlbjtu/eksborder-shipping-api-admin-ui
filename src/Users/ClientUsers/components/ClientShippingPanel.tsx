@@ -362,6 +362,7 @@ const ClientShippingPanel = ({
       '邮编',
       '邮寄费'
     ]);
+    console.log('data:', data.length);
     data.forEach((record, index) => {
       output.push([
         index + 1,
@@ -373,6 +374,7 @@ const ClientShippingPanel = ({
         record.rate!.amount.toFixed(2)
       ]);
     });
+    console.log('output:', output.length);
     return output;
   };
 
@@ -428,10 +430,12 @@ const ClientShippingPanel = ({
               />
             </Form.Item>
             <Form.Item label="订单号" name="orderId">
-              <Input type="text" placeholder="订单号" />
+              <Input type="text" placeholder="订单号" style={{ width: 300 }} />
             </Form.Item>
+          </Space>
+          <Space direction="horizontal" size="middle">
             <Form.Item label="面单号" name="trackingId">
-              <Input type="text" placeholder="面单号" />
+              <Input type="text" placeholder="面单号" style={{ width: 300 }} />
             </Form.Item>
             <Form.Item label="收件人" name="name">
               <Input type="text" placeholder="收件人" />
