@@ -14,7 +14,11 @@ import {
   Statistic
 } from 'antd';
 import React, { useEffect } from 'react';
-import { DollarOutlined } from '@ant-design/icons';
+import {
+  DollarOutlined,
+  MinusCircleOutlined,
+  PlusOutlined
+} from '@ant-design/icons';
 import DescriptionsItem from 'antd/lib/descriptions/Item';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'antd/lib/form/Form';
@@ -72,10 +76,12 @@ const ShippingFeePage = () => {
           zip: values.zip,
           country: values.country
         },
-        weight: values.weight,
-        length: values.length,
-        width: values.width,
-        height: values.height
+        packageList: values.packages.map((p: any) => ({
+          weight: p.weight,
+          length: p.length,
+          width: p.width,
+          height: p.height
+        }))
       };
       dispatch(checkRateHanlder(req, values.userId));
     });
@@ -169,26 +175,76 @@ const ShippingFeePage = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              <div>
+                <Form.List name="packages">
+                  {(fields, { add, remove }) => {
+                    return (
+                      <div>
+                        {fields.map((field) => (
+                          <div key={`${field.name}_${field.key}`}>
+                            <Space>
+                              <Form.Item
+                                label="重量(LB)"
+                                name={[field.name, 'weight']}
+                                initialValue={1}
+                                rules={[
+                                  { required: true, message: '需要重量' }
+                                ]}
+                              >
+                                <InputNumber min={0} step={0.1} />
+                              </Form.Item>
+                              <Form.Item
+                                label="长(IN)"
+                                name={[field.name, 'length']}
+                                initialValue={1}
+                              >
+                                <InputNumber min={0} step={0.1} />
+                              </Form.Item>
+                              <Form.Item
+                                label="宽(IN)"
+                                name={[field.name, 'width']}
+                                initialValue={1}
+                              >
+                                <InputNumber min={0} step={0.1} />
+                              </Form.Item>
+                              <Form.Item
+                                label="高(IN)"
+                                name={[field.name, 'height']}
+                                initialValue={1}
+                              >
+                                <InputNumber min={0} step={0.1} />
+                              </Form.Item>
+                              <MinusCircleOutlined
+                                style={{ fontSize: '14px' }}
+                                className="dynamic-delete-button"
+                                onClick={() => {
+                                  remove(field.name);
+                                }}
+                              />
+                            </Space>
+                          </div>
+                        ))}
 
-              <Form.Item
-                label="重量(LB)"
-                name="weight"
-                initialValue={1}
-                rules={[{ required: true, message: '需要重量' }]}
-              >
-                <InputNumber min={0} step={0.1} />
-              </Form.Item>
-              <Space>
-                <Form.Item label="长(IN)" name="length" initialValue={1}>
-                  <InputNumber min={0} step={0.1} />
-                </Form.Item>
-                <Form.Item label="宽(IN)" name="width" initialValue={1}>
-                  <InputNumber min={0} step={0.1} />
-                </Form.Item>
-                <Form.Item label="高(IN)" name="height" initialValue={1}>
-                  <InputNumber min={0} step={0.1} />
-                </Form.Item>
-              </Space>
+                        <Row style={{ marginBottom: '24px' }}>
+                          <Col push={4} xl={16}>
+                            <Form.Item>
+                              <Button
+                                type="dashed"
+                                onClick={() => {
+                                  add();
+                                }}
+                                style={{ width: '100%' }}
+                              >
+                                <PlusOutlined /> 添加包裹
+                              </Button>
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </div>
+                    );
+                  }}
+                </Form.List>
+              </div>
               <Button
                 key="submit"
                 type="primary"

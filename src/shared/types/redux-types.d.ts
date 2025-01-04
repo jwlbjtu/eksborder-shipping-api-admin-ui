@@ -181,8 +181,14 @@ export interface RateInfo {
 export interface UserShippingRateRequest {
   channel: string;
   toAddress: OrderAddress;
-  weight: number; // LB
-  length: number; // IN
-  width: number; // IN
-  height: number; // IN
+  packageList: ApiPackage[];
+}
+
+export interface ApiPackage {
+  weight: number; // 重量 KG
+  length?: number; // 长 cm
+  width?: number; // 宽 cm
+  height?: number; // 高 cm
+  count: number; // 件数
+  lineItems: ApiLineItem[];
 }
