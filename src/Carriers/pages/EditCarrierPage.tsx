@@ -43,7 +43,8 @@ import {
   FEDEX_SERVICES,
   RUI_YUN_SERVICES,
   USPS3_SERVICES,
-  MAO_YUAN_SERVICES
+  MAO_YUAN_SERVICES,
+  KUAI_DI_YI_SERVICES
 } from '../../shared/utils/constants';
 import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
@@ -90,6 +91,9 @@ const EditCarrierPage = (): ReactElement => {
         break;
       case CARRIERS.MAO_YUAN:
         CARRIER_SERVICES = MAO_YUAN_SERVICES;
+        break;
+      case CARRIERS.KUAI_DI_YI:
+        CARRIER_SERVICES = KUAI_DI_YI_SERVICES;
         break;
       default:
         CARRIER_SERVICES = [];
@@ -189,7 +193,10 @@ const EditCarrierPage = (): ReactElement => {
           });
         }
 
-        if (carrier.carrierName === CARRIERS.MAO_YUAN) {
+        if (
+          carrier.carrierName === CARRIERS.MAO_YUAN ||
+          carrier.carrierName === CARRIERS.KUAI_DI_YI
+        ) {
           form.setFieldsValue({
             accessKey: carrier.accessKey
           });
@@ -233,6 +240,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = USPS3_SERVICES;
     } else if (carrierType === CARRIERS.MAO_YUAN) {
       carrierServices = MAO_YUAN_SERVICES;
+    } else if (carrierType === CARRIERS.KUAI_DI_YI) {
+      carrierServices = KUAI_DI_YI_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number | string) =>
@@ -287,7 +296,10 @@ const EditCarrierPage = (): ReactElement => {
       data.accountNum = values.accountNum;
     }
 
-    if (carrierType === CARRIERS.MAO_YUAN) {
+    if (
+      carrierType === CARRIERS.MAO_YUAN ||
+      carrierType === CARRIERS.KUAI_DI_YI
+    ) {
       data.accessKey = values.accessKey;
     }
 
@@ -379,6 +391,11 @@ const EditCarrierPage = (): ReactElement => {
     }
     if (carrierType === CARRIERS.MAO_YUAN) {
       defaultServices = MAO_YUAN_SERVICES.map((service, index) => {
+        return { label: `${service.name}-${service.id}`, value: index };
+      });
+    }
+    if (carrierType === CARRIERS.KUAI_DI_YI) {
+      defaultServices = KUAI_DI_YI_SERVICES.map((service, index) => {
         return { label: `${service.name}-${service.id}`, value: index };
       });
     }
@@ -499,7 +516,8 @@ const EditCarrierPage = (): ReactElement => {
                   />
                 </Form.Item>
               </Space>
-              {carrierType === CARRIERS.MAO_YUAN && (
+              {(carrierType === CARRIERS.MAO_YUAN ||
+                carrierType === CARRIERS.KUAI_DI_YI) && (
                 <Space size={[10, 2]} style={{ width: '100%' }}>
                   <Form.Item
                     style={{ width: '350px' }}

@@ -30,7 +30,7 @@ export const displayRate = (rate: FeeRate): string => {
 
 export const opentLabelUrlHandler = (shipment: ShippingRecord): void => {
   if (shipment.labelUrlList) {
-    shipment.labelUrlList.forEach((url) => window.open(url.labelUrl));
+    shipment.labelUrlList.forEach((url) => window.open(url.labelUrl, '_blank'));
   }
 };
 

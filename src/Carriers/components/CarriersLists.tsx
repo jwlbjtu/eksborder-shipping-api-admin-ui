@@ -10,6 +10,7 @@ import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 import maoYuanLogo from '../../assets/images/carriers/maoyuan-logo.png';
+import kuaiDiYiLogo from '../../assets/images/carriers/kuaidiyi-logo.png';
 import {
   selectShowCarrierList,
   setShowCarrierList
@@ -117,6 +118,19 @@ const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
             preview={false}
             src={maoYuanLogo}
             alt={CARRIERS.MAO_YUAN}
+          />
+        </Space>
+      </Row>
+      <Row>
+        <Space size="middle">
+          <Image
+            onClick={() => imageClicked(CARRIERS.KUAI_DI_YI)}
+            style={{ cursor: 'pointer' }}
+            width={120}
+            height={73.84}
+            preview={false}
+            src={kuaiDiYiLogo}
+            alt={CARRIERS.KUAI_DI_YI}
           />
         </Space>
       </Row>

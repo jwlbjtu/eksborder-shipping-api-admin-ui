@@ -9,7 +9,9 @@ import {
   DatePicker,
   Tabs,
   Popconfirm,
-  Tag
+  Tag,
+  Dropdown,
+  Menu
 } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import dayjs from 'dayjs';
@@ -18,6 +20,7 @@ import {
   BarcodeOutlined,
   CheckCircleTwoTone,
   DeleteFilled,
+  DownOutlined,
   PrinterOutlined,
   SearchOutlined,
   SyncOutlined
@@ -138,6 +141,11 @@ const ClientShippingPanel = ({
     });
   };
 
+  function handleMenuClick(e: any) {
+    console.log('click', e);
+    window.open(e.key, '_blank');
+  }
+
   const columns = [
     {
       title: '序号',
@@ -182,7 +190,9 @@ const ClientShippingPanel = ({
           <div>
             <div>{record.carrier}</div>
             <div>{record.service.name}</div>
-            <div>{`${record.trackingId}`}</div>
+            {record.labels?.map((label) => (
+              <div>{`${label.tracking}`}</div>
+            ))}
             {record.facility && <div>{`${record.facility}`}</div>}
           </div>
         );
@@ -297,20 +307,37 @@ const ClientShippingPanel = ({
       render: (labels: Label[], record: ShippingRecord) => {
         return (
           <Space direction="vertical">
-            <Button
-              type="primary"
-              icon={<PrinterOutlined />}
-              onClick={() =>
-                record.carrier === CARRIERS.RUI_YUN ||
-                record.carrier === CARRIERS.USPS3 ||
-                record.carrier === CARRIERS.MAO_YUAN
-                  ? opentLabelUrlHandler(record)
-                  : downloadLabelsHandler(record)
-              }
-              ghost
-            >
-              打印面单
-            </Button>
+            {record.carrier === CARRIERS.MAO_YUAN ? (
+              <Dropdown
+                overlay={
+                  <Menu onClick={handleMenuClick}>
+                    {record.labelUrlList?.map((url, index) => (
+                      <Menu.Item key={url.labelUrl}>{`打印面单${
+                        index + 1
+                      }`}</Menu.Item>
+                    ))}
+                  </Menu>
+                }
+              >
+                <Button type="primary" icon={<PrinterOutlined />}>
+                  打印面单 <DownOutlined />
+                </Button>
+              </Dropdown>
+            ) : (
+              <Button
+                type="primary"
+                icon={<PrinterOutlined />}
+                onClick={() =>
+                  record.carrier === CARRIERS.RUI_YUN ||
+                  record.carrier === CARRIERS.USPS3
+                    ? opentLabelUrlHandler(record)
+                    : downloadLabelsHandler(record)
+                }
+                ghost
+              >
+                打印面单
+              </Button>
+            )}
             {record.forms && record.forms.length > 0 && (
               <Button
                 type="primary"

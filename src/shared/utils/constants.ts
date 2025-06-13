@@ -7,6 +7,7 @@ import pbLogo from '../../assets/images/carriers/pitney-bowes-logo.png';
 import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 import maoYuanLogo from '../../assets/images/carriers/maoyuan-logo.png';
+import kuaiDiYiLogo from '../../assets/images/carriers/kuaidiyi-logo.png';
 
 export enum Currency {
   USD = 'USD',
@@ -54,7 +55,8 @@ export const CARRIERS = {
   PITNEY_BOWES: 'Pitney Bowes',
   RUI_YUN: 'Rui Yun',
   USPS3: 'USPS3',
-  MAO_YUAN: 'Mao Yuan'
+  MAO_YUAN: 'Mao Yuan',
+  KUAI_DI_YI: 'Kuai Di Yi'
 };
 
 export const GET_CARRIER_LOGO = (carrier: string): string => {
@@ -75,6 +77,8 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
       return usps3Logo;
     case CARRIERS.MAO_YUAN:
       return maoYuanLogo;
+    case CARRIERS.KUAI_DI_YI:
+      return kuaiDiYiLogo;
     default:
       return eksShippingLogo;
   }
@@ -187,7 +191,11 @@ export const FEDEX_SERVICES = [
 
 export const RUI_YUN_SERVICES = [
   { key: 'UPS', id: 'AA06pkt03N', name: 'UPS MI JFK Q （MLF）08840' },
-  { key: 'UPS', id: 'AA06pkt041', name: 'UPS MI CA  Q （MLF）91732' }
+  { key: 'UPS', id: 'AA06pkt041', name: 'UPS MI CA  Q （MLF）91732' },
+  { key: 'FEDEX', id: 'AA06CS011J5', name: 'Fedex-Ground-A' },
+  { key: 'FEDEX', id: 'AA06CS011BD', name: 'Fedex-Ground-A-600&601' },
+  { key: 'FEDEX', id: 'AA06CS011L8', name: 'Fedex-Ground-A-902&908' },
+  { key: 'FEDEX', id: 'AA06CS011JR', name: 'Fedex-Ground-A-114&115' },
 ];
 
 export const USPS3_SERVICES = [
@@ -198,6 +206,10 @@ export const USPS3_SERVICES = [
 export const MAO_YUAN_SERVICES = [
   { key: 'FEDEX', id: '169', name: 'FEDEX GROUND' },
   { key: 'UPS', id: '170', name: 'UPS GROUND' }
+];
+
+export const KUAI_DI_YI_SERVICES = [
+  { key: 'USPS', id: '359', name: 'US-GA-MID91748' }
 ];
 
 export const CARRIER_SERVIES = {
