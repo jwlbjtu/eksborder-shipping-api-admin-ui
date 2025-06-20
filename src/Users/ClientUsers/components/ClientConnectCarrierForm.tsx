@@ -303,6 +303,9 @@ const ClientConnectCarrierForm = ({
                     <Option value={Country.CHINA}>
                       {COUNTRY_NAMES[Country.CHINA]}
                     </Option>
+                    <Option value={Country.AUSTRALIA}>
+                      {COUNTRY_NAMES[Country.AUSTRALIA]}
+                    </Option>
                   </>
                   );
                 </Select>

@@ -11,6 +11,7 @@ import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 import maoYuanLogo from '../../assets/images/carriers/maoyuan-logo.png';
 import kuaiDiYiLogo from '../../assets/images/carriers/kuaidiyi-logo.png';
+import dpdLogo from '../../assets/images/carriers/dpd-logo.jpg';
 import {
   selectShowCarrierList,
   setShowCarrierList
@@ -131,6 +132,15 @@ const CarriersList = ({ imageClicked }: CarriersListProps): ReactElement => {
             preview={false}
             src={kuaiDiYiLogo}
             alt={CARRIERS.KUAI_DI_YI}
+          />
+          <Image
+            onClick={() => imageClicked(CARRIERS.DPD)}
+            style={{ cursor: 'pointer' }}
+            width={120}
+            height={73.84}
+            preview={false}
+            src={dpdLogo}
+            alt={CARRIERS.DPD}
           />
         </Space>
       </Row>

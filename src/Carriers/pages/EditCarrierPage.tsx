@@ -44,7 +44,8 @@ import {
   RUI_YUN_SERVICES,
   USPS3_SERVICES,
   MAO_YUAN_SERVICES,
-  KUAI_DI_YI_SERVICES
+  KUAI_DI_YI_SERVICES,
+  DPD_SERVICES
 } from '../../shared/utils/constants';
 import CustomServicePanel from '../components/CustomServicePanel';
 import PriceTablePanel from '../components/PriceTablePanel';
@@ -94,6 +95,9 @@ const EditCarrierPage = (): ReactElement => {
         break;
       case CARRIERS.KUAI_DI_YI:
         CARRIER_SERVICES = KUAI_DI_YI_SERVICES;
+        break;
+      case CARRIERS.DPD:
+        CARRIER_SERVICES = DPD_SERVICES;
         break;
       default:
         CARRIER_SERVICES = [];
@@ -214,6 +218,13 @@ const EditCarrierPage = (): ReactElement => {
             testHubId: carrier.testHubId
           });
         }
+
+        if (carrier.carrierName === CARRIERS.DPD) {
+          form.setFieldsValue({
+            testClientId: carrier.testClientId,
+            testClientSecret: carrier.testClientSecret
+          });
+        }
       } else {
         history.push(UI_ROUTES.CARRIERS);
       }
@@ -242,6 +253,8 @@ const EditCarrierPage = (): ReactElement => {
       carrierServices = MAO_YUAN_SERVICES;
     } else if (carrierType === CARRIERS.KUAI_DI_YI) {
       carrierServices = KUAI_DI_YI_SERVICES;
+    } else if (carrierType === CARRIERS.DPD) {
+      carrierServices = DPD_SERVICES;
     }
     if (carrierServices.length > 0) {
       services = values.services.map((inds: number | string) =>
@@ -337,6 +350,11 @@ const EditCarrierPage = (): ReactElement => {
       data.clientSecret = values.clientSecret;
     }
 
+    if (carrierType === CARRIERS.DPD) {
+      data.testClientId = values.testClientId;
+      data.testClientSecret = values.testClientSecret;
+    }
+
     return data;
   };
 
@@ -405,6 +423,11 @@ const EditCarrierPage = (): ReactElement => {
           label: `${service.key!}-${service.name}-${service.id}`,
           value: index
         };
+      });
+    }
+    if (carrierType === CARRIERS.DPD) {
+      defaultServices = DPD_SERVICES.map((service, index) => {
+        return { label: `${service.name}-${service.id}`, value: index };
       });
     }
 
@@ -801,7 +824,8 @@ const EditCarrierPage = (): ReactElement => {
                 </>
               )}
               {(carrierType === CARRIERS.DHL_ECOMMERCE ||
-                carrierType === CARRIERS.FEDEX) && (
+                carrierType === CARRIERS.FEDEX ||
+                carrierType === CARRIERS.DPD) && (
                 <>
                   <Divider orientation="left" plain>
                     测试信息
