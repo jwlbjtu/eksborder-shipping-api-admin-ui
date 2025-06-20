@@ -8,6 +8,7 @@ import ruiYunLogo from '../../assets/images/carriers/ruiyun-logo.png';
 import usps3Logo from '../../assets/images/carriers/3usps-logo.png';
 import maoYuanLogo from '../../assets/images/carriers/maoyuan-logo.png';
 import kuaiDiYiLogo from '../../assets/images/carriers/kuaidiyi-logo.png';
+import dpdLogo from '../../assets/images/carriers/dpd-logo.jpg';
 
 export enum Currency {
   USD = 'USD',
@@ -32,12 +33,14 @@ export const RATE_BASES = {
 
 export enum Country {
   USA = 'US',
-  CHINA = 'CN'
+  CHINA = 'CN',
+  AUSTRALIA = 'AU'
 }
 
 export const COUNTRY_NAMES = {
   [Country.USA]: 'United States',
-  [Country.CHINA]: 'China'
+  [Country.CHINA]: 'China',
+  [Country.AUSTRALIA]: 'Australia',
 };
 
 export enum WeightUnit {
@@ -56,7 +59,8 @@ export const CARRIERS = {
   RUI_YUN: 'Rui Yun',
   USPS3: 'USPS3',
   MAO_YUAN: 'Mao Yuan',
-  KUAI_DI_YI: 'Kuai Di Yi'
+  KUAI_DI_YI: 'Kuai Di Yi',
+  DPD: 'DPD'
 };
 
 export const GET_CARRIER_LOGO = (carrier: string): string => {
@@ -79,6 +83,8 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
       return maoYuanLogo;
     case CARRIERS.KUAI_DI_YI:
       return kuaiDiYiLogo;
+    case CARRIERS.DPD:
+      return dpdLogo;
     default:
       return eksShippingLogo;
   }
@@ -87,13 +93,17 @@ export const GET_CARRIER_LOGO = (carrier: string): string => {
 export const CARRIER_REGIONS = {
   US_DOMESTIC: 'US_DOMESTIC',
   US_INTERNATIONAL: 'US_INTERNATIONAL',
-  CN_IMPORT: 'CN_IMPORT'
+  CN_IMPORT: 'CN_IMPORT',
+  AU_DOMESTIC: 'AU_DOMESTIC',
+  AU_INTERNATIONAL: 'AU_INTERNATIONAL',
 };
 
 export const CARRIER_REGIONS_TEXTS = {
   [CARRIER_REGIONS.US_DOMESTIC]: 'US Domestic',
   [CARRIER_REGIONS.US_INTERNATIONAL]: 'US International',
-  [CARRIER_REGIONS.CN_IMPORT]: 'China Import'
+  [CARRIER_REGIONS.CN_IMPORT]: 'China Import',
+  [CARRIER_REGIONS.AU_DOMESTIC]: 'Australia Domestic',
+  [CARRIER_REGIONS.AU_INTERNATIONAL]: 'Australia International'
 };
 
 export const CARRIER_ZONE_MODE = {
@@ -194,8 +204,8 @@ export const RUI_YUN_SERVICES = [
   { key: 'UPS', id: 'AA06pkt041', name: 'UPS MI CA  Q （MLF）91732' },
   { key: 'FEDEX', id: 'AA06CS011J5', name: 'Fedex-Ground-A' },
   { key: 'FEDEX', id: 'AA06CS011BD', name: 'Fedex-Ground-A-600&601' },
-  { key: 'FEDEX', id: 'AA06CS011L8', name: 'Fedex-Ground-A-902&908' },
-  { key: 'FEDEX', id: 'AA06CS011JR', name: 'Fedex-Ground-A-114&115' },
+  { key: 'FEDEX', id: 'AA06CS011UQ', name: 'Fedex-Ground-C-902&908' },
+  { key: 'FEDEX', id: 'AA06CS011UP', name: 'Fedex-Ground-B 114&115' },
 ];
 
 export const USPS3_SERVICES = [
@@ -210,6 +220,10 @@ export const MAO_YUAN_SERVICES = [
 
 export const KUAI_DI_YI_SERVICES = [
   { key: 'USPS', id: '359', name: 'US-GA-MID91748' }
+];
+
+export const DPD_SERVICES = [
+  { key: 'AU Express', id: 'AUETKAU', name: 'AU Express' },
 ];
 
 export const CARRIER_SERVIES = {
